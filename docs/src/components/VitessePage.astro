@@ -1,0 +1,10 @@
+---
+import { generateVitessePageRouteData, type VitessePageProps as Props } from '../utils/vitesse-page'
+import Page from './Page.astro'
+
+export type VitessePageProps = Props
+---
+
+<Page {...await generateVitessePageRouteData({ props: Astro.props, url: Astro.url })}>
+  <slot />
+</Page>

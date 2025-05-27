@@ -1,0 +1,163 @@
+{
+  "framework": {
+    "cloudformation": {
+      "CKV_AWS_20": "PASSED", // Ensure S3 bucket has encryption
+      "CKV_AWS_41": "PASSED" // Ensure no hard-coded secrets
+    },
+    "dockerfile": {
+      "CKV_DOCKER_2": "PASSED", // Ensure no sensitive info in ENV vars
+      "CKV_DOCKER_3": "PASSED" // Ensure COPY instead of ADD
+    },
+    "kubernetes": {
+      "CKV_K8S_8": "PASSED", // Ensure liveness probe
+      "CKV_K8S_9": "PASSED", // Ensure readiness probe
+      "CKV_K8S_15": "PASSED", // Ensure image pull policy
+      "CKV_K8S_23": "PASSED" // Ensure no root containers
+    },
+    "terraform": {
+      "CKV_AWS_143": "PASSED", // Ensure encryption at rest
+      "CKV_AWS_144": "PASSED", // Ensure encryption in transit
+      "CKV_AWS_145": "PASSED", // Ensure access logging
+      "CKV_AWS_146": "PASSED" // Ensure audit logging
+    }
+  },
+  "check_type": "custom",
+  "results": {
+    "passed_checks": [
+      {
+        "check_id": "CKV_HIPAA_1",
+        "check_name": "Ensure PHI encryption",
+        "check_result": {
+          "result": "PASSED"
+        },
+        "code_block": [],
+        "file_path": "/path/to/file",
+        "file_line_range": [1, 10]
+      },
+      {
+        "check_id": "CKV_HIPAA_2",
+        "check_name": "Ensure access logging",
+        "check_result": {
+          "result": "PASSED"
+        },
+        "code_block": [],
+        "file_path": "/path/to/file",
+        "file_line_range": [1, 10]
+      }
+    ],
+    "failed_checks": [],
+    "skipped_checks": [
+      "CKV_K8S_21", // Skip container resource limits
+      "CKV_SECRET_6" // Skip specific secret patterns
+    ]
+  },
+  "check_ids": [
+    "CKV_DOCKER_2",
+    "CKV_DOCKER_3",
+    "CKV_GHA_3",
+    "CKV_K8S_21",
+    "CKV_AWS_20",
+    "CKV_AWS_21",
+    "CKV_AZURE_40",
+    "CKV_GCP_62"
+  ],
+  "skip_check": ["CKV_SECRET_6", "CKV_K8S_31"],
+  "enforce_check": {
+    "CKV_K8S_35": "HIPAA requires TLS encryption for all data in transit",
+    "CKV_AWS_21": "HIPAA requires encryption of PHI at rest",
+    "CKV_AWS_117": "HIPAA compliance requires audit logging for all PHI access",
+    "CKV_GCP_62": "HIPAA compliance requires Cloud Storage buckets to have uniform bucket-level access",
+    "CKV_AZURE_53": "HIPAA compliance requires Storage Accounts to enforce HTTPS"
+  },
+  "hipaa_compliance": {
+    "data_protection": [
+      "CKV_AWS_19",
+      "CKV_AWS_21",
+      "CKV_AZURE_3",
+      "CKV_AZURE_35",
+      "CKV_GCP_29",
+      "CKV_GCP_62"
+    ],
+    "access_control": [
+      "CKV_AWS_42",
+      "CKV_AWS_40",
+      "CKV_AZURE_41",
+      "CKV_AZURE_40",
+      "CKV_GCP_45",
+      "CKV_GCP_44"
+    ],
+    "audit_logging": [
+      "CKV_AWS_67",
+      "CKV_AWS_158",
+      "CKV_AZURE_22",
+      "CKV_AZURE_201",
+      "CKV_GCP_26",
+      "CKV_GCP_32"
+    ],
+    "network_security": [
+      "CKV_AWS_260",
+      "CKV_AWS_27",
+      "CKV_AZURE_10",
+      "CKV_AZURE_130",
+      "CKV_GCP_2",
+      "CKV_GCP_28"
+    ],
+    "ehr_specific": {
+      "CKV_CUSTOM_1": "Patient data must be encrypted at rest",
+      "CKV_CUSTOM_2": "FHIR APIs must use TLS 1.2 or higher",
+      "CKV_CUSTOM_3": "All PHI access must be logged for audit purposes",
+      "CKV_CUSTOM_4": "Automatic session timeout must be implemented",
+      "CKV_CUSTOM_5": "Multi-factor authentication must be enforced for EHR access",
+      "CKV_CUSTOM_6": "Backup and disaster recovery plans must be in place",
+      "CKV_CUSTOM_7": "Data Loss Prevention (DLP) must be implemented"
+    }
+  },
+  "custom_policies": {
+    "minimum_tls_version": "1.2",
+    "max_token_lifetime": 3600,
+    "required_authorization_scopes": [
+      "patient/*.read",
+      "user/*.read",
+      "openid",
+      "fhirUser"
+    ],
+    "phi_data_classification": [
+      "Patient",
+      "Encounter",
+      "Observation",
+      "Condition",
+      "MedicationStatement",
+      "MedicationRequest",
+      "Procedure",
+      "DiagnosticReport"
+    ],
+    "required_audit_events": [
+      "user.login",
+      "user.logout",
+      "patient.read",
+      "patient.write",
+      "data.export"
+    ]
+  },
+  "security_controls": {
+    "technical": [
+      "encryption_at_rest",
+      "encryption_in_transit",
+      "access_controls",
+      "audit_logging",
+      "vulnerability_scanning",
+      "penetration_testing"
+    ],
+    "administrative": [
+      "security_risk_assessment",
+      "security_management_process",
+      "contingency_plan",
+      "security_awareness_training"
+    ],
+    "physical": [
+      "facility_access_controls",
+      "workstation_security",
+      "device_and_media_controls"
+    ]
+  }
+}

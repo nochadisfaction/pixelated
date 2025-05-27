@@ -1,0 +1,61 @@
+---
+import PerformanceDashboardReact from './PerformanceDashboardReact'
+import type { PerformanceDashboardProps } from './PerformanceDashboardReact'
+
+// Define Props interface that extends the React component props
+interface Props extends PerformanceDashboardProps {
+  title?: string
+  description?: string
+}
+
+// Destructure props with defaults
+const {
+  aiService,
+  refreshInterval = 10000,
+  title = 'AI Performance Dashboard',
+  description = 'Real-time metrics on AI service performance including cache, connections, response times, and token usage.',
+} = Astro.props
+---
+
+<div class="performance-dashboard w-full">
+  {
+    title && (
+      <h2 class="text-xl font-semibold mb-2 text-gray-800 dark:text-white">
+        {title}
+      </h2>
+    )
+  }
+
+  {
+    description && (
+      <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">{description}</p>
+    )
+  }
+
+  <div
+    class="dashboard-container bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden"
+  >
+    <PerformanceDashboardReact
+      {...{ 'client:load': true }}
+      {aiService}
+      {refreshInterval}
+    />
+  </div>
+</div>
+
+<style>
+  .performance-dashboard {
+    transition:
+      background-color 300ms ease-in-out,
+      color 300ms ease-in-out,
+      border-color 300ms ease-in-out;
+  }
+
+  .dashboard-container {
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  :global(.dark) .dashboard-container {
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+</style>

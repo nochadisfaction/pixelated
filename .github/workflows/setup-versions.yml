@@ -1,0 +1,51 @@
+name: Setup Versions
+
+# Set default restrictive permissions - empty permissions are the most restrictive
+permissions: {}
+
+on:
+  workflow_call:
+    outputs:
+      node-version:
+        description: 'Node.js version from .nvmrc'
+        value: ${{ jobs.determine-versions.outputs.node-version }}
+      pnpm-version:
+        description: 'pnpm version (currently hardcoded but could be read from config)'
+        value: ${{ jobs.determine-versions.outputs.pnpm-version }}
+      python-version:
+        description: 'Python version (currently hardcoded but could be read from config)'
+        value: ${{ jobs.determine-versions.outputs.python-version }}
+
+jobs:
+  determine-versions:
+    runs-on: ubuntu-latest
+    outputs:
+      node-version: ${{ steps.get-node-version.outputs.node-version }}
+      pnpm-version: ${{ steps.get-pnpm-version.outputs.pnpm-version }}
+      python-version: ${{ steps.get-python-version.outputs.python-version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get Node.js version from .nvmrc
+        id: get-node-version
+        run: |
+          NODE_VERSION=$(cat .nvmrc | tr -d '[:space:]')
+          echo "node-version=${NODE_VERSION}" >> $GITHUB_OUTPUT
+          echo "Node.js version: ${NODE_VERSION}"
+
+      - name: Get pnpm version
+        id: get-pnpm-version
+        run: |
+          PNPM_VERSION=$(jq -r '.packageManager | select(startswith("pnpm@")) | split("@")[1]' package.json)
+          echo "pnpm-version=${PNPM_VERSION}" >> $GITHUB_OUTPUT
+          echo "pnpm version: ${PNPM_VERSION}"
+
+      - name: Get Python version
+        id: get-python-version
+        run: |
+          # For now, hardcoded but could read from a file
+          PYTHON_VERSION="3.12"
+          echo "python-version=${PYTHON_VERSION}" >> $GITHUB_OUTPUT
+          echo "Python version: ${PYTHON_VERSION}"

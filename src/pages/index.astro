@@ -1,0 +1,55 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import StandardLayout from '@/layouts/StandardLayout.astro'
+import SpinningGlobe from '@/components/widgets/SpinningGlobe.astro'
+
+// Add prerender directive to generate static HTML during build
+export const prerender = true
+---
+
+<BaseLayout
+  title="Pixelated Empathy"
+  description="Welcome to Pixelated Empathy - the premier destination for all things related to the world of AI-assisted emotional intelligence."
+  bgType="plum"
+>
+  <StandardLayout isCentered={true}>
+    <div class="flex flex-col items-center justify-center mt-10 min-h-fit">
+      <SpinningGlobe />
+
+      <div
+        class="prose text-center slide-enter"
+        style="--enter-stage: 1; animation-duration: 1.2s;"
+      >
+        <p>
+          Pixelated Empathy - the premier destination<br />
+          for the world of AI-assisted emotional intelligence.<br />
+          <br />
+          Therapy training has never been more accessible, or more effective. <strong
+            >Ever.</strong
+          >
+        </p>
+      </div>
+    </div>
+  </StandardLayout>
+</BaseLayout>
+
+<style>
+  .slide-enter {
+    --enter-stage: 0;
+    --enter-step: 150ms;
+    --enter-initial: translateY(20px);
+    animation: slide-enter 1s ease both;
+    animation-delay: calc(var(--enter-stage) * var(--enter-step));
+  }
+
+  @keyframes slide-enter {
+    0% {
+      transform: var(--enter-initial);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+</style>
