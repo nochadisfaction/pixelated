@@ -1,0 +1,407 @@
+---
+// Frontmatter section (add imports and scripts here)
+---
+
+import { Icon } from 'astro-icon/components';
+import Button from '../ui/button/Button.astro';
+
+interface Props {
+  patientId?: string;
+  patientName?: string;
+  disabled?: boolean;
+}
+
+const { patientId = '', patientName = '', disabled = false } = Astro.props;
+
+// Define available data sections
+const dataSections = [
+  { id: 'profile', label: 'Patient Profile', description: 'Basic demographic and contact information' },
+  { id: 'mental-health', label: 'Mental Health Records', description: 'Assessments, emotions, and clinical notes' },
+  { id: 'chat-history', label: 'Chat History', description: 'Messages exchanged with healthcare providers' },
+  { id: 'consent', label: 'Consent Records', description: 'History of consent grants and withdrawals' }
+];
+
+// Define format options
+const formatOptions = [
+  { id: 'json', label: 'JSON', description: 'Standard data format for technical use' },
+  { id: 'csv', label: 'CSV', description: 'Tabular format compatible with spreadsheet software' },
+  { id: 'fhir', label: 'FHIR', description: 'Healthcare interoperability standard' },
+  { id: 'ccd', label: 'CCD', description: 'Clinical Document Architecture format' },
+  { id: 'hl7', label: 'HL7', description: 'Healthcare Level 7 messaging standard' }
+];
+
+// Define recipient types
+const recipientTypes = [
+  { id: 'patient', label: 'Patient', description: 'Send directly to the patient' },
+  { id: 'provider', label: 'Healthcare Provider', description: 'Send to another healthcare provider' },
+  { id: 'research', label: 'Research Institution', description: 'Send to approved research organization' }
+];
+
+<div class="data-export-form bg-white rounded-lg shadow-md p-6 max-w-3xl mx-auto">
+  <h2 class="text-2xl font-semibold mb-6 text-gray-800">Create Data Export Request</h2>
+
+  <form id="exportForm" class="space-y-6">
+    <!-- Patient Information -->
+    <div class="space-y-4">
+      <h3 class="text-lg font-medium text-gray-800 border-b pb-2">Patient Information</h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label for="patientId" class="block text-sm font-medium text-gray-700 mb-1">Patient ID</label>
+          <input
+            type="text"
+            id="patientId"
+            name="patientId"
+            value={patientId}
+            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            placeholder="Enter patient ID"
+            required
+            readonly={!!patientId}
+          />
+        </div>
+
+        <div>
+          <label for="patientName" class="block text-sm font-medium text-gray-700 mb-1">Patient Name</label>
+          <input
+            type="text"
+            id="patientName"
+            name="patientName"
+            value={patientName}
+            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            placeholder="Enter patient name"
+            readonly={!!patientName}
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Selection -->
+    <div class="space-y-4">
+      <h3 class="text-lg font-medium text-gray-800 border-b pb-2">Data Selection</h3>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Select Data Sections</label>
+        <div class="space-y-3">
+          {dataSections.map(section => (
+            <div class="flex items-start">
+              <div class="flex items-center h-5">
+                <input
+                  id={`section-${section.id}`}
+                  name="dataSections"
+                  type="checkbox"
+                  value={section.id}
+                  class="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                />
+              </div>
+              <div class="ml-3 text-sm">
+                <label for={`section-${section.id}`} class="font-medium text-gray-700">{section.label}</label>
+                <p class="text-gray-500">{section.description}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div class="text-sm text-red-500 hidden" id="dataSectionsError">Please select at least one data section</div>
+      </div>
+    </div>
+
+    <!-- Format Selection -->
+    <div class="space-y-4">
+      <h3 class="text-lg font-medium text-gray-800 border-b pb-2">Export Format</h3>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Select Data Format</label>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {formatOptions.map(format => (
+            <div class="relative">
+              <input
+                type="radio"
+                id={`format-${format.id}`}
+                name="dataFormat"
+                value={format.id}
+                class="peer sr-only"
+              />
+              <label
+                for={`format-${format.id}`}
+                class="flex p-3 border border-gray-300 rounded-md cursor-pointer hover:border-green-500 peer-checked:border-green-500 peer-checked:bg-green-50"
+              >
+                <div>
+                  <div class="font-medium">{format.label}</div>
+                  <div class="text-xs text-gray-500">{format.description}</div>
+                </div>
+              </label>
+              <div class="absolute hidden w-5 h-5 text-green-600 pointer-events-none top-3 right-3 peer-checked:block">
+                <Icon name="check-circle" />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div class="text-sm text-red-500 hidden" id="dataFormatError">Please select a data format</div>
+      </div>
+    </div>
+
+    <!-- Recipient Information -->
+    <div class="space-y-4">
+      <h3 class="text-lg font-medium text-gray-800 border-b pb-2">Recipient Information</h3>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Recipient Type</label>
+        <div class="space-y-3">
+          {recipientTypes.map(type => (
+            <div class="relative">
+              <input
+                type="radio"
+                id={`recipient-${type.id}`}
+                name="recipientType"
+                value={type.id}
+                class="peer sr-only"
+              />
+              <label
+                for={`recipient-${type.id}`}
+                class="flex p-3 border border-gray-300 rounded-md cursor-pointer hover:border-green-500 peer-checked:border-green-500 peer-checked:bg-green-50"
+              >
+                <div>
+                  <div class="font-medium">{type.label}</div>
+                  <div class="text-xs text-gray-500">{type.description}</div>
+                </div>
+              </label>
+              <div class="absolute hidden w-5 h-5 text-green-600 pointer-events-none top-3 right-3 peer-checked:block">
+                <Icon name="check-circle" />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div class="text-sm text-red-500 hidden" id="recipientTypeError">Please select a recipient type</div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        <div>
+          <label for="recipientName" class="block text-sm font-medium text-gray-700 mb-1">Recipient Name</label>
+          <input
+            type="text"
+            id="recipientName"
+            name="recipientName"
+            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            placeholder="Enter recipient name"
+            required
+          />
+          <div class="text-sm text-red-500 hidden" id="recipientNameError">Recipient name is required</div>
+        </div>
+
+        <div>
+          <label for="recipientEmail" class="block text-sm font-medium text-gray-700 mb-1">Recipient Email</label>
+          <input
+            type="email"
+            id="recipientEmail"
+            name="recipientEmail"
+            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            placeholder="Enter recipient email"
+            required
+          />
+          <div class="text-sm text-red-500 hidden" id="recipientEmailError">Please enter a valid email</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="flex justify-end space-x-3 pt-4 border-t">
+      <Button variant="outline" id="cancelButton" type="button">
+        Cancel
+      </Button>
+      <Button id="submitButton" type="submit" disabled={disabled}>
+        Create Export Request
+      </Button>
+    </div>
+  </form>
+</div>
+
+<div id="confirmationModal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+  <div class="absolute inset-0 bg-black opacity-50"></div>
+  <div class="relative bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+    <h3 class="text-xl font-semibold mb-4 text-gray-900">Export Request Created</h3>
+    <p class="text-gray-700 mb-6">Your export request has been successfully created and is now being processed.</p>
+    <div id="exportDetails" class="mb-6 p-4 bg-gray-50 rounded-md">
+      <p><span class="font-medium">Export ID:</span> <span id="exportIdText"></span></p>
+      <p><span class="font-medium">Status:</span> <span id="statusText"></span></p>
+      <p><span class="font-medium">Data Sections:</span> <span id="dataSectionsText"></span></p>
+      <p><span class="font-medium">Format:</span> <span id="formatText"></span></p>
+    </div>
+    <div class="flex justify-end">
+      <Button id="closeModalButton">
+        Close
+      </Button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Initialize form handling
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('exportForm');
+    const cancelButton = document.getElementById('cancelButton');
+    const submitButton = document.getElementById('submitButton');
+    const confirmationModal = document.getElementById('confirmationModal');
+    const closeModalButton = document.getElementById('closeModalButton');
+
+    // Form validation
+    function validateForm() {
+      let isValid = true;
+
+      // Validate patient ID
+      const patientId = (document.getElementById('patientId') as HTMLInputElement)?.value;
+      if (!patientId) {
+        isValid = false;
+        document.getElementById('patientIdError')?.classList.remove('hidden');
+      } else {
+        document.getElementById('patientIdError')?.classList.add('hidden');
+      }
+
+      // Validate data sections
+      const dataSections = Array.from(document.querySelectorAll('input[name="dataSections"]:checked')).map(
+        (checkbox) => (checkbox as HTMLInputElement).value
+      );
+      if (dataSections.length === 0) {
+        isValid = false;
+        document.getElementById('dataSectionsError')?.classList.remove('hidden');
+      } else {
+        document.getElementById('dataSectionsError')?.classList.add('hidden');
+      }
+
+      // Validate data format
+      const dataFormat = (document.querySelector('input[name="dataFormat"]:checked') as HTMLInputElement)?.value;
+      if (!dataFormat) {
+        isValid = false;
+        document.getElementById('dataFormatError')?.classList.remove('hidden');
+      } else {
+        document.getElementById('dataFormatError')?.classList.add('hidden');
+      }
+
+      // Validate recipient type
+      const recipientType = (document.querySelector('input[name="recipientType"]:checked') as HTMLInputElement)?.value;
+      if (!recipientType) {
+        isValid = false;
+        document.getElementById('recipientTypeError')?.classList.remove('hidden');
+      } else {
+        document.getElementById('recipientTypeError')?.classList.add('hidden');
+      }
+
+      // Validate recipient name
+      const recipientName = (document.getElementById('recipientName') as HTMLInputElement)?.value;
+      if (!recipientName) {
+        isValid = false;
+        document.getElementById('recipientNameError')?.classList.remove('hidden');
+      } else {
+        document.getElementById('recipientNameError')?.classList.add('hidden');
+      }
+
+      // Validate recipient email
+      const recipientEmail = (document.getElementById('recipientEmail') as HTMLInputElement)?.value;
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!recipientEmail || !emailRegex.test(recipientEmail)) {
+        isValid = false;
+        document.getElementById('recipientEmailError')?.classList.remove('hidden');
+      } else {
+        document.getElementById('recipientEmailError')?.classList.add('hidden');
+      }
+
+      return isValid;
+    }
+
+    // Handle form submission
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      if (!validateForm()) {
+        return;
+      }
+
+      submitButton?.setAttribute('disabled', 'true');
+      submitButton.textContent = 'Creating...';
+
+      try {
+        const formData = new FormData(form as HTMLFormElement);
+        const dataSections = Array.from(formData.getAll('dataSections')) as string[];
+
+        const requestData = {
+          patientId: formData.get('patientId'),
+          recipientType: formData.get('recipientType'),
+          recipientName: formData.get('recipientName'),
+          recipientEmail: formData.get('recipientEmail'),
+          dataFormat: formData.get('dataFormat'),
+          dataSections
+        };
+
+        // Send the export request to the API
+        const response = await fetch('/api/patient-rights/create-export', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(requestData)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          // Populate the confirmation modal
+          if (document.getElementById('exportIdText')) {
+            document.getElementById('exportIdText')!.textContent = result.data.exportRequest.id;
+          }
+          if (document.getElementById('statusText')) {
+            document.getElementById('statusText')!.textContent = result.data.exportRequest.status;
+          }
+          if (document.getElementById('dataSectionsText')) {
+            document.getElementById('dataSectionsText')!.textContent = dataSections.join(', ');
+          }
+          if (document.getElementById('formatText')) {
+            document.getElementById('formatText')!.textContent = formData.get('dataFormat') as string;
+          }
+
+          // Show the confirmation modal
+          confirmationModal?.classList.remove('hidden');
+
+          // Reset the form
+          form.reset();
+        } else {
+          // Handle error
+          alert(`Error: ${result.message}`);
+        }
+      } catch (error) {
+        console.error('Error creating export request:', error);
+        alert('An error occurred while creating the export request. Please try again.');
+      } finally {
+        submitButton?.removeAttribute('disabled');
+        submitButton.textContent = 'Create Export Request';
+      }
+    });
+
+    // Handle cancel button
+    cancelButton?.addEventListener('click', () => {
+      form?.reset();
+
+      // Reset all error messages
+      document.querySelectorAll('.text-red-500').forEach(el => {
+        el.classList.add('hidden');
+      });
+
+      // If there's a back navigation function, use it
+      if (window.history.length > 1) {
+        window.history.back();
+      }
+    });
+
+    // Handle close modal button
+    closeModalButton?.addEventListener('click', () => {
+      confirmationModal?.classList.add('hidden');
+
+      // Redirect to the data exports list page
+      window.location.href = '/admin/data-transfer';
+    });
+  });
+</script>
+
+<style>
+  /* Add any component-specific styles here */
+  .data-export-form {
+    max-width: 800px;
+  }
+</style>

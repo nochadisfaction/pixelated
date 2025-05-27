@@ -1,0 +1,21 @@
+---
+import type { Props } from '../props'
+
+import NavBar from 'virtual:vitesse/components/NavBar'
+import ScrollToTop from 'virtual:vitesse/components/ScrollToTop'
+import SiteTitle from 'virtual:vitesse/components/SiteTitle'
+---
+
+<header class="header z-40">
+  <SiteTitle {...Astro.props} />
+
+  <ScrollToTop {...Astro.props} />
+
+  <NavBar {...Astro.props} />
+</header>
+
+<style>
+  .header h1 {
+    margin-bottom: 0;
+  }
+</style>

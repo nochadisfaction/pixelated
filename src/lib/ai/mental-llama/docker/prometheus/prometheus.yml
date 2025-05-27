@@ -1,0 +1,58 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 10s
+
+  # Labels for all metrics
+  external_labels:
+    monitor: 'mental-llama-monitor'
+
+# Alert manager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # Alert manager service will be added in the future
+          # - alertmanager:9093
+
+# Rule files to load
+rule_files:
+  # - "alert_rules.yml"
+
+# Scrape configurations
+scrape_configs:
+  # MentalLLaMA API metrics
+  - job_name: 'mental-llama-api'
+    scrape_interval: 5s
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['mental-llama-api:3000']
+        labels:
+          service: 'mental-llama-api'
+          environment: 'production'
+
+    # Basic authentication if needed
+    # basic_auth:
+    #   username: prometheus
+    #   password: prometheus-password
+
+  # Redis metrics (via redis-exporter)
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+        labels:
+          service: 'redis'
+
+  # Nginx metrics (optional, requires nginx-prometheus-exporter)
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx-exporter:9113']
+        labels:
+          service: 'nginx'
+
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'prometheus'

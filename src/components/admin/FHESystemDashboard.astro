@@ -1,0 +1,255 @@
+---
+// FHE System Dashboard for monitoring the fully homomorphic encryption system
+---
+
+<div class="fhe-system-dashboard">
+  <h1>Fully Homomorphic Encryption Dashboard</h1>
+
+  <div class="dashboard-stats">
+    <div class="stat-card">
+      <h3>Total Operations</h3>
+      <div class="stat-value" id="total-operations">128</div>
+    </div>
+
+    <div class="stat-card">
+      <h3>Encrypted Data</h3>
+      <div class="stat-value" id="encrypted-data">125</div>
+    </div>
+
+    <div class="stat-card">
+      <h3>Homomorphic Operations</h3>
+      <div class="stat-value" id="homomorphic-operations">86</div>
+    </div>
+
+    <div class="stat-card">
+      <h3>Auth Operations</h3>
+      <div class="stat-value" id="auth-operations">42</div>
+    </div>
+
+    <div class="stat-card">
+      <h3>Chat Operations</h3>
+      <div class="stat-value" id="chat-operations">86</div>
+    </div>
+
+    <div class="stat-card">
+      <h3>Encrypted Messages</h3>
+      <div class="stat-value" id="encrypted-messages">64</div>
+    </div>
+
+    <div class="stat-card">
+      <h3>Avg. Processing Time</h3>
+      <div class="stat-value" id="avg-processing-time">120 ms</div>
+    </div>
+  </div>
+
+  <h2>Recent Activity</h2>
+  <div class="recent-activity">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Type</th>
+          <th>Action</th>
+          <th>Time</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="activity-table-body">
+        <!-- Initial data will be here, will be updated by client-side script -->
+      </tbody>
+    </table>
+  </div>
+
+  <h2>System Health</h2>
+  <div class="system-health">
+    <div class="health-card">
+      <h3>FHE Service</h3>
+      <div class="health-status healthy">Operational</div>
+    </div>
+
+    <div class="health-card">
+      <h3>Crypto System</h3>
+      <div class="health-status healthy">Operational</div>
+    </div>
+
+    <div class="health-card">
+      <h3>Key Rotation</h3>
+      <div class="health-status healthy">Operational</div>
+    </div>
+
+    <div class="health-card">
+      <h3>Circuit Compilation</h3>
+      <div class="health-status warning">Degraded</div>
+      <div class="health-message">
+        High compilation times for complex circuits
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Define interfaces for type safety
+  interface ActivityItem {
+    id: string
+    type: string
+    action: string
+    timestamp: number
+    status: 'success' | 'failed' | 'pending'
+  }
+
+  // Initial activity data
+  const initialActivity: ActivityItem[] = [
+    {
+      id: 'proof-1',
+      type: 'auth',
+      action: 'session_verification',
+      timestamp: Date.now() - 5 * 60 * 1000,
+      status: 'success',
+    },
+    {
+      id: 'proof-2',
+      type: 'chat',
+      action: 'message_encryption',
+      timestamp: Date.now() - 10 * 60 * 1000,
+      status: 'success',
+    },
+    {
+      id: 'proof-3',
+      type: 'chat',
+      action: 'sender_verification',
+      timestamp: Date.now() - 15 * 60 * 1000,
+      status: 'failed',
+    },
+    {
+      id: 'proof-4',
+      type: 'auth',
+      action: 'login_attempts_verification',
+      timestamp: Date.now() - 20 * 60 * 1000,
+      status: 'success',
+    },
+    {
+      id: 'proof-5',
+      type: 'chat',
+      action: 'message_verification',
+      timestamp: Date.now() - 25 * 60 * 1000,
+      status: 'pending',
+    },
+  ]
+
+  // Function to render activity data
+  function renderActivityTable(activities: ActivityItem[]): void {
+    const tableBody = document.getElementById('activity-table-body')
+    if (!tableBody) return
+
+    tableBody.innerHTML = ''
+
+    activities.forEach((activity) => {
+      const row = document.createElement('tr')
+      row.innerHTML = `
+        <td>${activity.id}</td>
+        <td>${activity.type}</td>
+        <td>${activity.action}</td>
+        <td>${new Date(activity.timestamp).toLocaleTimeString()}</td>
+        <td>
+          <span class="status-badge ${activity.status}">
+            ${activity.status}
+          </span>
+        </td>
+      `
+      tableBody.appendChild(row)
+    })
+  }
+
+  // Initialize data and polling
+  document.addEventListener('DOMContentLoaded', () => {
+    // Render initial activity data
+    renderActivityTable(initialActivity)
+
+    // Set up polling for real-time updates
+    setInterval(async () => {
+      try {
+        // In a real implementation, this would fetch actual data from the server
+        // For now, we'll just simulate updated stats
+
+        // Update stats
+        const totalOperations = document.getElementById('total-operations')
+        if (totalOperations) {
+          totalOperations.textContent = String(
+            Math.floor(128 + Math.random() * 10),
+          )
+        }
+
+        const encryptedData = document.getElementById('encrypted-data')
+        if (encryptedData) {
+          encryptedData.textContent = String(
+            Math.floor(125 + Math.random() * 8),
+          )
+        }
+
+        const homomorphicOperations = document.getElementById(
+          'homomorphic-operations',
+        )
+        if (homomorphicOperations) {
+          homomorphicOperations.textContent = String(
+            Math.floor(86 + Math.random() * 5),
+          )
+        }
+
+        const authOperations = document.getElementById('auth-operations')
+        if (authOperations) {
+          authOperations.textContent = String(
+            Math.floor(42 + Math.random() * 3),
+          )
+        }
+
+        const chatOperations = document.getElementById('chat-operations')
+        if (chatOperations) {
+          chatOperations.textContent = String(
+            Math.floor(86 + Math.random() * 7),
+          )
+        }
+
+        const encryptedMessages = document.getElementById('encrypted-messages')
+        if (encryptedMessages) {
+          encryptedMessages.textContent = String(
+            Math.floor(64 + Math.random() * 4),
+          )
+        }
+
+        const avgProcessingTime = document.getElementById('avg-processing-time')
+        if (avgProcessingTime) {
+          avgProcessingTime.textContent =
+            Math.floor(115 + Math.random() * 10) + ' ms'
+        }
+
+        // Update activity with some randomness
+        if (Math.random() > 0.7) {
+          // Add a new activity at the top occasionally
+          initialActivity.unshift({
+            id: 'proof-' + Math.floor(Math.random() * 1000),
+            type: Math.random() > 0.5 ? 'auth' : 'chat',
+            action: [
+              'session_verification',
+              'message_encryption',
+              'sender_verification',
+            ][Math.floor(Math.random() * 3)],
+            timestamp: Date.now(),
+            status: ['success', 'failed', 'pending'][
+              Math.floor(Math.random() * 3)
+            ] as 'success' | 'failed' | 'pending',
+          })
+
+          // Keep only the latest 5 activities
+          if (initialActivity.length > 5) {
+            initialActivity.pop()
+          }
+
+          // Update the table
+          renderActivityTable(initialActivity)
+        }
+      } catch (err) {
+        console.error('Error updating dashboard:', err)
+      }
+    }, 30000) // Update every 30 seconds
+  })
+</script>

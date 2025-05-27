@@ -1,0 +1,233 @@
+# Cursor Development Rules & AI Collaboration Guide
+
+## 🎯 High-Priority Guidelines
+
+1. **CRITICAL Checks:**
+   * Verify Astro frontmatter syntax (between `---` fences) in all `.astro` files
+   * Use `pnpm` exclusively for package management, never npm or yarn
+   * Run tests and check for linter errors before committing changes
+   * Never commit sensitive data or `.env` files
+   * Use `astro:transitions` (not the deprecated `@astrojs/transitions`)
+
+2. **Documentation as Source of Truth:**
+   * First consult: `README.md`, `docs/architecture.mdx`, `.notes/status.mdx`, `.notes/tasks.mdx`
+   * Configuration references: `astro.config.mjs`, `tsconfig.json`
+   * Ask for clarification when documentation is unclear or contradictory
+
+3. **Code Structure & Safety:**
+   * Follow Astro's project structure and component model
+   * Implement proper security controls (input validation, auth, CSP)
+   * Follow Test-Driven Development (TDD) principles
+   * Fix root causes, not just symptoms
+
+## 🏗️ Architecture & Project Structure
+
+1. **Astro Framework Structure:**
+   ```
+   src/
+     pages/         # File-based routing (.astro, .md, .mdx)
+     components/    # Reusable components
+     layouts/       # Page layouts
+     content/       # Content collections
+     styles/        # Global styles
+   public/          # Static assets
+   ```
+
+2. **Component Organization:**
+   * Use `.astro` files for static/minimal interactivity
+   * Use framework components (React/Vue/Svelte) only for complex interactions
+   * Keep files under 300 lines; refactor proactively
+   * Name files consistently: PascalCase for components, kebab-case for pages
+
+3. **Type Safety:**
+   * Use strict TypeScript typing; avoid `any`
+   * Define proper interfaces for component props
+   * Use type guards for runtime type checking
+   * Document complex logic with JSDoc
+
+## 💻 Astro Component Development
+
+1. **Correct Astro Component Structure:**
+   ```astro
+   ---
+   // 1. Imports
+   import ComponentName from '../components/ComponentName.astro';
+   import type { PropTypes } from '../types';
+
+   // 2. Props definition and destructuring
+   interface Props {
+     title: string;
+     items?: string[];
+   }
+   const { title, items = [] } = Astro.props;
+
+   // 3. Component logic
+   const processedItems = items.filter(item => item.length > 0);
+   ---
+
+   <!-- Template section -->
+   <div>
+     <h1>{title}</h1>
+     <ul>
+       {processedItems.map(item => <li>{item}</li>)}
+     </ul>
+   </div>
+
+   <!-- Styling section -->
+   <style>
+     h1 { color: var(--heading-color); }
+   </style>
+   ```
+
+2. **Common Astro Errors to Check:**
+   * Missing/improper frontmatter fences (`---`)
+   * Incorrect imports (default vs. named)
+   * Type import errors (wrong paths)
+   * Undefined variables in templates
+   * Imports from non-existent modules
+
+3. **Transitions System:**
+   * Use `import { ... } from 'astro:transitions'` (never `@astrojs/transitions`)
+   * Use `<ClientRouter />` component for page transitions
+   * Apply transitions with directives:
+     ```astro
+     <img src={src} transition:name={`image-${id}`} />
+     <main transition:animate="slide">...</main>
+     <header transition:persist>...</header>
+     ```
+   * For framework components, use CSS custom properties:
+     ```jsx
+     <img className="dynamic-image"
+       style={{ '--transition-name': `image-${id}` }}
+       src={src} />
+     ```
+
+4. **Performance Optimization:**
+   * Minimize client-side JavaScript
+   * Use Astro's partial hydration via client directives:
+     ```astro
+     <InteractiveComponent client:load />
+     <LessImportantComponent client:idle />
+     <LazyComponent client:visible />
+     ```
+   * Leverage static site generation features
+   * Implement proper image optimization
+   * Use dynamic imports for code splitting
+
+## 🔒 Security Best Practices
+
+1. **Server-Side Security:**
+   * Keep sensitive logic server-side only
+   * Use Astro's security features (HTML escaping, CSP)
+   * Configure proper CORS policies
+   * Store sensitive values in environment variables
+
+2. **Client-Side Security:**
+   * Validate and sanitize all user inputs
+   * Implement XSS protection
+   * Use Content Security Policy headers
+   * Never expose sensitive data in client-side code
+
+3. **API & Data Protection:**
+   * Implement proper authentication and authorization
+   * Rate-limit API endpoints
+   * Use HTTPS for all communications
+   * Follow data protection regulations (GDPR, CCPA)
+   * Use secure HTTP headers (HSTS, X-Frame-Options)
+
+## 🧪 Testing & Validation
+
+1. **Test-Driven Development:**
+   * **New Features:** Write failing tests first, then implement
+   * **Bug Fixes:** Create test reproducing the bug before fixing
+   * All tests must pass before committing
+
+2. **Vitest Best Practices:**
+   * Don't import test utilities - use globals
+   * Type mocks properly: `ReturnType<typeof vi.fn>` instead of `Mock`
+   * Cast mocked objects: `const mock = service as unknown as MockedService`
+   * Use type-safe helpers for mock.calls
+   * Reference patterns in `src/lib/services/notification/__tests__/WebSocketServer.test.ts`
+
+## 📦 Package Management with pnpm
+
+1. **Essential Commands:**
+   * Install: `pnpm install`
+   * Add dependency: `pnpm add [package-name]`
+   * Add dev dependency: `pnpm add -D [package-name]`
+   * Run scripts: `pnpm [script-name]` (e.g., `pnpm dev`)
+   * List scripts: `pnpm run`
+
+2. **Troubleshooting:**
+   * Clear cache: `pnpm store prune`
+   * Clean reinstall: `rm -rf node_modules && pnpm install`
+   * Never use `sudo` with pnpm
+
+## 🛠️ Development Workflow
+
+1. **Before Making Changes:**
+   * Understand requirements and acceptance criteria
+   * Identify affected components and dependencies
+   * Plan systematic, incremental approach
+   * Verify how changes will be tested
+
+2. **When Implementing:**
+   * Make focused, logical changes
+   * Follow established patterns and conventions
+   * Maintain test coverage
+   * Document complex logic
+   * Fix linter errors immediately
+
+3. **After Changes:**
+   * Verify all tests pass
+   * Check for linter/compiler warnings
+   * Update documentation as needed
+   * Update status and task trackers
+
+4. **Refactoring Guidelines:**
+   * Refactor to improve clarity and reduce duplication
+   * Edit files directly; don't duplicate and rename
+   * Verify all integrations work after refactoring
+   * Run tests to confirm functionality
+
+## 🐛 Debugging Strategies
+
+1. **Effective Debugging:**
+   * Fix root causes, not just symptoms
+   * Check browser/server console for errors
+   * Use targeted logging to trace execution flow
+   * Reference `fixes/` directory for known solutions
+   * Document complex fixes for future reference
+
+## 🤖 AI Assistant Collaboration
+
+1. **Effective AI Interaction:**
+   * Provide clear, specific instructions
+   * Reference relevant context from previous interactions
+   * Break complex tasks into smaller steps
+   * Clearly indicate whether AI should suggest or implement
+   * Review AI output critically; question assumptions
+
+2. **AI Strengths & Limitations:**
+   * Best for: boilerplate, refactoring, syntax errors, tests
+   * Human oversight needed for: complex logic, architecture, security
+   * Verify AI-generated code thoroughly
+   * Focus AI on specific, well-defined tasks
+
+## 🌳 Version Control & Environment
+
+1. **Best Practices:**
+   * Commit frequently with clear, atomic messages
+   * Follow established branching strategy
+   * Never commit `.env` files or sensitive data
+   * Ensure code works across environments (dev, test, prod)
+   * Restart servers after configuration changes
+
+## 📄 Documentation
+
+1. **Keep Updated:**
+   * Sync documentation with code changes
+   * Document configuration and integrations
+   * Maintain type definitions
+   * Update security documentation promptly
+   * Review and update this rules file regularly

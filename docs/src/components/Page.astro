@@ -1,0 +1,83 @@
+---
+import type { Props } from '../props'
+
+import { ClientRouter } from 'astro:transitions'
+import Footer from 'virtual:vitesse/components/Footer'
+import config from 'virtual:vitesse/user-config'
+
+import Head from 'virtual:vitesse/components/Head'
+import Header from './Header.astro'
+import WrapperPost from './WrapperPost.astro'
+
+import '@unocss/reset/tailwind.css'
+import '../styles/main.css'
+import '../styles/prose.css'
+import '../styles/markdown.css'
+
+// Important that this is the last import so it can override built-in styles.
+import 'virtual:vitesse/user-css'
+---
+
+<script is:inline>
+  // eslint-disable-next-line ts/ban-ts-comment
+  // @ts-nocheck
+  // eslint-disable-next-line ts/explicit-function-return-type
+  function setDarkMode(document) {
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+    const setting = localStorage.getItem('theme') || 'auto'
+    if (setting === 'dark' || (prefersDark && setting !== 'light')) {
+      document.documentElement.classList.toggle('dark', true)
+    }
+  }
+
+  setDarkMode(document)
+
+  document.addEventListener('astro:before-swap', (ev) => {
+    setDarkMode(ev.newDocument)
+  })
+</script>
+
+<html lang={Astro.props.lang} dir={Astro.props.dir}>
+  <head>
+    <Head {...Astro.props} />
+
+    <script>
+      import nprogress from 'nprogress'
+
+      document.addEventListener('astro:before-preparation', () => {
+        nprogress.start()
+      })
+
+      document.addEventListener('astro:page-load', () => {
+        nprogress.done()
+      })
+    </script>
+
+    <ClientRouter />
+  </head>
+  <body class="relative text-gray-700 font-sans dark:text-gray-200">
+    <Header {...Astro.props} />
+
+    <main class="of-x-hidden px-7 py-10">
+      <WrapperPost {...Astro.props}>
+        <slot />
+      </WrapperPost>
+
+      <div class="slide-enter prose m-auto mb-6 mt-10 flex animate-delay-1200!">
+        <Footer />
+      </div>
+
+      {
+        config.credits && (
+          <div class="slide-enter prose m-auto mb-6 flex animate-delay-1500!">
+            <span class="text-sm op50">
+              <a target="_blank" href="https://github.com/adrian-ub/astro-vitesse" style="color:inherit">
+                {Astro.locals.t('builtWithVitesse.label')}
+              </a>
+            </span>
+          </div>
+        )
+      }
+    </main>
+  </body>
+</html>

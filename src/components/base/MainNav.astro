@@ -1,0 +1,80 @@
+---
+import LogoButton from '@/components/widgets/LogoButton.astro'
+import DarkThemeToggle from '@/components/ui/DarkThemeToggle.astro'
+import { UI } from '@/config'
+import type { SocialLink } from '@/types'
+
+// Explicitly define the navigation items to ensure they're displayed correctly
+const navItems = [
+  { name: 'Features', link: '/features' },
+  { name: 'Blog', link: '/blog' },
+  { name: 'Dashboard', link: '/dashboard' },
+]
+
+// Use proper type assertion for social links
+const socialLinks = (UI.socialLinks || []) as SocialLink[]
+---
+
+<header
+  class="translucent-header flex items-center justify-between p-6 w-full absolute top-0 left-0 right-0 z-10"
+>
+  <div class="flex items-center">
+    <LogoButton />
+  </div>
+
+  <nav class="flex items-center gap-6">
+    <ul class="flex items-center gap-6">
+      {
+        navItems.map((item) => (
+          <li>
+            <a
+              href={item.link}
+              class="text-sm font-medium tracking-wide text-gray-400 hover:text-white transition-colors"
+            >
+              {item.name}
+            </a>
+          </li>
+        ))
+      }
+
+      {
+        socialLinks.map((item) => (
+          <li>
+            <a
+              href={item.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-gray-400 hover:text-white transition-colors social-icon"
+              aria-label={item.title}
+            >
+              <i class={item.icon as any} />
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <DarkThemeToggle />
+  </nav>
+</header>
+
+<style>
+  .translucent-header {
+    background: rgba(255, 255, 255, 0.065); /* 50% more translucent */
+    box-shadow: 0 2px 8px 0 rgba(80, 0, 80, 0.07);
+    backdrop-filter: blur(8px) saturate(1.2);
+    -webkit-backdrop-filter: blur(8px) saturate(1.2);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+  }
+
+  .social-icon {
+    font-size: 0.6em; /* Make social icons 60% of their original size */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .social-icon i {
+    transform: scale(0.6); /* Scale down the icons to 60% */
+  }
+</style>

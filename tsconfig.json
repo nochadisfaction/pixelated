@@ -1,0 +1,73 @@
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "baseUrl": ".",
+    "module": "ESNext",
+    "target": "ESNext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "lib": ["ESNext", "DOM", "DOM.Iterable", "WebWorker"],
+    "paths": {
+      "~/*": ["./src/*"],
+      "@/*": ["./src/*"],
+      "@convex/_generated/*": ["./convex/_generated/*"],
+      "@components/*": ["./src/components/*"],
+      "@layouts/*": ["./src/layouts/*"],
+      "@utils/*": ["./src/utils/*"],
+      "@lib/*": ["./src/lib/*"],
+      "three": ["./node_modules/three"],
+      "three/*": ["./node_modules/three/*"]
+    },
+    "types": ["astro/client", "node", "vitest/globals"],
+    "typeRoots": ["./node_modules/@types", "./src/types"],
+    "skipLibCheck": true,
+    "allowJs": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "plugins": [
+      // Disabling @astrojs/ts-plugin as it's generating too many errors in Cursor
+      // {
+      //   "name": "@astrojs/ts-plugin"
+      // }
+    ]
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.astro",
+    "src/**/*.d.ts",
+    "tests/**/*.ts",
+    "tests/**/*.tsx",
+    "playwright.config.ts",
+    "scripts/**/*.js",
+    "scripts/**/*.ts",
+    "*.config.js",
+    "*.config.ts",
+    "**/.eslintrc.{js,cjs}",
+    "vitest.setup.ts",
+    "api/**/*.ts",
+    "plugins/**/*.ts",
+    "types/**/*.d.ts",
+    ".astro-env.d.ts"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules",
+    "**/node_modules/**",
+    ".vercel",
+    ".astro",
+    ".local"
+  ],
+  "watchOptions": {
+    "watchFile": "dynamicPriorityPolling",
+    "watchDirectory": "dynamicPriorityPolling",
+    "fallbackPolling": "dynamicPriority",
+    "excludeDirectories": ["**/node_modules", "dist", ".astro"]
+  }
+}

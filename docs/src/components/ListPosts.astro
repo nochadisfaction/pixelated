@@ -1,0 +1,151 @@
+---
+import type { CollectionEntry, InferEntrySchema } from 'astro:content'
+import { formatDate } from '../logics'
+import { slugToLocaleData } from '../utils/slugs'
+import { ensureLeadingSlash, stripLeadingSlash } from '../utils/path'
+import { getLocaleRoutes, type Route } from '../utils/routing'
+import { generateVitessePageRouteData } from '../utils/vitesse-page'
+
+export interface Props {
+  startsWith?: string
+  items?: CollectionEntry<'pages'>['data'][]
+}
+
+const { startsWith = 'posts/', items: pagesProps } = Astro.props
+
+let pagesCollection: Route[] = []
+
+const localeData = slugToLocaleData(stripLeadingSlash(Astro.url.pathname))
+if (!pagesProps?.length) {
+  const routes = getLocaleRoutes(localeData.locale).filter((route) =>
+    route.slug.startsWith((localeData.locale ? localeData.locale + '/' : '') + startsWith),
+  )
+  pagesCollection = routes
+}
+
+const newPagePros: Route[] = await Promise.all(
+  [...(pagesProps || [])].map(async (page): Promise<Route> => {
+    const { entry, slug, id, entryMeta, dir, lang, locale } = await generateVitessePageRouteData({
+      url: Astro.url,
+      props: {
+        frontmatter: page,
+        lang: localeData.locale,
+      },
+    })
+
+    return {
+      entry,
+      slug,
+      id,
+      entryMeta,
+      dir,
+      lang,
+      locale,
+    }
+  }),
+)
+
+const pages: Route[] = [...((newPagePros.length ? newPagePros : null) || pagesCollection)]
+  .sort((a, b) => +new Date(b.entry.data.date!) - +new Date(a.entry.data.date!))
+  .map((page) => ({
+    ...page,
+    entry: {
+      ...page.entry,
+      data: {
+        ...page.entry.data,
+        path: page.entry.data.path ?? page.entry.data.redirect ?? ensureLeadingSlash(page.slug),
+      },
+    },
+  }))
+
+const getYear = (a: Date | string | number) => new Date(a).getFullYear()
+const isFuture = (a?: Date | string | number) => a && new Date(a) > new Date()
+const isSameYear = (a?: Date | string | number, b?: Date | string | number) => a && b && getYear(a) === getYear(b)
+function isSameGroup(a: InferEntrySchema<'pages'>, b?: InferEntrySchema<'pages'>) {
+  return isFuture(a.date) === isFuture(b?.date) && isSameYear(a.date, b?.date)
+}
+
+function getGroupName(p: InferEntrySchema<'pages'>) {
+  if (isFuture(p.date)) return 'Upcoming'
+  return getYear(p.date!)
+}
+---
+
+<ul>
+  {!pages.length && <div class="py2 op50">{Astro.locals.t('posts.empty')}</div>}
+
+  {
+    pages.map(({ entry: { data }, isFallback, entryMeta }, idx) => (
+      <>
+        {!isSameGroup(data, pages[idx - 1]?.entry.data) && (
+          <div
+            class="select-none relative h20 pointer-events-none slide-enter"
+            style={{
+              '--enter-stage': idx - 2,
+              '--enter-step': '60ms',
+            }}
+          >
+            <span class="text-8em color-transparent absolute left--3rem top--2rem font-bold text-stroke-2 text-stroke-hex-aaa op10">
+              {getGroupName(data)}
+            </span>
+          </div>
+        )}
+        <div
+          class="slide-enter"
+          style={{
+            '--enter-stage': idx,
+            '--enter-step': '60ms',
+          }}
+        >
+          <a
+            href={data.path}
+            class="item block font-normal mb-6 mt-2 no-underline"
+            {...{
+              target: data.path?.startsWith('http') ? '_blank' : undefined,
+              rel: data.path?.startsWith('http') ? 'noopener noreferrer' : undefined,
+            }}
+          >
+            <li class="no-underline flex flex-col md:flex-row gap-2 md:flex-items-center">
+              <div class="title text-lg leading-1.2em flex gap-2 flex-wrap">
+                {isFallback && (
+                  <span
+                    align-middle
+                    flex-none
+                    class="text-xs bg-zinc:15 text-zinc5 rounded px-1 py-0.5 ml--12 mr2 my-auto hidden md:block"
+                  >
+                    {entryMeta.lang}
+                  </span>
+                )}
+
+                <span align-middle>{data.title}</span>
+
+                {data.redirect && (
+                  <span class="align-middle op50 flex-none text-xs ml--1.5 i-carbon-arrow-up-right" title="External" />
+                )}
+              </div>
+
+              <div class="flex gap-2 flex-items-center">
+                {data.inperson && <span class="align-middle op50 flex-none i-ri:group-2-line" title="In person" />}
+                {(data.recording || data.video) && (
+                  <span class="align-middle op50 flex-none i-ri:film-line" title="Provided in video" />
+                )}
+                {data.radio && <span class="align-middle op50 flex-none i-ri:radio-line" title="Provided in radio" />}
+                <span class="text-sm op50 ws-nowrap">{formatDate(data.date!, true)}</span>
+                {data.duration && <span class="text-sm op40 ws-nowrap"> · {data.duration}</span>}
+                {data.platform && <span class="text-sm op40 ws-nowrap"> · {data.platform}</span>}
+                {data.place && <span class="text-sm op40 ws-nowrap md:hidden"> · {data.place}</span>}
+
+                {isFallback && (
+                  <span class="text-xs bg-zinc:15 text-zinc5 rounded px-1 py-0.5 my-auto md:hidden align-middle flex-none">
+                    {entryMeta.lang}
+                  </span>
+                )}
+              </div>
+            </li>
+            {data.place && <div class="op50 text-sm hidden mt--2 md:block">{data.place}</div>}
+          </a>
+        </div>
+      </>
+    ))
+  }
+</ul>

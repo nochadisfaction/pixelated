@@ -1,0 +1,27 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import StandardLayout from '@/layouts/StandardLayout.astro'
+import type { BgType } from '@/types'
+
+interface Props {
+  title: string
+  description?: string
+  bgType?: BgType
+  ogImage?: string | boolean
+}
+
+const {
+  title,
+  description = 'Pixelated Empathy - Advanced AI Platform',
+  bgType = 'plum',
+  ogImage = false,
+} = Astro.props
+---
+
+<BaseLayout {title} {description} {bgType} {ogImage}>
+  <StandardLayout {title}>
+    <div class="prose mx-auto">
+      <slot />
+    </div>
+  </StandardLayout>
+</BaseLayout>

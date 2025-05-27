@@ -1,0 +1,699 @@
+---
+import { Icon } from 'astro-icon/components'
+import Button from '../ui/Button.astro'
+
+interface ExportRequest {
+  id: string
+  patientId: string
+  patientName?: string
+  initiatedBy: string
+  initiatedDate: string
+  recipientType: 'patient' | 'provider' | 'research'
+  recipientName: string
+  dataFormat: string
+  status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled'
+  percentComplete?: number
+  dataSections: string[]
+}
+
+interface Props {
+  exportRequests: ExportRequest[]
+  showNewRequestButton?: boolean
+}
+
+const { exportRequests = [], showNewRequestButton = true } = Astro.props
+
+// Helper function to format dates
+function formatDate(dateString: string): string {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+// Helper function to get status badge color
+function getStatusColor(status: string): string {
+  switch (status) {
+    case 'pending':
+      return 'bg-yellow-100 text-yellow-800'
+    case 'processing':
+      return 'bg-blue-100 text-blue-800'
+    case 'completed':
+      return 'bg-green-100 text-green-800'
+    case 'failed':
+      return 'bg-red-100 text-red-800'
+    case 'cancelled':
+      return 'bg-gray-100 text-gray-800'
+    default:
+      return 'bg-gray-100 text-gray-800'
+  }
+}
+
+// Helper function to get status icon
+function getStatusIcon(status: string): string {
+  switch (status) {
+    case 'pending':
+      return 'clock'
+    case 'processing':
+      return 'refresh'
+    case 'completed':
+      return 'check-circle'
+    case 'failed':
+      return 'x-circle'
+    case 'cancelled':
+      return 'slash'
+    default:
+      return 'help-circle'
+  }
+}
+---
+
+<div class="export-requests-list bg-white rounded-lg shadow-md overflow-hidden">
+  <div class="flex justify-between items-center p-6 border-b">
+    <h2 class="text-xl font-semibold text-gray-800">Data Export Requests</h2>
+
+    <div class="flex space-x-3">
+      {
+        showNewRequestButton && (
+          <Button href="/admin/data-transfer/new-export" id="newExportButton">
+            <Icon name="plus-circle" class="w-5 h-5 mr-2" />
+            New Export Request
+          </Button>
+        )
+      }
+      <Button variant="outline" id="refreshButton">
+        <Icon name="refresh" class="w-5 h-5" />
+      </Button>
+    </div>
+  </div>
+
+  <div class="p-4 border-b bg-gray-50">
+    <div
+      class="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+    >
+      <div class="relative flex-grow max-w-md">
+        <div
+          class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+        >
+          <Icon name="search" class="h-5 w-5 text-gray-400" />
+        </div>
+        <input
+          type="text"
+          id="searchInput"
+          class="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+          placeholder="Search by patient ID, name or recipient..."
+        />
+      </div>
+
+      <div class="flex flex-wrap gap-3">
+        <select
+          id="statusFilter"
+          class="rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm"
+        >
+          <option value="">All Statuses</option>
+          <option value="pending">Pending</option>
+          <option value="processing">Processing</option>
+          <option value="completed">Completed</option>
+          <option value="failed">Failed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+
+        <select
+          id="formatFilter"
+          class="rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm"
+        >
+          <option value="">All Formats</option>
+          <option value="json">JSON</option>
+          <option value="csv">CSV</option>
+          <option value="fhir">FHIR</option>
+          <option value="ccd">CCD</option>
+          <option value="hl7">HL7</option>
+        </select>
+
+        <select
+          id="sortBy"
+          class="rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm"
+        >
+          <option value="recent">Most Recent</option>
+          <option value="oldest">Oldest First</option>
+          <option value="status">Status</option>
+          <option value="patient">Patient Name</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="overflow-x-auto" style="max-height: 600px;">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50 sticky top-0">
+        <tr>
+          <th
+            scope="col"
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Patient
+          </th>
+          <th
+            scope="col"
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Initiated By
+          </th>
+          <th
+            scope="col"
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Date
+          </th>
+          <th
+            scope="col"
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Recipient
+          </th>
+          <th
+            scope="col"
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Format
+          </th>
+          <th
+            scope="col"
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Status
+          </th>
+          <th
+            scope="col"
+            class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Actions
+          </th>
+        </tr>
+      </thead>
+      <tbody
+        class="bg-white divide-y divide-gray-200"
+        id="exportRequestsTableBody"
+      >
+        {
+          exportRequests.length > 0 ? (
+            exportRequests.map((request) => (
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div>
+                      <div class="text-sm font-medium text-gray-900">
+                        {request.patientName || 'Unknown'}
+                      </div>
+                      <div class="text-sm text-gray-500">
+                        {request.patientId}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-900">{request.initiatedBy}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-900">
+                    {formatDate(request.initiatedDate)}
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-900">
+                    {request.recipientName}
+                  </div>
+                  <div class="text-sm text-gray-500 capitalize">
+                    {request.recipientType}
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-900 uppercase">
+                    {request.dataFormat}
+                  </div>
+                  <div class="text-sm text-gray-500">
+                    {request.dataSections.length} section(s)
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span
+                    class={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(request.status)}`}
+                  >
+                    <Icon
+                      name={getStatusIcon(request.status)}
+                      class="w-4 h-4 mr-1"
+                    />
+                    {request.status.charAt(0).toUpperCase() +
+                      request.status.slice(1)}
+                  </span>
+                  {request.status === 'processing' &&
+                    request.percentComplete !== undefined && (
+                      <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                        <div
+                          class="bg-blue-600 h-2.5 rounded-full"
+                          style={`width: ${request.percentComplete}%`}
+                        />
+                      </div>
+                    )}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <div class="flex justify-end space-x-2">
+                    <button
+                      class="text-green-600 hover:text-green-900"
+                      data-export-id={request.id}
+                      data-action="view"
+                    >
+                      <Icon name="eye" class="w-5 h-5" />
+                    </button>
+
+                    {['pending', 'processing'].includes(request.status) && (
+                      <button
+                        class="text-red-600 hover:text-red-900"
+                        data-export-id={request.id}
+                        data-action="cancel"
+                      >
+                        <Icon name="x" class="w-5 h-5" />
+                      </button>
+                    )}
+
+                    {request.status === 'completed' && (
+                      <button
+                        class="text-blue-600 hover:text-blue-900"
+                        data-export-id={request.id}
+                        data-action="download"
+                      >
+                        <Icon name="download" class="w-5 h-5" />
+                      </button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colspan="7" class="px-6 py-10 text-center text-gray-500">
+                <div class="flex flex-col items-center">
+                  <Icon name="inbox" class="w-12 h-12 mb-4 text-gray-400" />
+                  <p class="text-lg font-medium">No export requests found</p>
+                  <p class="text-sm">
+                    Create a new export request to get started
+                  </p>
+                </div>
+              </td>
+            </tr>
+          )
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Export Details Modal -->
+<div
+  id="exportDetailsModal"
+  class="fixed inset-0 z-50 flex items-center justify-center hidden"
+>
+  <div class="absolute inset-0 bg-black opacity-50"></div>
+  <div class="relative bg-white rounded-lg shadow-xl p-6 max-w-2xl w-full mx-4">
+    <h3 class="text-xl font-semibold mb-4 text-gray-900">
+      Export Request Details
+    </h3>
+
+    <button
+      id="closeDetailsModalButton"
+      class="absolute top-4 right-4 text-gray-400 hover:text-gray-500"
+    >
+      <Icon name="x" class="w-6 h-6" />
+    </button>
+
+    <div id="exportDetailsContent" class="space-y-4">
+      <!-- Will be populated with JavaScript -->
+      <div class="animate-pulse">
+        <div class="h-4 bg-gray-200 rounded w-3/4 mb-2.5"></div>
+        <div class="h-4 bg-gray-200 rounded w-1/2 mb-2.5"></div>
+        <div class="h-4 bg-gray-200 rounded w-5/6 mb-2.5"></div>
+      </div>
+    </div>
+
+    <div class="mt-6 flex justify-end space-x-3">
+      <Button id="closeDetailsButton" variant="outline"> Close </Button>
+
+      <Button id="downloadButton" class="hidden">
+        <Icon name="download" class="w-5 h-5 mr-2" />
+        Download Export
+      </Button>
+    </div>
+  </div>
+</div>
+
+<!-- Cancel Export Modal -->
+<div
+  id="cancelExportModal"
+  class="fixed inset-0 z-50 flex items-center justify-center hidden"
+>
+  <div class="absolute inset-0 bg-black opacity-50"></div>
+  <div class="relative bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+    <h3 class="text-xl font-semibold mb-4 text-gray-900">
+      Cancel Export Request
+    </h3>
+
+    <p class="text-gray-700 mb-4">
+      Are you sure you want to cancel this export request? This action cannot be
+      undone.
+    </p>
+
+    <div class="mb-4">
+      <label
+        for="cancelReason"
+        class="block text-sm font-medium text-gray-700 mb-1"
+        >Reason for cancellation (optional)</label
+      >
+      <textarea
+        id="cancelReason"
+        rows="3"
+        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+        placeholder="Enter reason for cancellation"></textarea>
+    </div>
+
+    <div class="flex justify-end space-x-3">
+      <Button id="cancelModalCloseButton" variant="outline"> Go Back </Button>
+
+      <Button id="confirmCancelButton" variant="destructive">
+        Confirm Cancellation
+      </Button>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Elements
+    const searchInput = document.getElementById(
+      'searchInput',
+    ) as HTMLInputElement
+    const statusFilter = document.getElementById(
+      'statusFilter',
+    ) as HTMLSelectElement
+    const formatFilter = document.getElementById(
+      'formatFilter',
+    ) as HTMLSelectElement
+    const sortBy = document.getElementById('sortBy') as HTMLSelectElement
+    const refreshButton = document.getElementById('refreshButton')
+    const exportDetailsModal = document.getElementById('exportDetailsModal')
+    const cancelExportModal = document.getElementById('cancelExportModal')
+    const exportDetailsContent = document.getElementById('exportDetailsContent')
+    const downloadButton = document.getElementById('downloadButton')
+    const closeDetailsButton = document.getElementById('closeDetailsButton')
+    const closeDetailsModalButton = document.getElementById(
+      'closeDetailsModalButton',
+    )
+    const cancelModalCloseButton = document.getElementById(
+      'cancelModalCloseButton',
+    )
+    const confirmCancelButton = document.getElementById('confirmCancelButton')
+    const cancelReason = document.getElementById(
+      'cancelReason',
+    ) as HTMLTextAreaElement
+
+    let currentExportId = ''
+
+    // Attach event listeners to action buttons
+    document.querySelectorAll('[data-action]').forEach((button) => {
+      button.addEventListener('click', handleActionClick)
+    })
+
+    // Handle action button click
+    function handleActionClick(event: Event) {
+      const button = event.currentTarget as HTMLButtonElement
+      const exportId = button.getAttribute('data-export-id')
+      const action = button.getAttribute('data-action')
+
+      if (!exportId) return
+
+      currentExportId = exportId
+
+      switch (action) {
+        case 'view':
+          viewExportDetails(exportId)
+          break
+        case 'cancel':
+          showCancelModal(exportId)
+          break
+        case 'download':
+          downloadExport(exportId)
+          break
+      }
+    }
+
+    // View export details
+    async function viewExportDetails(exportId: string) {
+      try {
+        exportDetailsContent!.innerHTML = `
+          <div class="animate-pulse">
+            <div class="h-4 bg-gray-200 rounded w-3/4 mb-2.5"></div>
+            <div class="h-4 bg-gray-200 rounded w-1/2 mb-2.5"></div>
+            <div class="h-4 bg-gray-200 rounded w-5/6 mb-2.5"></div>
+          </div>
+        `
+
+        exportDetailsModal?.classList.remove('hidden')
+
+        // Fetch export details
+        const response = await fetch(
+          `/api/patient-rights/export-status?exportId=${exportId}`,
+        )
+        const result = await response.json()
+
+        if (result.success) {
+          const exportRequest = result.data.exportRequest
+
+          // Update download button visibility
+          if (exportRequest.status === 'completed') {
+            downloadButton?.classList.remove('hidden')
+          } else {
+            downloadButton?.classList.add('hidden')
+          }
+
+          // Format date
+          const dateOptions: Intl.DateTimeFormatOptions = {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          }
+          const formattedDate = new Date(
+            exportRequest.createdAt,
+          ).toLocaleDateString('en-US', dateOptions)
+
+          // Format status with color
+          let statusClass = ''
+          switch (exportRequest.status) {
+            case 'pending':
+              statusClass = 'text-yellow-800 bg-yellow-100'
+              break
+            case 'processing':
+              statusClass = 'text-blue-800 bg-blue-100'
+              break
+            case 'completed':
+              statusClass = 'text-green-800 bg-green-100'
+              break
+            case 'failed':
+              statusClass = 'text-red-800 bg-red-100'
+              break
+            case 'cancelled':
+              statusClass = 'text-gray-800 bg-gray-100'
+              break
+          }
+
+          // Populate details
+          exportDetailsContent!.innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <h4 class="text-sm font-medium text-gray-500">Export ID</h4>
+                <p class="text-gray-900">${exportRequest.id}</p>
+              </div>
+
+              <div>
+                <h4 class="text-sm font-medium text-gray-500">Status</h4>
+                <p class="px-2 py-1 inline-block rounded-full ${statusClass} text-sm font-medium capitalize">
+                  ${exportRequest.status}
+                </p>
+                ${
+                  exportRequest.status === 'processing' &&
+                  exportRequest.percentComplete
+                    ? `<div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                    <div class="bg-blue-600 h-2.5 rounded-full" style="width: ${exportRequest.percentComplete}%"></div>
+                  </div>
+                  <p class="text-xs text-gray-500 mt-1">Estimated completion: ${exportRequest.estimatedCompletionTime || 'Calculating...'}</p>`
+                    : ''
+                }
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+              <div>
+                <h4 class="text-sm font-medium text-gray-500">Patient ID</h4>
+                <p class="text-gray-900">${exportRequest.patientId}</p>
+              </div>
+
+              <div>
+                <h4 class="text-sm font-medium text-gray-500">Created On</h4>
+                <p class="text-gray-900">${formattedDate}</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+              <div>
+                <h4 class="text-sm font-medium text-gray-500">Initiated By</h4>
+                <p class="text-gray-900">${exportRequest.initiatedBy}</p>
+              </div>
+
+              <div>
+                <h4 class="text-sm font-medium text-gray-500">Format</h4>
+                <p class="text-gray-900 uppercase">${exportRequest.dataFormat}</p>
+              </div>
+            </div>
+
+            <div class="mt-2">
+              <h4 class="text-sm font-medium text-gray-500">Recipient</h4>
+              <p class="text-gray-900">${exportRequest.recipientName} <span class="text-gray-500">(${exportRequest.recipientType})</span></p>
+              <p class="text-gray-500">${exportRequest.recipientEmail}</p>
+            </div>
+
+            <div class="mt-2">
+              <h4 class="text-sm font-medium text-gray-500">Data Sections</h4>
+              <div class="flex flex-wrap gap-1 mt-1">
+                ${exportRequest.dataSections
+                  .map(
+                    (section: string) =>
+                      `<span class="px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-full">${section}</span>`,
+                  )
+                  .join('')}
+              </div>
+            </div>
+
+            ${
+              exportRequest.notes
+                ? `
+              <div class="mt-2">
+                <h4 class="text-sm font-medium text-gray-500">Notes</h4>
+                <p class="text-gray-900">${exportRequest.notes}</p>
+              </div>
+            `
+                : ''
+            }
+
+            ${
+              exportRequest.reason
+                ? `
+              <div class="mt-2">
+                <h4 class="text-sm font-medium text-gray-500">Cancellation Reason</h4>
+                <p class="text-gray-900">${exportRequest.reason}</p>
+              </div>
+            `
+                : ''
+            }
+          `
+        } else {
+          exportDetailsContent!.innerHTML = `
+            <div class="text-center py-4">
+              <p class="text-red-500">Error: ${result.message || 'Failed to load export details'}</p>
+            </div>
+          `
+        }
+      } catch (error) {
+        console.error('Error fetching export details:', error)
+        exportDetailsContent!.innerHTML = `
+          <div class="text-center py-4">
+            <p class="text-red-500">An error occurred while loading export details</p>
+          </div>
+        `
+      }
+    }
+
+    // Show cancel modal
+    function showCancelModal(exportId: string) {
+      currentExportId = exportId
+      cancelReason.value = ''
+      cancelExportModal?.classList.remove('hidden')
+    }
+
+    // Cancel export
+    async function cancelExport() {
+      if (!currentExportId) return
+
+      confirmCancelButton?.setAttribute('disabled', 'true')
+      confirmCancelButton!.textContent = 'Cancelling...'
+
+      try {
+        const response = await fetch('/api/patient-rights/cancel-export', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            exportId: currentExportId,
+            reason: cancelReason.value.trim() || undefined,
+          }),
+        })
+
+        const result = await response.json()
+
+        cancelExportModal?.classList.add('hidden')
+
+        if (result.success) {
+          // Refresh the list
+          location.reload()
+        } else {
+          alert(`Error: ${result.message || 'Failed to cancel export'}`)
+        }
+      } catch (error) {
+        console.error('Error cancelling export:', error)
+        alert(
+          'An error occurred while cancelling the export. Please try again.',
+        )
+      } finally {
+        confirmCancelButton?.removeAttribute('disabled')
+        confirmCancelButton!.textContent = 'Confirm Cancellation'
+      }
+    }
+
+    // Download export
+    function downloadExport(exportId: string) {
+      window.location.href = `/api/patient-rights/download-export?exportId=${exportId}`
+    }
+
+    // Close details modal
+    function closeDetailsModal() {
+      exportDetailsModal?.classList.add('hidden')
+    }
+
+    // Close cancel modal
+    function closeCancelModal() {
+      cancelExportModal?.classList.add('hidden')
+    }
+
+    // Attach event listeners
+    refreshButton?.addEventListener('click', () => location.reload())
+    closeDetailsButton?.addEventListener('click', closeDetailsModal)
+    closeDetailsModalButton?.addEventListener('click', closeDetailsModal)
+    cancelModalCloseButton?.addEventListener('click', closeCancelModal)
+    confirmCancelButton?.addEventListener('click', cancelExport)
+    downloadButton?.addEventListener('click', () =>
+      downloadExport(currentExportId),
+    )
+
+    // Search, filter, and sort functionality
+    // This would be implemented with client-side filtering
+    // or server-side API calls depending on the requirements
+  })
+</script>
+
+<style>
+  /* Add any component-specific styles here */
+</style>

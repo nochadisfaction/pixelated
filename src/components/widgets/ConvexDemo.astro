@@ -1,0 +1,264 @@
+---
+import { withConvex } from '@/lib/providers/ConvexProvider'
+
+// Define TypeScript interfaces for clarity
+interface Message {
+  _id: string
+  text: string
+  author: string
+  timestamp: number
+}
+
+interface User {
+  _id: string
+  name: string
+  email: string
+  avatar: string
+}
+
+// In a real implementation, we would fetch initial data from the Convex database
+// For the server-side render, use mock data as placeholders
+const mockMessages: Message[] = [
+  {
+    _id: 'message-1',
+    text: 'Hello, this is a sample message',
+    author: 'Demo User',
+    timestamp: Date.now() - 30000,
+  },
+  {
+    _id: 'message-2',
+    text: 'This is an example of Convex real-time updates',
+    author: 'System',
+    timestamp: Date.now() - 60000,
+  },
+]
+
+const mockUsers: User[] = [
+  {
+    _id: 'user-1',
+    name: 'Demo User',
+    email: 'demo@example.com',
+    avatar: 'https://ui-avatars.com/api/?name=Demo+User&background=random',
+  },
+  {
+    _id: 'user-2',
+    name: 'System',
+    email: 'system@example.com',
+    avatar: 'https://ui-avatars.com/api/?name=System&background=random',
+  },
+]
+
+// Export component with Convex wrapper for client-side functionality
+// This will be used in the client script part
+---
+
+<div class="p-4 border rounded-lg bg-white shadow-sm">
+  <h2 class="text-xl font-bold mb-4">Convex Real-time Demo</h2>
+
+  <div class="mb-6">
+    <h3 class="text-lg font-semibold mb-2">Users</h3>
+    <div class="flex gap-2 mb-3">
+      <input
+        type="text"
+        id="user-name-input"
+        placeholder="Name"
+        class="px-3 py-2 border rounded flex-1"
+      />
+      <input
+        type="email"
+        id="user-email-input"
+        placeholder="Email"
+        class="px-3 py-2 border rounded flex-1"
+      />
+      <button
+        id="add-user-btn"
+        class="px-4 py-2 bg-blue-600 text-white rounded"
+      >
+        Add User
+      </button>
+    </div>
+
+    <div id="users-container" class="max-h-40 overflow-y-auto">
+      {
+        mockUsers.map((user) => (
+          <div
+            class="flex items-center gap-2 p-2 border-b"
+            data-user-id={user._id}
+          >
+            {user.avatar && (
+              <img
+                src={user.avatar}
+                alt={user.name}
+                class="w-8 h-8 rounded-full"
+              />
+            )}
+            <div>
+              <div class="font-medium">{user.name}</div>
+              <div class="text-sm text-gray-600">{user.email}</div>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+
+  <div>
+    <h3 class="text-lg font-semibold mb-2">Messages</h3>
+    <div class="flex gap-2 mb-3">
+      <input
+        type="text"
+        id="message-text-input"
+        placeholder="Type a message..."
+        class="px-3 py-2 border rounded flex-1"
+      />
+      <button
+        id="send-message-btn"
+        class="px-4 py-2 bg-green-600 text-white rounded"
+      >
+        Send
+      </button>
+    </div>
+
+    <div id="messages-container" class="max-h-60 overflow-y-auto">
+      {
+        mockMessages.map((message) => (
+          <div class="p-2 border-b" data-message-id={message._id}>
+            <div class="flex justify-between">
+              <span class="font-medium">{message.author}</span>
+              <button
+                class="text-red-600 text-xs delete-message-btn"
+                data-message-id={message._id}
+              >
+                Delete
+              </button>
+            </div>
+            <p>{message.text}</p>
+            <span class="text-xs text-gray-500">
+              {new Date(message.timestamp).toLocaleString()}
+            </span>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</div>
+
+<script>
+  // Import the ConvexProvider and hooks
+  import {
+    ConvexProvider,
+    ConvexReactClient,
+  } from '@/lib/providers/ConvexProvider'
+
+  // Initialize Convex client
+  let convex = null
+
+  // We'll add real-time functionality once the component is loaded in the browser
+  document.addEventListener('DOMContentLoaded', async () => {
+    try {
+      // Import modules dynamically to ensure they're only loaded client-side
+      const { useMessages, useUsers } = await import('@/lib/hooks/useConvex')
+
+      // Initialize Convex client
+      convex = new ConvexReactClient(import.meta.env.PUBLIC_CONVEX_URL || '')
+
+      // DOM elements
+      const userNameInput = document.getElementById(
+        'user-name-input',
+      ) as HTMLInputElement
+      const userEmailInput = document.getElementById(
+        'user-email-input',
+      ) as HTMLInputElement
+      const addUserBtn = document.getElementById('add-user-btn')
+      const messageTextInput = document.getElementById(
+        'message-text-input',
+      ) as HTMLInputElement
+      const sendMessageBtn = document.getElementById('send-message-btn')
+      const usersContainer = document.getElementById('users-container')
+      const messagesContainer = document.getElementById('messages-container')
+
+      // Setup event listeners
+      if (addUserBtn) {
+        addUserBtn.addEventListener('click', async () => {
+          if (!userNameInput || !userEmailInput) return
+
+          const userName = userNameInput.value.trim()
+          const userEmail = userEmailInput.value.trim()
+
+          if (!userName || !userEmail) return
+
+          try {
+            const { upsertUser } = useUsers()
+            await upsertUser({
+              name: userName,
+              email: userEmail,
+              avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=random`,
+            })
+
+            userNameInput.value = ''
+            userEmailInput.value = ''
+          } catch (error) {
+            console.error('Error adding user:', error)
+          }
+        })
+      }
+
+      if (sendMessageBtn) {
+        sendMessageBtn.addEventListener('click', async () => {
+          if (!messageTextInput) return
+
+          const messageText = messageTextInput.value.trim()
+
+          if (!messageText) return
+
+          try {
+            const { sendMessage } = useMessages()
+            await sendMessage({
+              text: messageText,
+              author:
+                (
+                  document.getElementById('user-name-input') as HTMLInputElement
+                )?.value.trim() || 'Anonymous',
+            })
+
+            messageTextInput.value = ''
+          } catch (error) {
+            console.error('Error sending message:', error)
+          }
+        })
+      }
+
+      // Setup real-time data subscription
+      // In a real implementation, this would update the DOM with real-time data from Convex
+      const setupRealTimeData = async () => {
+        const { messages, deleteMessage } = useMessages()
+        const { users } = useUsers()
+
+        // Setup delete message handlers
+        document.querySelectorAll('.delete-message-btn').forEach((btn) => {
+          btn.addEventListener('click', async (e) => {
+            const messageId = btn.getAttribute('data-message-id')
+            if (!messageId) return
+
+            try {
+              await deleteMessage({ id: messageId })
+            } catch (error) {
+              console.error('Error deleting message:', error)
+            }
+          })
+        })
+
+        // In a production app, we would subscribe to real-time updates here
+        // For demonstration purposes, we'll just log that real-time capability is available
+        console.log('Convex real-time capabilities ready')
+        console.log(
+          'Note: In a real implementation, real-time data would update automatically',
+        )
+      }
+
+      setupRealTimeData()
+    } catch (error) {
+      console.error('Error initializing Convex client:', error)
+    }
+  })
+</script>

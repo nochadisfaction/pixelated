@@ -1,0 +1,101 @@
+{
+  "scanDate": "2025-05-09T16:13:58.684Z",
+  "totalFiles": 898,
+  "filesWithIssues": 13,
+  "totalIssues": 13,
+  "errorCount": 13,
+  "warningCount": 0,
+  "issues": [
+    {
+      "file": "src/lib/utils/load-sample-models.ts",
+      "check": "PHI Audit Logging",
+      "severity": "ERROR",
+      "message": "PHI handling without audit logging",
+      "description": "Ensure PHI handling includes audit logging"
+    },
+    {
+      "file": "src/lib/utils/ids.ts",
+      "check": "PHI Audit Logging",
+      "severity": "ERROR",
+      "message": "PHI handling without audit logging",
+      "description": "Ensure PHI handling includes audit logging"
+    },
+    {
+      "file": "src/lib/ai/services/TechniqueRecommender.ts",
+      "check": "PHI Audit Logging",
+      "severity": "ERROR",
+      "message": "PHI handling without audit logging",
+      "description": "Ensure PHI handling includes audit logging"
+    },
+    {
+      "file": "src/lib/ai/services/PatientModelService.ts",
+      "check": "PHI Audit Logging",
+      "severity": "ERROR",
+      "message": "PHI handling without audit logging",
+      "description": "Ensure PHI handling includes audit logging"
+    },
+    {
+      "file": "src/lib/ai/services/ModelLibrary.ts",
+      "check": "PHI Audit Logging",
+      "severity": "ERROR",
+      "message": "PHI handling without audit logging",
+      "description": "Ensure PHI handling includes audit logging"
+    },
+    {
+      "file": "src/lib/ai/services/CrisisSimulator.ts",
+      "check": "PHI Audit Logging",
+      "severity": "ERROR",
+      "message": "PHI handling without audit logging",
+      "description": "Ensure PHI handling includes audit logging"
+    },
+    {
+      "file": "src/lib/ai/mental-arena/types.ts",
+      "check": "PHI Audit Logging",
+      "severity": "ERROR",
+      "message": "PHI handling without audit logging",
+      "description": "Ensure PHI handling includes audit logging"
+    },
+    {
+      "file": "src/hooks/usePatientModel.ts",
+      "check": "PHI Audit Logging",
+      "severity": "ERROR",
+      "message": "PHI handling without audit logging",
+      "description": "Ensure PHI handling includes audit logging"
+    },
+    {
+      "file": "src/data/therapeutic-challenges.ts",
+      "check": "PHI Audit Logging",
+      "severity": "ERROR",
+      "message": "PHI handling without audit logging",
+      "description": "Ensure PHI handling includes audit logging"
+    },
+    {
+      "file": "src/data/sample-cognitive-models.ts",
+      "check": "PHI Audit Logging",
+      "severity": "ERROR",
+      "message": "PHI handling without audit logging",
+      "description": "Ensure PHI handling includes audit logging"
+    },
+    {
+      "file": "scripts/optimize-scripts.js",
+      "check": "PHI Audit Logging",
+      "severity": "ERROR",
+      "message": "PHI handling without audit logging",
+      "description": "Ensure PHI handling includes audit logging"
+    },
+    {
+      "file": "scripts/consolidated-test.js",
+      "check": "PHI Audit Logging",
+      "severity": "ERROR",
+      "message": "PHI handling without audit logging",
+      "description": "Ensure PHI handling includes audit logging"
+    },
+    {
+      "file": "ai/generate_prompts.py",
+      "check": "PHI Audit Logging",
+      "severity": "ERROR",
+      "message": "PHI handling without audit logging",
+      "description": "Ensure PHI handling includes audit logging"
+    }
+  ]
+}

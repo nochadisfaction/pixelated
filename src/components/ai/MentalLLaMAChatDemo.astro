@@ -1,0 +1,479 @@
+---
+/**
+ * MentalLLaMA Chat Demo Component
+ * Demonstrates the capabilities of the MentalLLaMA-chat-7B model integration
+ */
+import { MentalLLaMAFactory } from '../../lib/ai/mental-llama/MentalLLaMAFactory'
+
+// Props to customize the component
+interface Props {
+  title?: string
+  description?: string
+  showModelStatus?: boolean
+}
+
+const {
+  title = 'MentalLLaMA Chat',
+  description = 'Explore the capabilities of the MentalLLaMA-chat-7B model for mental health analysis',
+} = Astro.props
+---
+
+<section
+  class="mentalllama-demo rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+>
+  <div class="mb-6">
+    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{title}</h2>
+    <p class="mt-2 text-gray-600 dark:text-gray-300">{description}</p>
+    <div class="mt-4 flex items-center" data-model-status-container>
+      <span class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300"
+        >Model Status:</span
+      >
+      <span
+        data-model-status="available"
+        class="hidden inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-200"
+      >
+        <span class="mr-1 h-2 w-2 rounded-full bg-green-500"></span>
+        Available
+      </span>
+      <span
+        data-model-status="unavailable"
+        class="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900 dark:text-red-200"
+      >
+        <span class="mr-1 h-2 w-2 rounded-full bg-red-500"></span>
+        Unavailable
+      </span>
+    </div>
+
+    <div
+      data-error-container
+      class="hidden mt-2 text-sm text-red-600 dark:text-red-400"
+    >
+      <span id="status-error-message"></span>
+    </div>
+    <div class="mb-6">
+      <label
+        for="message"
+        class="mb-2 block text-sm font-medium text-gray-900 dark:text-white"
+        >Your message</label
+      >
+      <textarea
+        id="message"
+        rows="4"
+        data-requires-model
+        aria-label="Your message for MentalLLaMA analysis"
+        aria-describedby="message-desc"
+        class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 dark:disabled:bg-gray-800 dark:disabled:text-gray-400"
+        placeholder="Type your message here..."></textarea>
+      <span id="message-desc" class="sr-only"
+        >Enter a message describing your mental health concern or question. This
+        will be analyzed by the MentalLLaMA model.</span
+      >
+
+      <div class="mt-4 flex justify-between">
+        <button
+          id="analyze-btn"
+          class="rounded-lg bg-blue-700 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 disabled:bg-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 dark:disabled:bg-blue-800 dark:disabled:text-blue-100"
+          data-requires-model
+        >
+          Analyze
+        </button>
+
+        <button
+          id="clear-btn"
+          data-requires-model
+          class="rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-center text-sm font-medium text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-gray-200 disabled:text-gray-400 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:border-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:disabled:bg-gray-700 dark:disabled:text-gray-500"
+        >
+          Clear
+        </button>
+      </div>
+    </div>
+
+    <div id="results" class="hidden">
+      <div class="mb-4 border-t border-gray-200 pt-4 dark:border-gray-700">
+        <h3 class="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
+          Analysis Results
+        </h3>
+
+        <div class="mb-4">
+          <h4 class="mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+            Mental Health Category
+          </h4>
+          <p
+            id="category-result"
+            class="rounded-lg bg-gray-100 p-3 text-gray-900 dark:bg-gray-700 dark:text-white"
+          >
+            Loading...
+          </p>
+        </div>
+
+        <div class="mb-4">
+          <h4 class="mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+            Confidence
+          </h4>
+          <div class="h-4 w-full rounded-full bg-gray-200 dark:bg-gray-700">
+            <div
+              id="confidence-bar"
+              class="h-4 rounded-full bg-blue-600 text-xs text-center text-blue-100 dark:bg-blue-500"
+              style="width: 0%"
+            >
+            </div>
+          </div>
+          <p
+            id="confidence-text"
+            class="mt-1 text-xs text-gray-600 dark:text-gray-400"
+          >
+            0%
+          </p>
+        </div>
+
+        <div class="mb-4">
+          <h4 class="mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+            Explanation
+          </h4>
+          <div
+            id="explanation-result"
+            class="rounded-lg bg-gray-100 p-3 text-gray-900 dark:bg-gray-700 dark:text-white"
+          >
+            Loading...
+          </div>
+        </div>
+
+        <div>
+          <h4 class="mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+            Supporting Evidence
+          </h4>
+          <ul
+            id="evidence-list"
+            class="list-inside list-disc rounded-lg bg-gray-100 p-3 text-gray-900 dark:bg-gray-700 dark:text-white"
+          >
+            <li>Loading...</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div id="loading" class="hidden">
+      <div class="flex items-center justify-center py-8">
+        <div
+          class="h-12 w-12 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600 dark:border-gray-700 dark:border-t-blue-500"
+        >
+        </div>
+        <span class="ml-3 text-gray-700 dark:text-gray-300">Analyzing...</span>
+      </div>
+    </div>
+
+    <div id="error" class="hidden">
+      <div
+        class="rounded-lg bg-red-100 p-4 text-red-800 dark:bg-red-900 dark:text-red-200"
+      >
+        <h3 class="mb-2 font-semibold">Error</h3>
+        <p id="error-message">An error occurred while analyzing the text.</p>
+      </div>
+    </div>
+
+    <div class="mt-6">
+      <h3 class="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
+        About MentalLLaMA
+      </h3>
+      <p class="text-sm text-gray-600 dark:text-gray-300">
+        MentalLLaMA is an open-source large language model specialized for
+        mental health analysis. It provides interpretable explanations for its
+        classifications and is designed for research purposes only.
+        <span class="mt-2 block font-medium text-red-600 dark:text-red-400">
+          Note: This is a demonstration only. MentalLLaMA is not a replacement
+          for professional mental health evaluation or treatment. Always consult
+          with qualified healthcare providers for mental health concerns.
+        </span>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // Client-side logic for the demo
+    document.addEventListener('DOMContentLoaded', () => {
+      // Define all DOM elements with proper typing
+      const messageInput = /** @type {HTMLTextAreaElement | null} */ (
+        document.getElementById('message')
+      )
+      const analyzeBtn = /** @type {HTMLButtonElement | null} */ (
+        document.getElementById('analyze-btn')
+      )
+      const clearBtn = /** @type {HTMLButtonElement | null} */ (
+        document.getElementById('clear-btn')
+      )
+      const resultsSection = /** @type {HTMLElement | null} */ (
+        document.getElementById('results')
+      )
+      const loadingSection = /** @type {HTMLElement | null} */ (
+        document.getElementById('loading')
+      )
+      const errorSection = /** @type {HTMLElement | null} */ (
+        document.getElementById('error')
+      )
+      const errorMessage = /** @type {HTMLElement | null} */ (
+        document.getElementById('error-message')
+      )
+      const categoryResult = /** @type {HTMLElement | null} */ (
+        document.getElementById('category-result')
+      )
+      const confidenceBar = /** @type {HTMLElement | null} */ (
+        document.getElementById('confidence-bar')
+      )
+      const confidenceText = /** @type {HTMLElement | null} */ (
+        document.getElementById('confidence-text')
+      )
+      const explanationResult = /** @type {HTMLElement | null} */ (
+        document.getElementById('explanation-result')
+      )
+      const evidenceList = /** @type {HTMLElement | null} */ (
+        document.getElementById('evidence-list')
+      )
+
+      // Check model availability on component mount
+      checkModelAvailability()
+
+      // Loading state for model availability check
+      let isCheckingModel = false
+      // Processing state for analyze button
+      let isProcessing = false
+      const modelLoadingSection = document.createElement('div')
+      modelLoadingSection.id = 'model-loading'
+      modelLoadingSection.className = 'flex items-center py-2'
+      modelLoadingSection.innerHTML = `
+      <div class="h-4 w-4 animate-spin rounded-full border-2 border-blue-200 border-t-blue-600 dark:border-gray-700 dark:border-t-blue-500"></div>
+      <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Checking model status...</span>
+    `
+      const modelStatusContainer = document.querySelector(
+        '[data-model-status-container]',
+      )
+
+      /**
+       * Fetch model availability status from API
+       */
+      async function checkModelAvailability() {
+        isCheckingModel = true
+        if (modelStatusContainer && !document.getElementById('model-loading')) {
+          modelStatusContainer.appendChild(modelLoadingSection)
+        }
+        try {
+          const response = await fetch('/api/ai/mental-health/status')
+          if (response.ok) {
+            const result =
+              /** @type {{isConfigured: boolean, connectionStatus?: {errorMessage?: string}}} */ (
+                await response.json()
+              )
+            const modelAvailable = result.isConfigured
+            let errorMessage = ''
+
+            if (!modelAvailable && result.connectionStatus) {
+              errorMessage =
+                result.connectionStatus.errorMessage ||
+                'Model not properly configured'
+            }
+
+            // Update UI based on availability
+            updateUIForModelStatus(modelAvailable, errorMessage)
+          }
+        } catch (error) {
+          // Log and handle the error
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : 'Failed to check model status'
+          console.error('Error checking model status:', error)
+          updateUIForModelStatus(false, errorMessage)
+        } finally {
+          isCheckingModel = false
+          if (
+            modelStatusContainer &&
+            document.getElementById('model-loading')
+          ) {
+            modelStatusContainer.removeChild(modelLoadingSection)
+          }
+        }
+      }
+
+      /**
+       * Update UI elements based on model status
+       * @param {boolean} modelAvailable - Whether the model is available
+       * @param {string} errorMessage - Error message to display if model is unavailable
+       */
+      function updateUIForModelStatus(
+        modelAvailable: boolean,
+        errorMessage: string,
+      ) {
+        // Update status indicators
+        document
+          .querySelector('[data-model-status="available"]')
+          ?.classList.toggle('hidden', !modelAvailable)
+        document
+          .querySelector('[data-model-status="unavailable"]')
+          ?.classList.toggle('hidden', modelAvailable)
+
+        // Update error message
+        const errorEl = /** @type {HTMLElement|null} */ (
+          document.getElementById('status-error-message')
+        )
+        const errorContainer = document.querySelector('[data-error-container]')
+        if (errorEl && errorContainer) {
+          errorEl.textContent = errorMessage
+          errorContainer.classList.toggle('hidden', !errorMessage)
+        }
+
+        // Enable/disable interactive elements
+        document
+          .querySelectorAll('[data-requires-model]')
+          .forEach(function (el) {
+            // Check if element is one that supports the disabled property
+            if (
+              el instanceof HTMLButtonElement ||
+              el instanceof HTMLInputElement ||
+              el instanceof HTMLTextAreaElement ||
+              el instanceof HTMLSelectElement
+            ) {
+              el.disabled = !modelAvailable
+            }
+          })
+      }
+
+      // Add event listeners
+      analyzeBtn?.addEventListener('click', async function () {
+        if (isProcessing) return
+        // Ensure messageInput is HTMLTextAreaElement
+        const msgInput = messageInput as HTMLTextAreaElement | null
+        // Ensure analyzeBtn is HTMLButtonElement
+        const btn = analyzeBtn as HTMLButtonElement | null
+        if (!msgInput || !msgInput.value.trim()) {
+          return
+        }
+        isProcessing = true
+        if (btn) btn.disabled = true
+        // Show loading state
+        loadingSection?.classList.remove('hidden')
+        resultsSection?.classList.add('hidden')
+        errorSection?.classList.add('hidden')
+
+        try {
+          // Call the API to analyze the text
+          const response = await fetch('/api/ai/mental-health/analyze', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              text: msgInput.value,
+            }),
+          })
+
+          if (!response.ok) {
+            throw new Error(`API error: ${response.status}`)
+          }
+
+          const result = /** @type {{
+          mentalHealthCategory?: string,
+          confidence?: number,
+          explanation?: string,
+          supportingEvidence?: string[],
+          modelInfo?: { directModelAvailable: boolean, modelTier: string }
+        }} */ (await response.json())
+
+          // Check if we have a valid result object
+          if (!result) {
+            throw new Error('Invalid response from server')
+          }
+
+          // Update the results
+          if (categoryResult) {
+            categoryResult.textContent =
+              result.mentalHealthCategory || 'Unknown'
+          }
+
+          // Validate confidence exists and is a number before operations
+          const confidence =
+            result.confidence !== undefined && !isNaN(result.confidence)
+              ? Math.round(result.confidence * 100)
+              : 0
+
+          if (confidenceBar) {
+            confidenceBar.style.width = `${confidence}%`
+          }
+
+          if (confidenceText) {
+            confidenceText.textContent = `${confidence}%`
+          }
+
+          // Update explanation
+          if (explanationResult) {
+            explanationResult.textContent =
+              result.explanation || 'No explanation provided.'
+          }
+
+          // Update evidence list
+          if (evidenceList) {
+            evidenceList.innerHTML = ''
+            if (
+              result.supportingEvidence &&
+              Array.isArray(result.supportingEvidence) &&
+              result.supportingEvidence.length > 0
+            ) {
+              result.supportingEvidence.forEach(function (evidence: string) {
+                const li = document.createElement('li')
+                li.textContent = evidence
+                evidenceList.appendChild(li)
+              })
+            } else {
+              const li = document.createElement('li')
+              li.textContent = 'No specific evidence provided.'
+              evidenceList.appendChild(li)
+            }
+          }
+
+          // Show results
+          loadingSection?.classList.add('hidden')
+          resultsSection?.classList.remove('hidden')
+        } catch (error) {
+          // Show error
+          loadingSection?.classList.add('hidden')
+          errorSection?.classList.remove('hidden')
+          if (errorMessage) {
+            errorMessage.textContent =
+              error instanceof Error
+                ? error.message
+                : 'An unknown error occurred during analysis'
+          }
+        } finally {
+          isProcessing = false
+          if (btn) btn.disabled = false
+        }
+      })
+
+      clearBtn?.addEventListener('click', function () {
+        const msgInput = messageInput as HTMLTextAreaElement | null
+        // Ensure clearBtn is HTMLButtonElement
+        const clrBtn = clearBtn as HTMLButtonElement | null
+        if (msgInput) {
+          msgInput.value = ''
+        }
+        resultsSection?.classList.add('hidden')
+        errorSection?.classList.add('hidden')
+      })
+    })
+  </script>
+
+  <style>
+    .mentalllama-demo {
+      font-family:
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        'Segoe UI',
+        Roboto,
+        Oxygen,
+        Ubuntu,
+        Cantarell,
+        'Open Sans',
+        'Helvetica Neue',
+        sans-serif;
+    }
+  </style>
+</section>

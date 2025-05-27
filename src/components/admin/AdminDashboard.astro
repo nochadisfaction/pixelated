@@ -1,0 +1,191 @@
+---
+import { getLogger } from '@/lib/logging'
+import { getSystemMetrics, type SystemMetrics } from '@/lib/api/admin'
+import { initDashboardUpdates } from '@/lib/admin/dashboard-updater'
+
+// Initialize logger
+const logger = getLogger()
+
+// Initialize with default values
+const defaultMetrics: SystemMetrics = {
+  activeUsers: 0,
+  activeSessions: 0,
+  sessionsToday: 0,
+  totalTherapists: 0,
+  totalClients: 0,
+  messagesSent: 0,
+  avgResponseTime: 0,
+  systemLoad: 0,
+  storageUsed: '0 GB',
+  activeSecurityLevel: 'standard',
+}
+
+let metrics: SystemMetrics = defaultMetrics
+let error: string | null = null
+
+try {
+  metrics = await getSystemMetrics()
+} catch (err) {
+  logger.error('Error fetching metrics:', {
+    error: err instanceof Error ? err.message : String(err),
+    stack: err instanceof Error ? err.stack : undefined,
+  })
+  error = 'Failed to load system metrics'
+}
+
+// Calculate width percentages
+const storageUsedPercent = metrics.storageUsed
+  ? Math.min(parseInt(metrics.storageUsed) / 10, 100)
+  : 0
+
+const messagesSentPercent = metrics.messagesSent
+  ? Math.min(metrics.messagesSent / 100, 100)
+  : 0
+---
+
+<div class="p-6 space-y-8">
+  <!-- Header -->
+  <div class="flex justify-between items-center">
+    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+      System Dashboard
+    </h2>
+    <div
+      id="error-message"
+      class="hidden text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/20 px-4 py-2 rounded-lg"
+    >
+    </div>
+  </div>
+
+  <!-- Security Status -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+      Security Status
+    </h3>
+    <div class="flex items-center space-x-4">
+      <span class="text-gray-600 dark:text-gray-300"
+        >Active Security Level:</span
+      >
+      <span id="security-level-value" class="font-medium">Loading...</span>
+    </div>
+  </div>
+
+  <!-- Metrics Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- Active Users -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <h4 class="text-sm font-medium text-gray-600 dark:text-gray-400">
+        Active Users
+      </h4>
+      <div class="mt-2 flex items-baseline">
+        <span
+          id="active-users-value"
+          class="text-3xl font-semibold text-gray-900 dark:text-white"
+        >
+          0
+        </span>
+      </div>
+    </div>
+
+    <!-- Active Sessions -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <h4 class="text-sm font-medium text-gray-600 dark:text-gray-400">
+        Active Sessions
+      </h4>
+      <div class="mt-2 flex items-baseline">
+        <span
+          id="active-sessions-value"
+          class="text-3xl font-semibold text-gray-900 dark:text-white"
+        >
+          0
+        </span>
+      </div>
+    </div>
+
+    <!-- Average Response Time -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <h4 class="text-sm font-medium text-gray-600 dark:text-gray-400">
+        Average Response Time
+      </h4>
+      <div class="mt-2 flex items-baseline">
+        <span
+          id="avg-response-time-value"
+          class="text-3xl font-semibold text-gray-900 dark:text-white"
+        >
+          0ms
+        </span>
+      </div>
+    </div>
+
+    <!-- System Load -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <h4 class="text-sm font-medium text-gray-600 dark:text-gray-400">
+        System Load
+      </h4>
+      <div class="mt-2 flex items-baseline">
+        <span
+          id="system-load-value"
+          class="text-3xl font-semibold text-gray-900 dark:text-white"
+        >
+          0%
+        </span>
+      </div>
+    </div>
+
+    <!-- Storage Used -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <h4 class="text-sm font-medium text-gray-600 dark:text-gray-400">
+        Storage Used
+      </h4>
+      <div class="mt-2">
+        <div class="flex items-baseline mb-2">
+          <span
+            id="storage-used-value"
+            class="text-3xl font-semibold text-gray-900 dark:text-white"
+          >
+            0GB
+          </span>
+        </div>
+        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+          <div
+            id="storage-bar"
+            class="bg-blue-600 dark:bg-blue-500 h-2 rounded-full"
+            style="width: 0%"
+          >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Messages Sent -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <h4 class="text-sm font-medium text-gray-600 dark:text-gray-400">
+        Messages Sent
+      </h4>
+      <div class="mt-2">
+        <div class="flex items-baseline mb-2">
+          <span
+            id="messages-sent-value"
+            class="text-3xl font-semibold text-gray-900 dark:text-white"
+          >
+            0
+          </span>
+        </div>
+        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+          <div
+            id="messages-bar"
+            class="bg-green-600 dark:bg-green-500 h-2 rounded-full"
+            style="width: 0%"
+          >
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { initDashboardUpdates } from '@/lib/admin/dashboard-updater'
+
+  // Initialize dashboard updates when the component mounts
+  document.addEventListener('DOMContentLoaded', initDashboardUpdates)
+</script>

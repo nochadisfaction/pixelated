@@ -1,0 +1,443 @@
+---
+import '@unocss/reset/tailwind.css'
+import '@/styles/main.css'
+import '@/styles/prose.css'
+import '@/styles/markdown.css'
+import '@/styles/page.css'
+import '@/styles/mobile-fixes.css'
+
+import Head from '@/components/base/Head.astro'
+import Background from '@/components/backgrounds/Background.astro'
+import Link from '@/components/base/Link.astro'
+import MainNav from '@/components/base/MainNav.astro'
+import Footer from '@/components/base/Footer.astro'
+import ToTopButton from '@/components/widgets/ToTopButton.astro'
+import Backdrop from '@/components/base/Backdrop.astro'
+import ToastProvider from '@/components/ui/ToastProvider'
+import LiveRegionSystem from '@/components/accessibility/LiveRegionSystem.astro'
+import SpeedInsights from "@vercel/speed-insights/astro"
+import Analytics from '@vercel/analytics/astro'
+
+import { SITE, UI, FEATURES } from '@/config'
+import { getUrl } from '@/utils/common'
+
+import type { BgType } from '@/types'
+
+interface Props {
+  title?: string
+  description?: string
+  ogImage?: string | boolean
+  bgType?: BgType | false
+  pubDate?: string
+  lastModDate?: string
+  showNavBar?: boolean
+  showFooter?: boolean
+  bgPattern?: boolean
+  usePlumAnimation?: boolean
+  centered?: boolean
+  containerClass?: string
+  contentClass?: string
+  transitionMode?: 'default' | 'fade' | 'slide' | 'slide-up' | 'slide-down' | 'zoom'
+  optimizeImages?: boolean
+  isLoginPage?: boolean
+}
+
+const {
+  title = 'Pixelated Empathy',
+  description = 'Pixelated Empathy - Secure AI Therapy Platform',
+  showNavBar = true,
+  showFooter = true,
+  // bgPattern is currently unused but kept for future implementation
+  bgPattern = true,
+  usePlumAnimation = false,
+  centered = true,
+  containerClass = 'mx-auto w-full',
+  contentClass = 'pt-16 pb-2 px-4 flex-grow',
+  bgType,
+  transitionMode = 'slide',
+  ogImage,
+  pubDate,
+  lastModDate,
+  optimizeImages = true,
+  isLoginPage = false
+} = Astro.props
+
+let style: Record<string, string> = {}
+
+const { slideEnterAnim } = FEATURES
+const enableSlideEnterAnim = Array.isArray(slideEnterAnim) && slideEnterAnim[0]
+if (enableSlideEnterAnim)
+  style['--enter-step'] = `${slideEnterAnim[1].enterStep}ms`
+
+const {
+  externalLink: { newTab, cursorType },
+} = UI
+const hasCustomCursor =
+  newTab && cursorType.length > 0 && cursorType !== 'pointer'
+if (hasCustomCursor) style['--external-link-cursor'] = cursorType
+
+// Determine if this is a login redirect from the dashboard
+const isLoginRedirect = Astro.url.searchParams.has('redirect') &&
+  Astro.url.searchParams.get('redirect')?.includes('/dashboard');
+
+// Detect if this is an auth page
+const isAuthPage = isLoginPage ||
+  Astro.url.pathname.match(/\/(login|register|signin|signup|reset-password)/) !== null;
+
+// Astro global is available in all .astro files
+const { site } = Astro;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const isProd = import.meta.env.PROD;
+const analyticsEnabled = isProd && import.meta.env.ENABLE_ANALYTICS === "true";
+
+// Function to optimize images - ensure this function is defined or imported if used elsewhere
+// For now, assuming it's a global function or will be defined within this script
+// function optimizeAllImages() {
+//   console.log("Image optimization logic would run here.");
+// }
+---
+
+<!doctype html>
+<html lang={SITE.lang} class="dark">
+  <head>
+    <!-- Temporary CSP override until server headers are updated -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.vercel-insights.com https://cdn.pixelatedempathy.com https://www.googletagmanager.com https://vercel.live data:; style-src 'self' 'unsafe-inline' https://cdn.pixelatedempathy.com https://fonts.googleapis.com https://cdn.jsdelivr.net data:; img-src 'self' data: https: blob:; font-src 'self' https://cdn.pixelatedempathy.com https://fonts.gstatic.com https://fonts.bunny.net https://cdn.jsdelivr.net https://pixelated-jk5qsc8v0-blackmage.vercel.app data:; object-src 'none'; media-src 'self' https://cdn.pixelatedempathy.com; form-action 'self'; frame-ancestors 'none'; base-uri 'self'; manifest-src 'self'; worker-src 'self' blob:; child-src 'self' blob:; frame-src 'self'; upgrade-insecure-requests;">
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7ZF7M7306J"></script>
+    <script is:inline>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-7ZF7M7306J');
+    </script>
+
+    <!-- Feature Detection and Polyfill Loader (load early to avoid dependency issues) -->
+    <script is:inline src="/js/feature-detector.js"></script>
+
+    <!-- Load CSS and JS directly instead of preloading -->
+    <script is:inline src="/js/force-dark-mode.js"></script>
+    <link rel="stylesheet" href="/css/layout-fixes.css">
+    <link rel="stylesheet" href="/css/font-fix.css">
+
+    <!-- Properly preload fonts -->
+    <link rel="preload" href="/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin fetchpriority="high">
+
+    <Head
+      title={title}
+      description={description}
+      ogImage={ogImage}
+      pubDate={pubDate}
+      lastModDate={lastModDate}
+      transitionMode={transitionMode}
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+    <link rel="manifest" href="/manifest.webmanifest">
+
+    <!-- Disable source map errors -->
+    <script is:inline>
+      // Prevent console errors for missing source maps
+      window.addEventListener('error', function(event) {
+        if (event && event.filename && event.filename.includes('.map')) {
+          // Suppress source map loading errors
+          event.preventDefault();
+          return false;
+        }
+      }, true);
+    </script>
+
+    <!-- Polyfill strategy: Use feature detection only -->
+    <script is:inline define:vars={{ polyfillsCheckedKey: '__POLYFILLS_CHECKED' }}>
+      // Feature detection for critical features
+      (function() {
+        // Prevent duplicate polyfill loading
+        if (window[polyfillsCheckedKey]) return;
+
+        // Define the polyfill check property
+        window[polyfillsCheckedKey] = true;
+
+        // Log polyfill status
+        var missingFeatures = [];
+
+        // Check for critical features
+        if (!('IntersectionObserver' in window)) missingFeatures.push('IntersectionObserver');
+        if (!('ResizeObserver' in window)) missingFeatures.push('ResizeObserver');
+        if (!('fetch' in window)) missingFeatures.push('fetch');
+        if (!('Promise' in window)) missingFeatures.push('Promise');
+        if (!('CustomElements' in window)) missingFeatures.push('CustomElements');
+        if (!('fromEntries' in Object)) missingFeatures.push('Object.fromEntries');
+        if (!('Buffer' in window)) missingFeatures.push('Buffer');
+
+        // Load critical polyfills
+        if (missingFeatures.length > 0) {
+          console.warn('Browser is missing features that may affect functionality:', missingFeatures.join(', '));
+          console.warn('Loading polyfills for critical features...');
+
+          // Load Buffer polyfill which is critical for many features
+          if (!('Buffer' in window)) {
+            var script = document.createElement('script');
+            script.src = '/polyfills/buffer-polyfill.js';
+            script.async = false; // Load synchronously to ensure it's available before other scripts
+            document.head.appendChild(script);
+          }
+        } else {
+          console.log('All required browser features are supported.');
+        }
+      })();
+    </script>
+
+    {optimizeImages && isProd && (
+      <script is:inline>
+        {
+          // This is a placeholder for image optimization logic.
+          // Ensure that any actual function calls or logic are correctly placed and syntactically valid.
+          // For example, if optimizeAllImages was to be used:
+          /*
+          function optimizeAllImages() {
+            console.log("Image optimization would happen here.");
+            // Example: Implement lazy loading or responsive image adjustments
+            document.querySelectorAll('img[data-src]').forEach(img => {
+              img.setAttribute('src', img.getAttribute('data-src'));
+              img.onload = () => img.removeAttribute('data-src');
+            });
+          }
+
+          if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+              document.addEventListener('astro:page-load', optimizeAllImages);
+              // Initial call for non-transition loads
+              if (!window.astroPageLoadTriggered) optimizeAllImages();
+            });
+          } else {
+            document.addEventListener('astro:page-load', optimizeAllImages);
+            if (!window.astroPageLoadTriggered) optimizeAllImages();
+          }
+
+          // Helper to track if astro:page-load has fired for initial load
+          document.addEventListener('astro:page-load', () => { window.astroPageLoadTriggered = true; }, { once: true });
+          window.addEventListener('load', () => { setTimeout(() => { window.astroPageLoadTriggered = false; }, 0); }); // Reset for next potential full load
+          */
+        }
+      </script>
+    )}
+
+    <!-- Auth page optimizations -->
+    {isAuthPage && (
+      <script>
+        import { initAuthPageOptimizations } from '../scripts/preload-auth.js';
+        // Initialize auth optimizations immediately
+        document.addEventListener('DOMContentLoaded', initAuthPageOptimizations);
+      </script>
+    )}
+
+    <Analytics />
+
+    <slot name="head" />
+  </head>
+
+  <body
+    class="relative flex flex-col min-h-screen
+      font-sans text-gray-700 dark:text-gray-200"
+    style={Object.keys(style).length !== 0 ? style : undefined}
+    data-no-sliding={!enableSlideEnterAnim ? true : undefined}
+  >
+    <!-- Background -->
+    {bgType && <Background type={bgType} />}
+
+    <!-- Toast Notifications Provider -->
+    <ToastProvider client:load />
+
+    <!-- Live Region System for Accessibility -->
+    <LiveRegionSystem />
+
+    <!-- Main -->
+    <Link
+      href="#main"
+      class="sr-only focus:(not-sr-only fixed start-1 top-1.5 op-20)"
+    >
+      Skip to content
+    </Link>
+    {showNavBar && <MainNav />}
+    <div class:list={["page-wrapper flex flex-col min-h-screen", {"login-page-wrapper": isLoginPage || isLoginRedirect}]}>
+      <main id="main" class="mx-auto w-full px-4 flex-grow">
+        <div class={`${contentClass} ${centered ? 'flex justify-center items-center' : ''}`}>
+          <div class={containerClass}>
+            <slot />
+            {
+              Astro.url.pathname !== getUrl('/') && (
+                <footer class="slide-enter animate-delay-1000! prose mx-auto mt-8 print:hidden">
+                  <slot name="share" />
+                </footer>
+              )
+            }
+          </div>
+        </div>
+      </main>
+      {showFooter && <Footer />}
+    </div>
+    <ToTopButton />
+
+    <!-- Panel Backdrop (on mobile) -->
+    <Backdrop />
+
+    <!-- Mobile viewport fixes script -->
+    <script>
+      import { initMobileViewportFixes } from '../scripts/mobile-viewport.js';
+      document.addEventListener('astro:page-load', () => {
+        initMobileViewportFixes();
+      });
+    </script>
+
+    <!-- Progress Bar & Image Zoom -->
+    <script>
+      /* nprogress */
+      import nprogress from 'nprogress'
+      document.addEventListener('astro:before-preparation', () => {
+        nprogress.start()
+      })
+      document.addEventListener('astro:page-load', () => {
+        nprogress.done()
+      })
+
+      /* medium-zoom */
+      import mediumZoom from 'medium-zoom/dist/pure'
+      const zoom = mediumZoom({
+        background: 'rgb(0 0 0 / 0.8)',
+      })
+
+      document.addEventListener('astro:page-load', () => {
+        zoom.detach()
+        zoom.attach('.prose img:not(.no-zoom):not(a img)')
+      })
+    </script>
+
+    <!-- Vercel Speed Insights with conflict prevention approach -->
+    <script>
+      import { initSpeedInsights } from '../scripts/vercel-speed-insights.js';
+
+      // Initialize on DOMContentLoaded and again on Astro page transitions
+      document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(initSpeedInsights, 0); // Immediate queue for initial page
+      });
+      document.addEventListener('astro:page-load', () => {
+        setTimeout(initSpeedInsights, 0); // Immediate queue for page transitions
+      });
+    </script>
+
+    <!-- Plum animation script -->
+    {usePlumAnimation && (
+      <script>
+        // Plum animation code here if using plum animation
+        const COUNT = 150;
+
+        function createPlums() {
+          const plumContainer = document.getElementById('plum-animation');
+          if (!plumContainer) return;
+
+          for (let i = 0; i < COUNT; i++) {
+            const plum = document.createElement('div');
+            plum.className = 'plum';
+            plum.style.left = `${Math.random() * 100}%`;
+            plum.style.top = `${Math.random() * 100}%`;
+            plum.style.animationDelay = `${Math.random() * 30}s`;
+            plum.style.animationDuration = `${Math.random() * 20 + 10}s`;
+            plumContainer.appendChild(plum);
+          }
+        }
+
+        document.addEventListener('DOMContentLoaded', createPlums);
+      </script>
+      <style>
+        #plum-animation {
+          z-index: -5;
+          position: fixed;
+          inset: 0;
+          pointer-events: none;
+        }
+
+        .plum {
+          position: absolute;
+          background: radial-gradient(circle at center, rgba(150, 150, 150, 0.8) 0%, rgba(150, 150, 150, 0) 70%);
+          width: 100px;
+          height: 100px;
+          border-radius: 50%;
+          opacity: 0.5;
+          pointer-events: none;
+          animation: plum-float linear infinite;
+        }
+
+        @keyframes plum-float {
+          0% {
+            transform: translateY(0) translateX(0) scale(1);
+            opacity: 0.5;
+          }
+          50% {
+            transform: translateY(-50px) translateX(20px) scale(1.2);
+            opacity: 0.2;
+          }
+          100% {
+            transform: translateY(-100px) translateX(0) scale(1);
+            opacity: 0;
+          }
+        }
+      </style>
+    )}
+
+    <!-- Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(registration => {
+              console.log('ServiceWorker registration successful');
+            })
+            .catch(error => {
+              console.error('ServiceWorker registration failed:', error);
+            });
+        });
+      }
+    </script>
+    <script is:inline>
+      function speedInsightsBeforeSend(data) {
+        console.log("Speed Insights before send", data)
+        return data;
+      }
+    </script>
+    <SpeedInsights />
+  </body>
+</html>
+
+<style>
+  /* Ensure the page fills the viewport */
+  .page-wrapper {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    flex-grow: 1;
+    margin-bottom: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Special case for login page to prevent unnecessary scrolling */
+  .login-page-wrapper {
+    height: calc(100vh - var(--header-height, 60px)); /* Adjust based on your header height */
+    min-height: auto; /* Override min-height to prevent forcing scroll */
+    overflow: auto;
+  }
+
+  /* On login pages, keep the footer visible without scrolling when content is short */
+  .login-page-wrapper main {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  /* Push footer to bottom when content is short */
+  html, body {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+</style>

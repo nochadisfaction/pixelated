@@ -1,0 +1,10 @@
+*.mdx
+node_modules/
+dist/
+build/
+.next/
+.cache/
+.specstory/
+**/.specstory/**
+.specstory/**/*
+.cursorrules

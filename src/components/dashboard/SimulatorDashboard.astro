@@ -1,0 +1,209 @@
+---
+/**
+ * SimulatorDashboard.astro
+ * Astro wrapper component for the therapeutic practice simulator dashboard
+ *
+ * This component wraps the React-based SimulatorDashboardReact component
+ * to provide a consistent interface while maintaining interactive features.
+ *
+ * Optimized for performance with improved loading and resource management.
+ */
+
+// Import the React component
+import SimulatorDashboardReact from './SimulatorDashboardReact'
+
+// Define props for the Astro component
+interface Props {
+  title?: string
+  description?: string
+  lazyLoad?: boolean
+}
+
+// Set cache control headers
+export const cacheControl = {
+  maxAge: 3600, // Cache for 1 hour
+  staleWhileRevalidate: 86400, // Allow stale content while revalidating for 24 hours
+}
+
+// Default values for props
+const {
+  title = 'Therapeutic Practice Simulator',
+  description = 'Interactive simulator for practicing therapeutic techniques in a safe environment',
+  lazyLoad = false,
+} = Astro.props
+---
+
+<div
+  class="simulator-dashboard-wrapper"
+  role="main"
+  aria-labelledby="simulator-dashboard-title"
+>
+  {
+    title && (
+      <h1 id="simulator-dashboard-title" class="sr-only">
+        {title}
+      </h1>
+    )
+  }
+  {description && <p class="sr-only">{description}</p>}
+
+  <div
+    class="simulator-dashboard-container bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden"
+  >
+    <!-- Loading state shown until React component hydrates -->
+    <div class="simulator-loading-placeholder" aria-hidden="true">
+      <div class="animate-pulse p-6">
+        <div
+          class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6"
+        >
+          <div class="h-8 bg-gray-200 dark:bg-gray-700 rounded w-64"></div>
+          <div class="flex gap-2">
+            <div class="h-8 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
+            <div class="h-8 bg-gray-200 dark:bg-gray-700 rounded w-36"></div>
+          </div>
+        </div>
+        <div
+          class="h-96 bg-gray-100 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
+        >
+        </div>
+      </div>
+    </div>
+
+    <!-- The React component with appropriate client directive -->
+    {
+      lazyLoad ? (
+        <SimulatorDashboardReact client:visible />
+      ) : (
+        <SimulatorDashboardReact client:load />
+      )
+    }
+  </div>
+
+  <!-- Accessibility and SEO enhancement for simulator information -->
+  <div
+    class="simulator-info mt-4 p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-100 dark:border-blue-800"
+  >
+    <h2
+      class="text-md font-medium text-blue-800 dark:text-blue-300 mb-2 flex items-center"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-5 w-5 mr-1.5"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+          clip-rule="evenodd"></path>
+      </svg>
+      About This Simulator
+    </h2>
+    <p class="text-sm text-blue-700 dark:text-blue-400">
+      This simulator allows you to practice therapeutic techniques in a private,
+      safe environment. No audio or video data is recorded or stored at any
+      time. All processing happens in real-time with zero data retention to
+      ensure complete privacy and HIPAA compliance.
+    </p>
+
+    <div class="mt-3 text-xs text-blue-600 dark:text-blue-500">
+      You can track your progress through anonymized metrics that are only
+      stored in your browser. View your progress by clicking the "Progress
+      Metrics" button.
+    </div>
+  </div>
+</div>
+
+<style>
+  .simulator-dashboard-wrapper {
+    width: 100%;
+    position: relative;
+    transition: opacity 0.3s ease-in-out;
+  }
+
+  .simulator-dashboard-container {
+    position: relative;
+    min-height: 400px;
+  }
+
+  .simulator-loading-placeholder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 1;
+    transition: opacity 0.3s ease-out;
+    z-index: 1;
+  }
+
+  /* Hide loading placeholder once React component hydrates */
+  :global(.hydrated) .simulator-loading-placeholder {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  /* Optimize for reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-pulse {
+      animation: none;
+    }
+  }
+
+  /* Print styles */
+  @media print {
+    .simulator-info {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+  }
+</style>
+
+<script>
+  // Preload critical resources when component is near viewport
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            // Preload React components and dependencies
+            const preloadScripts = [
+              '/chunks/react-vendor.js',
+              '/chunks/SimulatorDashboardReact.js',
+            ]
+
+            preloadScripts.forEach((scriptPath) => {
+              const link = document.createElement('link')
+              link.rel = 'preload'
+              link.as = 'script'
+              link.href = scriptPath
+              document.head.appendChild(link)
+            })
+
+            observer.disconnect()
+          }
+        })
+      },
+      { rootMargin: '200px' },
+    )
+
+    const simulatorWrapper = document.querySelector(
+      '.simulator-dashboard-wrapper',
+    )
+    if (simulatorWrapper) {
+      observer.observe(simulatorWrapper)
+    }
+  }
+</script>

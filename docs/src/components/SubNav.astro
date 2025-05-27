@@ -1,0 +1,26 @@
+---
+import { getSubNavbarFromConfig } from '../utils/navigation'
+import { slugToLocaleData, urlToSlug } from '../utils/slugs'
+import config from 'virtual:vitesse/user-config'
+
+const url = Astro.url
+const slug = urlToSlug(url)
+const localeData = slugToLocaleData(slug)
+const subNavBar = getSubNavbarFromConfig(config.subNavBar, url.pathname, localeData.locale)
+---
+
+<div class="prose m-auto mb-8 select-none animate-none! op100!">
+  <div class="mb-0 flex flex-col gap-1 sm:gap-3 flex-wrap text-3xl sm:flex-row">
+    {
+      subNavBar.map((subNavLink) => (
+        <a
+          href={subNavLink.href}
+          class:list={['!border-none', subNavLink.isCurrent ? 'opacity-100 underline' : 'opacity-20 hover:opacity-50']}
+          {...subNavLink.attrs}
+        >
+          {subNavLink.label}
+        </a>
+      ))
+    }
+  </div>
+</div>

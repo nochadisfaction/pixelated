@@ -1,0 +1,20 @@
+# Don't index SpecStory auto-save files, but allow explicit context inclusion via @ references
+.specstory/**
+
+# Don't index node_modules and build directories
+node_modules/**
+**/node_modules/**
+dist/**
+**/dist/**
+.astro/**
+**/.astro/**
+.vercel/**
+**/.vercel/**
+**/.venv/**
+
+# Don't index polyfills and vendor files
+public/polyfills/**
+**/public/polyfills/**
+**/*.min.js
+.tmp.driveupload/
+/tests/security/node_modules/

@@ -1,0 +1,143 @@
+---
+title: Astro Vitesse
+display: 'Give your pages an elegant touch with Astro Vitesse'
+description: 'Give your pages an elegant touch with Astro Vitesse'
+tocAlwaysOn: true
+---
+
+import Card from '@/components/Card.astro'
+import SponsorButton from '@/components/SponsorButton.astro'
+import LinkWithIcon from '@/components/LinkWithIcon.astro'
+
+[[toc]]
+
+Everything you need to create a stunning website. Fast, affordable and easy to use.
+
+It's inspired by  <LinkWithIcon href="https://antfu.me" iconUrl="https://antfu.me/favicon.svg">antfu.me</LinkWithIcon> <br />
+Developed with <LinkWithIcon href="https://astro.build" iconUrl="https://github.com/withastro.png">Astro</LinkWithIcon> <br />
+Based on <LinkWithIcon href="https://starlight.astro.build" iconUrl="https://starlight.astro.build/favicon.svg">Starlight</LinkWithIcon>
+
+<div class="class flex flex-col space-y-4">
+
+<Card>
+
+Includes: Site navigation, internationalization, SEO, easy-to-read typography, code highlighting, dark mode and more.
+
+</Card>
+
+<Card>
+
+Bring your favorite markup language. Astro Vitesse gives you built-in frontmatter validation with TypeScript type-safety.
+
+</Card>
+
+<Card>
+
+Astro Vitesse ships as a framework-agnostic, complete solution. Extend with React, Vue, Svelte, Solid, and more.
+
+</Card>
+
+</div>
+
+## Set up Astro Vitesse
+
+To follow this guide, you’ll need an existing Astro project.
+
+### Add the Astro Vitesse integration
+
+Astro Vitesse is an [Astro integration](https://docs.astro.build/en/guides/integrations-guide/). Add it to your site by running the `astro add` command in your project’s root directory:
+
+```sh
+npx astro add astro-vitesse
+```
+
+This will install the required dependencies and add Astro Vitesse to the `integrations` array in your Astro config file.
+
+### Configure the integration
+
+The Astro Vitesse integration is configured in your `astro.config.mjs` file.
+
+Add a `title` to get started:
+
+```js
+import { defineConfig } from 'astro'
+import vitesse from 'astro-vitesse'
+
+export default defineConfig({
+  integrations: [
+    vitesse({
+      title: 'My Site',
+    })
+  ]
+})
+```
+
+### Configure UnoCSS
+
+Astro Vitesse uses [UnoCSS](https://unocss.dev/) for styling. To configure UnoCSS, create a `unocss.config.ts` file in your project’s root directory:
+
+```ts
+import { defineConfig } from 'astro-vitesse/theme'
+
+export default defineConfig({})
+```
+
+### Configure content collections
+
+Astro Vitesse is built on top of Astro’s [content collections](https://docs.astro.build/en/guides/content-collections/), which are configured in the `src/content.config.ts` file.
+
+Create or update the content config file, adding a `pages` collection that uses Astro Vitesse’s `pagesSchema`:
+
+```ts
+import { defineCollection } from 'astro:content'
+import { pagesSchema } from 'astro-vitesse/schema'
+import { pagesLoader } from 'astro-vitesse/loaders'
+
+export const collections = {
+  pages: defineCollection({ loader: pagesLoader(), schema: pagesSchema() }),
+}
+```
+
+### Add content
+
+Astro Vitesse is now configured and it’s time to add some content!
+
+Create a `src/content/pages/` directory and start by adding an `index.md` file.
+This will be the homepage of your new site:
+
+```mdx
+---
+title: Welcome to Astro Vitesse
+description: 'Give your pages an elegant touch with Astro Vitesse'
+---
+
+Welcome to my website!
+```
+
+Astro Vitesse uses file-based routing, which means every Markdown, MDX, or Markdoc file in `src/content/pages/` will turn into a page on your site. Frontmatter metadata (the `title` and `description` fields in the example above) can change how each page is displayed.
+
+## Start the development server
+
+When working locally, [Astro’s development server](https://docs.astro.build/en/reference/cli-reference/#astro-dev) lets you preview your work and automatically refreshes your browser when you make changes.
+
+Inside your project directory, run the following command to start the development server:
+
+```sh
+npm run dev
+```
+
+<div class="flex-auto"></div>
+
+---
+
+Find me on
+
+<p flex="~ gap-2 wrap" class="mt--2!">
+  <a href="https://github.com/adrian-ub" target="_blank"><span op75 class="i-simple-icons-github" /> GitHub</a>
+  <a href="https://elk.zone/mastodon.social/@adrianub" target="_blank"><span op75 class="i-ri-mastodon-fill" /> Mastodon</a>
+  <a href="https://www.twitter.com/AdrianUB" target="_blank"><span op75 class="i-ri-twitter-x-fill" /> Twitter</a>
+</p>
+
+---
+
+<SponsorButton />

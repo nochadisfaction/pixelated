@@ -1,0 +1,46 @@
+extends: default
+
+rules:
+  # 80 chars should be enough, but don't fail if a line is longer
+  line-length:
+    max: 120
+    level: warning
+
+  # allow/expect both
+  truthy:
+    allowed-values: ['true', 'false', 'yes', 'no', 'on', 'off']
+
+  # don't require document start markers
+  document-start: disable
+
+  # trailing spaces are fine
+  trailing-spaces: disable
+
+  # don't require comments to start with a space
+  comments:
+    min-spaces-from-content: 1 # at least one space
+
+  # don't bother with this
+  comments-indentation: disable
+
+  # don't be too picky about indentation
+  indentation:
+    spaces: 2
+    indent-sequences: consistent
+
+  # allow flow mappings
+  braces:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+
+  # allow flow sequences
+  brackets:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+
+  quoted-strings:
+    required: only-when-needed
+    extra-allowed: ['{|}']
+  key-duplicates: {}
+  octal-values:
+    forbid-implicit-octal: true

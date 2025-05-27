@@ -1,0 +1,15 @@
+---
+// Import the React Dialog component and its types
+import { Dialog } from './dialog'
+import type { DialogProps } from './dialog'
+
+// Define the props type, excluding children since we'll use slots
+export type Props = Omit<DialogProps, 'children'>
+
+// Get the props from Astro
+const dialogProps: Props = Astro.props
+---
+
+<Dialog client:load {...dialogProps}>
+  <slot />
+</Dialog>

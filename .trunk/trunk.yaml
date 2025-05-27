@@ -1,0 +1,97 @@
+# This file controls the behavior of Trunk: https://docs.trunk.io/cli
+# To learn more about the format of this file, see https://docs.trunk.io/reference/trunk-yaml
+version: 0.1
+cli:
+  version: 1.22.15
+# Trunk provides extensibility via plugins. (https://docs.trunk.io/plugins)
+plugins:
+  sources:
+    - id: trunk
+      ref: v1.6.8
+      uri: https://github.com/trunk-io/plugins
+# Many linters and tools depend on runtimes - configure them here. (https://docs.trunk.io/runtimes)
+runtimes:
+  enabled:
+    - go@1.21.0
+    - node@22.11.0
+    - python@3.10.8
+# This is the section where you manage your linters. (https://docs.trunk.io/check/configuration)
+lint:
+  disabled:
+    - markdownlint
+  enabled:
+    - bandit@1.8.3
+    - black@25.1.0
+    - checkov@3.2.423
+    - git-diff-check
+    - gitleaks@8.26.0
+    - hadolint@2.12.1-beta
+    - isort@6.0.1
+    - osv-scanner@2.0.2
+    - oxipng@9.1.5
+    - ruff@0.11.9
+    - shellcheck@0.10.0
+    - shfmt@3.6.0
+    - svgo@3.3.2
+    - taplo@0.9.3
+    - trufflehog@3.88.29
+    - actionlint@1.7.7
+    - eslint@9.23.0
+    - prettier@3.5.3
+    - yamllint@1.37.1
+  ignore:
+    - linters: [ALL]
+      paths:
+        - node_modules/**
+        - dist/**
+        - .next/**
+        - .astro/**
+        - '*.generated.*'
+        - .specstory/**
+        - scripts/**/*.js
+        - scripts/**/*.cjs
+        - public/polyfills/**
+        - '**/*.min.js'
+    - linters: [markdownlint]
+      paths:
+        - .specstory/**/*
+        - '**/.specstory/**/*'
+    - linters: [actionlint]
+      paths:
+        - .github/workflows/*.yml
+    - linters: [yamllint]
+      paths:
+        - .github/workflows/*.yml
+    - linters: [eslint]
+      paths:
+        - eslint.config.js
+        - uno.config.ts
+  definitions:
+    - name: prettier
+      files: [typescript, javascript, json, yaml]
+      commands:
+        - name: format
+          output: rewrite
+          run: prettier --write ${target}
+    - name: eslint
+      files: [typescript, javascript]
+      commands:
+        - name: lint
+          output: sarif
+          run: pnpm eslint ${target} -f @microsoft/eslint-formatter-sarif
+    - name: yamllint
+      files: [yaml]
+      commands:
+        - name: lint
+          output: regex
+          parse_regex: '^(?P<path>.*):(?P<line>\d+):(?P<col>\d+): \[(?P<severity>.*)\] (?P<message>.*)$'
+          run: yamllint -c .trunk/configs/.yamllint.yaml -f parsable ${target}
+
+actions:
+  disabled:
+    - git-lfs
+  enabled:
+    - trunk-announce
+    - trunk-check-pre-push
+    - trunk-fmt-pre-commit
+    - trunk-upgrade-available

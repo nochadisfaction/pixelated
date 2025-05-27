@@ -1,0 +1,210 @@
+name: Browser Compatibility Tests
+
+permissions:
+  contents: read
+  actions: write
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Environment variables can be defined here
+env:
+  NODE_ENV: test
+
+jobs:
+  setup:
+    name: Setup Versions
+    uses: ./.github/workflows/setup-versions.yml
+
+  browser-tests:
+    name: Run Browser Tests
+    runs-on: ubuntu-latest
+    needs: [setup]
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: ${{ needs.setup.outputs.pnpm-version }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ needs.setup.outputs.node-version }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps
+
+      - name: Build project
+        run: pnpm run build
+
+      - name: Run browser tests
+        run: pnpm exec playwright test src/tests/cross-browser-compatibility.test.ts --reporter=html,list
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+  visual-tests:
+    name: Visual Regression Tests
+    runs-on: ubuntu-latest
+    needs: [setup, browser-tests]
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: ${{ needs.setup.outputs.pnpm-version }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ needs.setup.outputs.node-version }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps
+
+      - name: Build project
+        run: pnpm run build
+
+      - name: Run visual comparison tests
+        run: pnpm exec playwright test src/tests/cross-browser-compatibility.test.ts --reporter=html,list
+        env:
+          CI: true
+          NODE_ENV: test
+        id: visual-tests
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-test-report
+          path: |
+            playwright-report/
+            test-results/
+            browser-compatibility/
+          retention-days: 30
+
+  generate-report:
+    name: Generate Test Report
+    runs-on: ubuntu-latest
+    needs: [setup, browser-tests, visual-tests]
+    if: always()
+    env:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      EMAIL_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      TEAM_EMAIL: ${{ secrets.BROWSER_COMPATIBILITY_EMAIL }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download test results
+        uses: actions/download-artifact@v4
+        with:
+          path: all-test-results
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ needs.setup.outputs.node-version }}
+
+      - name: Create report directories
+        run: |
+          mkdir -p playwright-report
+          mkdir -p all-test-results/playwright-report
+          mkdir -p all-test-results/visual-test-report
+
+      - name: Generate HTML report
+        run: |
+          echo "Browser Compatibility Test Report" > report.html
+          echo "<h1>Browser Compatibility Test Results</h1>" >> report.html
+          echo "<p>Generated on $(date)</p>" >> report.html
+
+          # Extract summary info from test results
+          if [ -f "all-test-results/test-results/test-results.json" ]; then
+            echo "<h2>Test Results Summary</h2>" >> report.html
+            echo "<pre>" >> report.html
+            cat all-test-results/test-results/test-results.json | jq -r '.suites[] | "\(.title): \(.specs | length) tests, \(.specs | map(select(.ok == true)) | length) passed"' >> report.html
+            echo "</pre>" >> report.html
+          fi
+
+          # Add issues section
+          echo "<h2>Detected Issues</h2>" >> report.html
+
+          ISSUE_COUNT=0
+          if [ -f "all-test-results/test-results/test-results.json" ]; then
+            FAILED_TESTS=$(cat all-test-results/test-results/test-results.json | jq -r '.suites[].specs[] | select(.ok == false) | .title')
+            if [ ! -z "$FAILED_TESTS" ]; then
+              echo "<h3>Browser Compatibility Issues</h3><ul>" >> report.html
+              echo "$FAILED_TESTS" | while read title; do
+                echo "<li>${title}</li>" >> report.html
+                ISSUE_COUNT=$((ISSUE_COUNT + 1))
+              done
+              echo "</ul>" >> report.html
+            fi
+          fi
+
+          # Set summary variable for notifications
+          echo "ISSUE_COUNT=$ISSUE_COUNT" >> $GITHUB_ENV
+
+          # Add link to full reports
+          echo "<p>See attached artifacts for full reports and screenshots.</p>" >> report.html
+
+      - name: Upload final report
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-compatibility-report
+          path: report.html
+          retention-days: 30
+
+      - name: Send notifications
+        if: env.ISSUE_COUNT > 0
+        run: |
+          # Prepare notification content
+          echo "Found $ISSUE_COUNT compatibility issues in the latest build." > notification.txt
+          echo "Repository: $GITHUB_REPOSITORY" >> notification.txt
+          echo "Branch: ${GITHUB_REF#refs/heads/}" >> notification.txt
+          echo "Commit: $GITHUB_SHA" >> notification.txt
+          echo "Workflow run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> notification.txt
+
+          # Send Slack notification if webhook is configured
+          if [ ! -z "$SLACK_WEBHOOK" ]; then
+            curl -X POST -H 'Content-type: application/json' \
+            --data "{\"text\":\"$(cat notification.txt)\"}" \
+            $SLACK_WEBHOOK
+          fi
+
+          # Send email notification if configured
+          if [ ! -z "$EMAIL_API_KEY" ] && [ ! -z "$TEAM_EMAIL" ]; then
+            curl -X POST https://api.resend.com/emails \
+              -H "Authorization: Bearer $EMAIL_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d "{
+                \"from\": \"ci@gradiant.health\",
+                \"to\": \"$TEAM_EMAIL\",
+                \"subject\": \"🚨 Browser Compatibility Issues Detected\",
+                \"text\": \"$(cat notification.txt)\"
+              }"
+          fi

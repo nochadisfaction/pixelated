@@ -1,0 +1,22 @@
+{
+  "timestamp": "2025-05-10T08:53:18.516Z",
+  "environment": "test",
+  "pages": {
+    "Chat": {
+      "url": "/app/chat",
+      "navigationTime": 21739.10316700001,
+      "LCP": 0,
+      "CLS": 0,
+      "FCP": 0,
+      "domContentLoaded": 3,
+      "domComplete": 0,
+      "loadEvent": 0,
+      "resourceCounttt": 0,
+      "resourceSize": 0,
+      "jsSize": 0,
+      "jsExecutionTime": 0,
+      "FID": 25.700000002980232
+    }
+  },
+  "api": {}
+}

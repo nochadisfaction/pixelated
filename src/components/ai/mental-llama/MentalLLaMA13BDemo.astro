@@ -1,0 +1,306 @@
+---
+/**
+ * MentalLLaMA-13B Demo Component
+ *
+ * This component provides a demonstration of the MentalLLaMA-13B model capabilities
+ * for mental health analysis. It showcases the enhanced explanation generation and
+ * classification abilities of the larger model.
+ */
+
+import { MentalLLaMAFactory } from '../../../lib/ai/mental-llama/MentalLLaMAFactory'
+import type { MentalLLaMAModelProvider } from '../../../lib/ai/mental-llama/MentalLLaMAModelProvider'
+import type { MentalHealthCategory } from '../../../lib/ai/mental-llama/prompts'
+
+interface Props {
+  demoText?: string
+  showExpertGuidance?: boolean
+}
+
+// Define types for analysis results
+interface MentalHealthAnalysis {
+  hasMentalHealthIssue: boolean
+  mentalHealthCategory: string
+  explanation: string
+  confidence: number
+  supportingEvidence: string[]
+}
+
+interface EnhancedMentalHealthAnalysis extends MentalHealthAnalysis {
+  expertGuided: boolean
+}
+
+interface ExplanationQuality {
+  fluency: number
+  completeness: number
+  reliability: number
+  overall: number
+  bartScore?: number
+}
+
+// Default props
+const {
+  demoText = "I've been feeling really down lately, and I'm having trouble getting out of bed. Nothing seems worth doing anymore.",
+  showExpertGuidance = true,
+} = Astro.props
+
+// Analysis results
+let analysis: MentalHealthAnalysis | null = null
+let enhancedAnalysis: EnhancedMentalHealthAnalysis | null = null
+let explanationQuality: ExplanationQuality | null = null
+let modelTier: string | null = null
+let error: string | null = null
+let directModelAvailable = false
+
+try {
+  // Create adapter with factory
+  const { adapter, modelProvider } = await MentalLLaMAFactory.createFromEnv()
+
+  // Check if direct model integration is available
+  directModelAvailable = !!modelProvider
+
+  if (modelProvider) {
+    modelTier = modelProvider.getModelTier()
+  }
+
+  // Only run analysis if model is available
+  if (directModelAvailable) {
+    // Basic analysis
+    const result = await adapter.analyzeMentalHealth(demoText)
+    analysis = {
+      hasMentalHealthIssue: result.hasMentalHealthIssue || false,
+      mentalHealthCategory: result.mentalHealthCategory || '',
+      explanation: result.explanation || result.analysis,
+      confidence: result.confidence || result.confidenceScore,
+      supportingEvidence: result.supportingEvidence || [],
+    }
+
+    // Enhanced analysis with expert guidance (if requested)
+    if (showExpertGuidance) {
+      enhancedAnalysis = await adapter.analyzeMentalHealthWithExpertGuidance(
+        demoText,
+        true,
+      )
+
+      // Evaluate explanation quality
+      if (enhancedAnalysis?.explanation) {
+        explanationQuality = await adapter.evaluateExplanationQuality(
+          enhancedAnalysis.explanation,
+        )
+      }
+    }
+  }
+} catch (e) {
+  error = e instanceof Error ? e.message : 'Unknown error occurred'
+}
+
+// Format confidence as percentage
+const confidencePercent = analysis?.confidence
+  ? (analysis.confidence * 100).toFixed(1) + '%'
+  : 'N/A'
+---
+
+<div
+  class="mental-llama-demo rounded-lg border bg-card p-6 text-card-foreground shadow-sm"
+>
+  <div class="flex flex-col space-y-1.5 pb-4 border-b">
+    <h3 class="text-2xl font-semibold leading-none tracking-tight">
+      MentalLLaMA-13B Demo
+    </h3>
+    <p class="text-sm text-muted-foreground">
+      Interpretable mental health analysis with the 13B parameter model
+    </p>
+  </div>
+
+  {
+    error && (
+      <div class="bg-destructive/15 p-4 rounded-md mt-4">
+        <p class="font-semibold text-destructive">Error: {error}</p>
+      </div>
+    )
+  }
+
+  {
+    !directModelAvailable && !error && (
+      <div class="bg-amber-100 dark:bg-amber-950/30 p-4 rounded-md mt-4">
+        <h4 class="font-semibold">Direct Model Integration Not Available</h4>
+        <p class="mt-2">
+          This demo requires direct integration with the MentalLLaMA-13B model.
+          Please ensure the following environment variables are set:
+        </p>
+        <ul class="list-disc list-inside mt-2">
+          <li>USE_MENTAL_LLAMA_13B_MODEL=true</li>
+          <li>MENTAL_LLAMA_13B_API_URL=&lt;api_url&gt;</li>
+          <li>MENTAL_LLAMA_13B_API_KEY=&lt;api_key&gt;</li>
+          <li>MENTAL_LLAMA_13B_MODEL_NAME=&lt;model_name&gt;</li>
+        </ul>
+      </div>
+    )
+  }
+
+  {
+    directModelAvailable && modelTier !== '13B' && (
+      <div class="bg-amber-100 dark:bg-amber-950/30 p-4 rounded-md mt-4">
+        <h4 class="font-semibold">Using {modelTier} Model</h4>
+        <p class="mt-2">
+          This demo is configured to use the MentalLLaMA-13B model, but the{' '}
+          {modelTier} model is currently active. Check your environment
+          configuration to enable the 13B model.
+        </p>
+      </div>
+    )
+  }
+
+  {
+    directModelAvailable && (
+      <div class="mt-6">
+        <div class="bg-muted p-4 rounded-md">
+          <h4 class="font-semibold">Demo Text</h4>
+          <p class="mt-2 italic">"{demoText}"</p>
+        </div>
+
+        {analysis && (
+          <div class="mt-6 space-y-6">
+            <div>
+              <h4 class="text-lg font-semibold">Analysis Results</h4>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3">
+                <div class="bg-muted p-4 rounded-md">
+                  <div class="text-sm font-medium">
+                    Mental Health Issue Detected
+                  </div>
+                  <div class="text-xl font-bold mt-1">
+                    {analysis.hasMentalHealthIssue ? (
+                      <span class="text-destructive">Yes</span>
+                    ) : (
+                      <span class="text-green-600 dark:text-green-400">No</span>
+                    )}
+                  </div>
+                </div>
+
+                <div class="bg-muted p-4 rounded-md">
+                  <div class="text-sm font-medium">Category</div>
+                  <div class="text-xl font-bold mt-1">
+                    {analysis.mentalHealthCategory}
+                  </div>
+                </div>
+
+                <div class="bg-muted p-4 rounded-md">
+                  <div class="text-sm font-medium">Confidence</div>
+                  <div class="text-xl font-bold mt-1">{confidencePercent}</div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="text-lg font-semibold">Basic Explanation</h4>
+              <div class="bg-muted p-4 rounded-md mt-3">
+                <p>{analysis.explanation}</p>
+              </div>
+            </div>
+
+            {analysis.supportingEvidence &&
+              analysis.supportingEvidence.length > 0 && (
+                <div>
+                  <h4 class="text-lg font-semibold">Supporting Evidence</h4>
+                  <ul class="bg-muted p-4 rounded-md mt-3 list-disc list-inside">
+                    {analysis.supportingEvidence.map((evidence: string) => (
+                      <li class="my-1">"{evidence}"</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+            {enhancedAnalysis && (
+              <div>
+                <h4 class="text-lg font-semibold">
+                  Enhanced Explanation (Expert-Guided)
+                </h4>
+                <div class="bg-muted p-4 rounded-md mt-3">
+                  <p>{enhancedAnalysis.explanation}</p>
+                </div>
+              </div>
+            )}
+
+            {explanationQuality && typeof explanationQuality === 'object' && (
+              <div>
+                <h4 class="text-lg font-semibold">
+                  Explanation Quality Assessment
+                </h4>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3">
+                  <div class="bg-muted p-4 rounded-md">
+                    <div class="text-sm font-medium">Fluency</div>
+                    <div class="text-xl font-bold mt-1">
+                      {typeof explanationQuality.fluency === 'number'
+                        ? explanationQuality.fluency.toFixed(1)
+                        : 'N/A'}
+                      /5
+                    </div>
+                  </div>
+
+                  <div class="bg-muted p-4 rounded-md">
+                    <div class="text-sm font-medium">Completeness</div>
+                    <div class="text-xl font-bold mt-1">
+                      {typeof explanationQuality.completeness === 'number'
+                        ? explanationQuality.completeness.toFixed(1)
+                        : 'N/A'}
+                      /5
+                    </div>
+                  </div>
+
+                  <div class="bg-muted p-4 rounded-md">
+                    <div class="text-sm font-medium">Reliability</div>
+                    <div class="text-xl font-bold mt-1">
+                      {typeof explanationQuality.reliability === 'number'
+                        ? explanationQuality.reliability.toFixed(1)
+                        : 'N/A'}
+                      /5
+                    </div>
+                  </div>
+
+                  <div class="bg-muted p-4 rounded-md">
+                    <div class="text-sm font-medium">Overall</div>
+                    <div class="text-xl font-bold mt-1">
+                      {typeof explanationQuality.overall === 'number'
+                        ? explanationQuality.overall.toFixed(1)
+                        : 'N/A'}
+                      /5
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  <div class="flex justify-between mt-6 pt-4 border-t">
+    <div class="text-sm text-muted-foreground">
+      <p>Using MentalLLaMA-{modelTier || '?'} Model</p>
+    </div>
+    <a
+      href="/api/ai/mental-health/analyze"
+      class="text-sm text-primary hover:underline"
+    >
+      Open API Docs
+    </a>
+  </div>
+</div>
+
+<style>
+  .mental-llama-demo {
+    --card-foreground: hsl(0 0% 3.9%);
+    --muted: hsl(0 0% 96.1%);
+    --muted-foreground: hsl(0 0% 45.1%);
+    --destructive: hsl(0 84.2% 60.2%);
+    --primary: hsl(221.2 83.2% 53.3%);
+  }
+
+  :global(.dark) .mental-llama-demo {
+    --card-foreground: hsl(0 0% 98%);
+    --muted: hsl(0 0% 14.9%);
+    --muted-foreground: hsl(0 0% 63.9%);
+    --destructive: hsl(0 62.8% 60.6%);
+    --primary: hsl(217.2 91.2% 59.8%);
+  }
+</style>

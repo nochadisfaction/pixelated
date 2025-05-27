@@ -1,0 +1,133 @@
+---
+import { getCollection } from 'astro:content'
+import { ViewTransitions } from 'astro:transitions'
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { formatDate } from '@/lib/utils'
+
+// Define types for use in the template
+type BlogPost = {
+  data: {
+    draft: boolean
+    pubDate: Date
+    category?: string
+    tags?: string[]
+    featured?: boolean
+    image?: { url: string; alt: string }
+    title: string
+    description: string
+    slug: string
+    readingTime?: number
+  }
+  id: string
+  slug: string
+}
+
+// Get all blog posts and sort by date
+const posts = await getCollection('blog', ({ data }: BlogPost) => {
+  return import.meta.env.PROD ? !data.draft : true
+})
+
+const sortedPosts = posts.sort(
+  (a: BlogPost, b: BlogPost) =>
+    b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+)
+
+// Group posts by year
+const postsByYear = sortedPosts.reduce(
+  (acc: Record<string, BlogPost[]>, post: BlogPost) => {
+    const year = new Date(post.data.pubDate).getFullYear().toString()
+    if (!acc[year]) {
+      acc[year] = []
+    }
+    acc[year].push(post)
+    return acc
+  },
+  {},
+)
+
+// Get years in descending order
+const years = Object.keys(postsByYear).sort((a, b) => parseInt(b) - parseInt(a))
+
+// Format date like: Oct 4 · 4 min
+function formatPostDate(date: Date, readingTime?: number): string {
+  const monthDay = date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+  })
+  return readingTime ? `${monthDay} · ${readingTime} min` : monthDay
+}
+
+const title = 'Blog'
+const description = 'Articles about mental health, therapy, and technology'
+const bgType = 'rose'
+---
+
+<BaseLayout {title} {description} {bgType}>
+  <div class="max-w-prose mx-auto">
+    <h1 class="text-4xl font-bold mb-8">{title}</h1>
+
+    <div class="prose dark:prose-invert">
+      <!-- Posts by Year -->
+      {
+        years.map((year) => (
+          <div class="mb-8">
+            <h2 class="text-2xl mb-4">{year}</h2>
+            <ul class="space-y-3 list-none pl-0">
+              {postsByYear[year].map((post: BlogPost) => (
+                <li class="flex justify-between items-baseline mb-2 leading-relaxed">
+                  <a
+                    href={`/blog/${post.slug}`}
+                    class="flex-1 text-primary hover:underline text-lg"
+                    transition:name={`post-title-${post.slug}`}
+                  >
+                    {post.data.title}
+                  </a>
+                  <span class="text-sm text-gray-500 dark:text-gray-400 op-80 ml-4">
+                    {formatPostDate(post.data.pubDate, post.data.readingTime)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+
+      <!-- Tags Section -->
+      <div class="mt-16">
+        <div class="flex justify-between items-center">
+          <div class="flex gap-2">
+            <a
+              href="/blog"
+              class="text-sm px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            >
+              all posts
+            </a>
+            <a
+              href="/blog/tags"
+              class="text-sm px-3 py-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              tags
+            </a>
+          </div>
+          <a
+            href="/rss.xml"
+            class="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+          >
+            RSS
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  /* Use UnoCSS compatible styling */
+  li {
+    transition: transform 0.2s ease;
+  }
+
+  li:hover {
+    transform: translateX(4px);
+  }
+</style>
