@@ -10,6 +10,61 @@ import { getLogger } from '../../../lib/logging'
 const logger = getLogger()
 
 /**
+ * GET handler - returns information about the export conversation endpoint
+ */
+export const GET: APIRoute = async ({ request }) => {
+  try {
+    // Verify authentication
+    const session = await getSession(request)
+    if (!session) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    }
+
+    // Return endpoint information
+    return new Response(
+      JSON.stringify({
+        name: 'Conversation Export API',
+        description: 'Endpoint for exporting therapy conversations',
+        methods: ['POST'],
+        version: '1.0.0',
+        status: 'active',
+        authentication: 'required',
+        supportedFormats: ['json', 'pdf', 'encrypted_archive'],
+        encryptionModes: ['none', 'standard', 'hipaa', 'fhe'],
+        features: [
+          'HIPAA-compliant encryption',
+          'Access control validation',
+          'Audit trail logging',
+          'Metadata inclusion',
+          'Verification tokens',
+        ],
+        requiredParameters: ['sessionId'],
+        optionalParameters: ['format', 'encryptionMode'],
+      }),
+      {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      },
+    )
+  } catch (error) {
+    logger.error('Export API info error:', error)
+    return new Response(
+      JSON.stringify({
+        error: 'Failed to get endpoint information',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      },
+    )
+  }
+}
+
+/**
  * API endpoint for exporting therapy conversations
  * POST /api/export/conversation
  */

@@ -1,6 +1,6 @@
-import type { AuditMetadata } from '@/lib/audit/log'
+import type { AuditMetadata } from '@/lib/audit/types'
 import type { APIRoute } from 'astro'
-import { createAuditLog } from '@/lib/audit/log'
+import { createAuditLog } from '@/lib/audit'
 import { getAIUsageStats } from '../../../lib/ai/analytics'
 import { handleApiError } from '../../../lib/ai/error-handling'
 import { getSession } from '../../../lib/auth/session'

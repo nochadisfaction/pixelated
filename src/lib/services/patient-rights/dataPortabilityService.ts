@@ -76,6 +76,16 @@ interface PatientData {
   [key: string]: object | undefined
 }
 
+// Define the PatientProfile interface
+export interface PatientProfile {
+  patient_id?: string
+  last_name?: string
+  first_name?: string
+  date_of_birth?: string
+  gender?: string
+  // Add other properties as needed based on actual patient_profiles table structure
+}
+
 // Define the export status types
 export type ExportStatus =
   | 'pending'
@@ -1633,13 +1643,13 @@ const mockDb = {
     },
   },
   patientUser: {
-    findFirst: (_params: { where: any }): Promise<PatientUser | null> => {
+    findFirst: (_params: { where: unknown }): Promise<PatientUser | null> => {
       return Promise.resolve(null)
     },
   },
   providerPatientAccess: {
     findFirst: (_params: {
-      where: any
+      where: unknown
     }): Promise<ProviderPatientAccess | null> => {
       return Promise.resolve(null)
     },

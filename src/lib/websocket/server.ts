@@ -1,5 +1,6 @@
 import type { ChatMessage } from '@/types/chat'
 import { WebSocketServer, WebSocket } from 'ws'
+import type { Server } from 'node:http'
 import { fheService } from '../fhe'
 import { EncryptionMode } from '../fhe/types'
 import { getLogger } from '../logging'
@@ -18,7 +19,7 @@ class TherapyChatWebSocketServer {
   private clients: Map<string, WebSocket>
   private sessions: Map<string, Set<string>>
 
-  constructor(server: any) {
+  constructor(server: Server) {
     this.wss = new WebSocketServer({ server })
     this.clients = new Map()
     this.sessions = new Map()
@@ -71,15 +72,23 @@ class TherapyChatWebSocketServer {
     // If message is encrypted, process with FHE
     if (message.encrypted) {
       try {
-        await fheService.initialize({ mode: EncryptionMode.FHE })
+        await fheService.initialize({
+          mode: EncryptionMode.FHE,
+          keySize: 2048,
+          securityLevel: 'tc128',
+        })
 
         // Handle mock implementation
         try {
           // Try to use processEncrypted if available
-          const result = await (fheService as any).processEncrypted(
-            message.data as string,
-            'CHAT',
-          )
+          const result = await (
+            fheService as unknown as {
+              processEncrypted: (
+                data: string,
+                operation: string,
+              ) => Promise<{ data: string }>
+            }
+          ).processEncrypted(message.data as string, 'CHAT')
           message.data = result.data
         } catch (e) {
           // Fallback for mock implementation

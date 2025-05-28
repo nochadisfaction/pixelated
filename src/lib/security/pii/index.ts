@@ -111,7 +111,13 @@ class PIIDetectionService {
         /\bMRN:?\s*\d+\b/gi,
         /\bMedical Record:?\s*\d+\b/gi,
       ],
-      [PIIType.PATIENT_ID]: [/\bPatient ID:?\s*\d+\b/gi, /\bPID:?\s*\d+\b/gi],
+      [PIIType.PATIENT_ID]: [
+        /\bPatient ID:?\s*\d+\b/gi, 
+        /\bPID:?\s*\d+\b/gi,
+        /\bPatient ID:?\s*[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi, // UUID format
+        /\bPID:?\s*[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi, // UUID format
+        /\b(?:patient[_-]?(?:id|uuid|identifier)|p(?:atient)?id):?\s*[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi // UUID with patient context
+      ],
       [PIIType.INSURANCE_ID]: [
         /\bInsurance ID:?\s*[\w-]+\b/gi,
         /\bPolicy Number:?\s*[\w-]+\b/gi,
@@ -594,6 +600,8 @@ class PIIDetectionService {
 
 // Export a singleton instance
 export const piiDetectionService = PIIDetectionService.getInstance()
+
+export { PIIDetectionService };
 
 // Export default for convenience
 export default piiDetectionService

@@ -102,6 +102,7 @@ export function Todo({ title = 'Todo List', initialTodos = [] }: TodoProps) {
           onChange={handleInputChange}
           onKeyPress={handleKeyPress}
         />
+
         <button id="add-todo-btn" onClick={addTodo}>
           Add
         </button>

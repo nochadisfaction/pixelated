@@ -209,6 +209,21 @@ export class EmotionLlamaProvider implements TherapyAIProvider {
     text: string,
     options?: TherapyAIOptions,
   ): Promise<EmotionAnalysis> {
+    // Optimization: Handle empty or whitespace-only text input
+    if (!text || text.trim() === '') {
+      logger.debug('analyzeEmotions: Empty text received, returning default analysis.');
+      return {
+        timestamp: new Date(),
+        emotions: [],
+        overallSentiment: 0, // Neutral
+        riskFactors: [],
+        contextualFactors: [],
+        requiresAttention: false,
+        // Ensure mentalHealth property is also initialized if it's non-optional in the live interface
+        // For now, assuming it can be omitted or is optional based on typical interface design
+      };
+    }
+
     try {
       const securityOptions: SecurityOptions = {
         useEncryption: options?.securityOptions?.useEncryption || false,

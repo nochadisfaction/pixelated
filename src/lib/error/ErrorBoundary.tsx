@@ -57,6 +57,7 @@ export class ErrorBoundary extends Component<Props, State> {
               this.state.error?.message || 'An unexpected error occurred'
             }
           />
+
           <div className="mt-4 flex justify-end">
             <Button onClick={this.handleReset}>Try Again</Button>
           </div>

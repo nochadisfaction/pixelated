@@ -69,6 +69,7 @@ export const ServiceWorkerUpdater: React.FC<ServiceWorkerUpdaterProps> = ({
             </div>
           </div>
         ),
+
         {
           duration: Infinity,
           position: 'bottom-right',

@@ -1,3 +1,5 @@
+export const prerender = false
+
 import { createLogger } from '../../../utils/logger'
 import { protectRoute } from '../../../lib/auth/serverAuth'
 import { AIRepository } from '../../../lib/db/ai/repository'

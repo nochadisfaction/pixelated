@@ -493,6 +493,7 @@ function ProfessionalTherapistWorkspace() {
                   checked={storeState.mentalHealthAnalysisEnabled}
                   onCheckedChange={toggleMentalHealthAnalysis}
                 />
+
                 <Label htmlFor="mh-analysis" className="text-sm text-green-300">
                   Cognitive Assessment
                 </Label>
@@ -503,6 +504,7 @@ function ProfessionalTherapistWorkspace() {
                   checked={storeState.expertGuidanceEnabled}
                   onCheckedChange={toggleExpertGuidance}
                 />
+
                 <Label
                   htmlFor="expert-guidance"
                   className="text-sm text-green-300"
@@ -568,6 +570,7 @@ function ProfessionalTherapistWorkspace() {
               checked={usePatientSimulation}
               onCheckedChange={setUsePatientSimulation}
             />
+
             <Label htmlFor="patient-simulation-toggle">
               Use Patient Simulation
             </Label>
@@ -591,6 +594,7 @@ function ProfessionalTherapistWorkspace() {
                 onStyleConfigChange={updateStyleConfig}
                 className="mb-4"
               />
+
               {isPatientModelLoading && (
                 <div className="text-blue-500">Loading patient models...</div>
               )}
@@ -663,6 +667,7 @@ function ProfessionalTherapistWorkspace() {
                 presentingIssues: currentModel?.presentingIssues || [
                   selectedScenario.description,
                 ],
+
                 primaryDiagnosis:
                   currentModel?.diagnosisInfo?.primaryDiagnosis ||
                   selectedScenario.name,
@@ -699,6 +704,7 @@ function ProfessionalTherapistWorkspace() {
               onStyleConfigChange={updateStyleConfig}
               className="mb-4"
             />
+
             <div className="mt-4 flex justify-end space-x-2">
               <button
                 onClick={() => setShowPatientModelSelector(false)}

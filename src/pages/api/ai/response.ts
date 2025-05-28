@@ -7,9 +7,74 @@ import type {
 } from '../../../lib/ai/models/ai-types'
 import { ResponseGenerationService } from '../../../lib/ai/services/response-generation'
 import { createTogetherAIService } from '../../../lib/ai/services/together'
-import { createAuditLog } from '../../../lib/audit/log'
+import { createAuditLog } from '../../../lib/audit'
 import { getSession } from '../../../lib/auth/session'
 import { aiRepository } from '../../../lib/db/ai/index'
+
+/**
+ * GET handler - returns information about the AI response endpoint
+ */
+export const GET: APIRoute = async ({ request }) => {
+  try {
+    // Verify session for security
+    const session = await getSession(request)
+    if (!session) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    }
+
+    // Return endpoint information
+    return new Response(
+      JSON.stringify({
+        name: 'AI Therapeutic Response API',
+        description: 'Endpoint for generating therapeutic AI responses',
+        methods: ['POST'],
+        version: '1.0.0',
+        status: 'active',
+        authentication: 'required',
+        supportedModels: [
+          'mistralai/Mixtral-8x7B-Instruct-v0.2',
+          'gpt-4',
+          'claude-3',
+        ],
+        parameters: {
+          required: ['messages or currentMessage'],
+          optional: [
+            'model',
+            'temperature',
+            'maxResponseTokens',
+            'instructions',
+          ],
+        },
+        features: [
+          'therapeutic response generation',
+          'conversation context awareness',
+          'audit logging',
+          'token usage tracking',
+        ],
+        defaultModel: 'mistralai/Mixtral-8x7B-Instruct-v0.2',
+        maxTokens: 1024,
+      }),
+      {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      },
+    )
+  } catch (error) {
+    return new Response(
+      JSON.stringify({
+        error: 'Failed to get endpoint information',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      },
+    )
+  }
+}
 
 /**
  * API route for therapeutic response generation

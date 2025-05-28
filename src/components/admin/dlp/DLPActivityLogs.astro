@@ -14,7 +14,6 @@ interface DLPActivityLog {
   eventType:
     | typeof AuditEventType.DLP_ALLOWED
     | typeof AuditEventType.DLP_BLOCKED
-    | typeof AuditEventType.DLP_REDACTED
     | typeof AuditEventType.SECURITY_ALERT
   triggeredRules: string[]
   destination?: string
@@ -42,13 +41,14 @@ const formatDate = (dateString: string) => {
   }).format(date)
 }
 
+// Define the allowed badge variants locally
+type BadgeVariant = 'default' | 'secondary' | 'destructive' | 'outline';
+
 // Get badge for event type
-const getEventBadge = (eventType: string) => {
+const getEventBadge = (eventType: string): { variant: BadgeVariant, text: string } => {
   switch (eventType) {
     case AuditEventType.DLP_ALLOWED:
-      return { variant: 'outline', text: 'Allowed' }
-    case AuditEventType.DLP_REDACTED:
-      return { variant: 'secondary', text: 'Redacted' }
+      return { variant: 'secondary', text: 'Allowed (Redacted)' }
     case AuditEventType.DLP_BLOCKED:
       return { variant: 'destructive', text: 'Blocked' }
     case AuditEventType.SECURITY_ALERT:
@@ -64,8 +64,8 @@ const getEventBadge = (eventType: string) => {
 
   {
     logs.length === 0 ? (
-      <Card class="mt-4">
-        <CardContent class="py-8">
+      <Card className="mt-4">
+        <CardContent className="py-8">
           <p class="text-center text-muted-foreground">
             No DLP activity logs found.
           </p>
@@ -73,14 +73,14 @@ const getEventBadge = (eventType: string) => {
       </Card>
     ) : (
       <div class="space-y-4 mt-4">
-        {logs.map((log) => {
+        {logs.map((log: DLPActivityLog) => {
           const eventBadge = getEventBadge(log.eventType)
           return (
             <Card key={log.id}>
-              <CardHeader class="pb-2">
+              <CardHeader className="pb-2">
                 <div class="flex justify-between items-start">
                   <div>
-                    <CardTitle class="text-base font-medium">
+                    <CardTitle className="text-base font-medium">
                       {log.action}
                     </CardTitle>
                     <div class="text-sm text-muted-foreground">
@@ -90,15 +90,17 @@ const getEventBadge = (eventType: string) => {
                   <Badge variant={eventBadge.variant}>{eventBadge.text}</Badge>
                 </div>
               </CardHeader>
-              <CardContent class="pt-0">
+              <CardContent className="pt-0">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                   <div>
                     <p class="text-sm font-medium">Triggered Rules:</p>
                     <div class="flex flex-wrap gap-1 mt-1">
-                      {log.triggeredRules.map((rule) => (
-                        <Badge variant="outline" key={rule}>
-                          {rule}
-                        </Badge>
+                      {log.triggeredRules.map((rule: string) => (
+                        <span>
+                          <Badge variant="outline">
+                            {rule}
+                          </Badge>
+                        </span>
                       ))}
                     </div>
                   </div>

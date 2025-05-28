@@ -1,6 +1,7 @@
 ---
 import LogoButton from '@/components/widgets/LogoButton.astro'
 import DarkThemeToggle from '@/components/ui/DarkThemeToggle.astro'
+import Hamburger from '@/components/Hamburger.astro'
 import { UI } from '@/config'
 import type { SocialLink } from '@/types'
 
@@ -8,22 +9,25 @@ import type { SocialLink } from '@/types'
 const navItems = [
   { name: 'Features', link: '/features' },
   { name: 'Blog', link: '/blog' },
-  { name: 'Dashboard', link: '/dashboard' },
+  { name: 'Dashboard', link: '/dashboard' }
 ]
 
 // Use proper type assertion for social links
 const socialLinks = (UI.socialLinks || []) as SocialLink[]
 ---
 
-<header
-  class="translucent-header flex items-center justify-between p-6 w-full absolute top-0 left-0 right-0 z-10"
+<nav
+  role="navigation"
+  aria-label="Main navigation"
+  class="flex items-center justify-between p-12 w-full absolute top-0 left-6 right-12 z-10"
 >
   <div class="flex items-center">
     <LogoButton />
   </div>
 
-  <nav class="flex items-center gap-6">
-    <ul class="flex items-center gap-6">
+  <div class="flex items-center gap-6">
+    <!-- Desktop Navigation -->
+    <ul class="hidden md:flex items-center gap-6">
       {
         navItems.map((item) => (
           <li>
@@ -44,7 +48,7 @@ const socialLinks = (UI.socialLinks || []) as SocialLink[]
               href={item.link}
               target="_blank"
               rel="noopener noreferrer"
-              class="text-gray-400 hover:text-white transition-colors social-icon"
+              class="text-gray-400 hover:text-white transition-colors"
               aria-label={item.title}
             >
               <i class={item.icon as any} />
@@ -55,26 +59,90 @@ const socialLinks = (UI.socialLinks || []) as SocialLink[]
     </ul>
 
     <DarkThemeToggle />
-  </nav>
-</header>
+    
+    <!-- Mobile Menu Toggle -->
+    <div class="md:hidden">
+      <Hamburger />
+    </div>
+  </div>
 
-<style>
-  .translucent-header {
-    background: rgba(255, 255, 255, 0.065); /* 50% more translucent */
-    box-shadow: 0 2px 8px 0 rgba(80, 0, 80, 0.07);
-    backdrop-filter: blur(8px) saturate(1.2);
-    -webkit-backdrop-filter: blur(8px) saturate(1.2);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-  }
+  <!-- Mobile Navigation Menu -->
+  <div id="mobile-menu" class="hidden md:hidden absolute top-full left-0 right-0 bg-gray-900 bg-opacity-95 backdrop-blur-sm">
+    <ul class="flex flex-col items-center py-6 space-y-4">
+      {
+        navItems.map((item) => (
+          <li>
+            <a
+              href={item.link}
+              class="text-lg font-medium tracking-wide text-gray-400 hover:text-white transition-colors"
+            >
+              {item.name}
+            </a>
+          </li>
+        ))
+      }
 
-  .social-icon {
-    font-size: 0.6em; /* Make social icons 60% of their original size */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+      <li class="flex items-center gap-4 pt-4">
+        {
+          socialLinks.map((item) => (
+            <a
+              href={item.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-gray-400 hover:text-white transition-colors"
+              aria-label={item.title}
+            >
+              <i class={item.icon as any} />
+            </a>
+          ))
+        }
+      </li>
+    </ul>
+  </div>
+</nav>
 
-  .social-icon i {
-    transform: scale(0.6); /* Scale down the icons to 60% */
-  }
-</style>
+<script>
+  // Mobile menu toggle functionality
+  document.addEventListener('DOMContentLoaded', () => {
+    const hamburger = document.querySelector('.hamburger')
+    const mobileMenu = document.getElementById('mobile-menu')
+
+    if (!hamburger || !mobileMenu) {
+      console.warn('Mobile menu elements not found')
+      return
+    }
+
+    hamburger.addEventListener('click', (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      
+      // Toggle the hidden class
+      mobileMenu.classList.toggle('hidden')
+      
+      // Update aria-expanded
+      const isExpanded = !mobileMenu.classList.contains('hidden')
+      hamburger.setAttribute('aria-expanded', isExpanded.toString())
+      
+      console.log('Mobile menu toggled:', isExpanded ? 'opened' : 'closed')
+    })
+
+    // Close mobile menu when clicking on a link
+    const mobileLinks = mobileMenu.querySelectorAll('a')
+    mobileLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenu.classList.add('hidden')
+        hamburger.setAttribute('aria-expanded', 'false')
+        console.log('Mobile menu closed via link click')
+      })
+    })
+
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', (event) => {
+      const target = event.target as Element
+      if (!hamburger.contains(target) && !mobileMenu.contains(target)) {
+        mobileMenu.classList.add('hidden')
+        hamburger.setAttribute('aria-expanded', 'false')
+      }
+    })
+  })
+</script>

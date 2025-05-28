@@ -10,7 +10,7 @@ const logger = getLogger()
  * Redis service implementation with connection pooling and health checks
  */
 export class RedisService extends EventEmitter implements IRedisService {
-  [x: string]: any
+  [x: string]: unknown
   getClient(): Redis | import('.').RedisService {
     throw new Error('Method not implemented.')
   }
@@ -239,12 +239,12 @@ export class RedisService extends EventEmitter implements IRedisService {
         store.set(key, num.toString())
         return num
       },
-      pttl: async () => -1, // No TTL in mock
+      pttl: async () => -1,
       info: async () => 'connected_clients:1\nblocked_clients:0',
-      publish: async () => 0, // No subscribers in mock
+      publish: async () => 0,
       quit: async () => 'OK',
       connect: async () => {},
-      on: (event: string, callback: Function) => {
+      on: (event: string, callback: (...args: unknown[]) => void) => {
         // Emit the event immediately to simulate connection events
         if (['connect', 'ready'].includes(event)) {
           setTimeout(() => callback(), 0)
@@ -252,7 +252,7 @@ export class RedisService extends EventEmitter implements IRedisService {
         return this
       }, // Basic event handling for mock
       pipeline: () => {
-        const commands: { cmd: string; args: any[] }[] = []
+        const commands: { cmd: string; args: unknown[] }[] = []
         return {
           del: (key: string) => {
             commands.push({ cmd: 'del', args: [key] })
@@ -261,7 +261,7 @@ export class RedisService extends EventEmitter implements IRedisService {
           exec: async () => {
             return commands.map((cmd) => {
               if (cmd.cmd === 'del') {
-                const deleted = store.delete(cmd.args[0])
+                const deleted = store.delete(cmd.args[0] as string)
                 return [null, deleted ? 1 : 0]
               }
               return [null, null]

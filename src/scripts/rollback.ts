@@ -52,8 +52,8 @@ async function sendNotification(message: string, environment: string) {
           'Authorization': `Bearer ${process.env.EMAIL_API_KEY}`,
         },
         body: JSON.stringify({
-          from: 'alerts@gradiant.health',
-          to: 'devops@gradiant.health',
+          from: 'alerts@pixelated.health',
+          to: 'devops@pixelated.health',
           subject: `🚨 Rollback Alert: ${environment}`,
           html: `<p><strong>ROLLBACK ALERT</strong></p><p>${message}</p><p>Environment: ${environment}</p>`,
         }),

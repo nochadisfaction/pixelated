@@ -302,6 +302,7 @@ export function ResearchConsentForm({
                       }
                       className="mt-1 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                     />
+
                     <label
                       htmlFor={option.id}
                       className="ml-2 block text-sm text-gray-700"

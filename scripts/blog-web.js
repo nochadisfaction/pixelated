@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * 🌟 Gradiant Blog Web Interface 🌟
+ * 🌟 Pixelated Blog Web Interface 🌟
  * A simple web-based UI for blog management
  */
 

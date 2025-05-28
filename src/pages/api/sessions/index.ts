@@ -4,6 +4,8 @@ import { protectRoute } from '../../../lib/auth/serverAuth'
 import { AIRepository } from '../../../lib/db/ai/repository'
 import type { TherapySession } from '../../../lib/ai/interfaces/therapy'
 
+export const prerender = false
+
 const logger = createLogger({ context: 'sessions-api' })
 
 // HTTP status codes

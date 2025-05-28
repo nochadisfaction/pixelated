@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * 🌟 Gradiant Blog Helper CLI 🌟
+ * 🌟 Pixelated Blog Helper CLI 🌟
  * A lightweight command-line interface for the blog publishing system
  */
 

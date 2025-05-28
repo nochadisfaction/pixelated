@@ -12,6 +12,7 @@ import {
   EncryptionMode,
   FHEOperation as FHEOpType,
   type FHEServiceOptions,
+  type FHEServiceInterface,
 } from './types'
 import { SealSchemeType } from './seal-types'
 
@@ -98,7 +99,7 @@ const DEFAULT_CONFIG: AnalyticsConfig = {
 export class FHEAnalyticsService {
   private static instance: FHEAnalyticsService
   private initialized = false
-  private fheService: any
+  private fheService!: FHEServiceInterface
 
   /**
    * Private constructor to enforce singleton pattern
@@ -142,7 +143,7 @@ export class FHEAnalyticsService {
 
       this.initialized = true
       logger.info('FHE Analytics service initialized with Microsoft SEAL', {
-        mode: this.fheService.getEncryptionMode(),
+        mode: this.fheService.getMode(),
         scheme: serviceOptions.sealScheme,
       })
     } catch (error) {
@@ -184,7 +185,7 @@ export class FHEAnalyticsService {
                 message.content.startsWith('FHE:')
               ) {
                 // Process sentiment analysis on the encrypted message
-                const sentimentResult = await this.fheService.processEncrypted(
+                const sentimentResult = await this.fheService.processEncrypted!(
                   message.content,
                   mapOperation(FHEOperation.SENTIMENT),
                 )
@@ -197,8 +198,10 @@ export class FHEAnalyticsService {
                 }
               } else {
                 // For unencrypted messages, we need to encrypt first
-                const encrypted = await this.fheService.encrypt(message.content)
-                const sentimentResult = await this.fheService.processEncrypted(
+                const encrypted = await this.fheService.encryptData(
+                  message.content,
+                )
+                const sentimentResult = await this.fheService.processEncrypted!(
                   encrypted,
                   mapOperation(FHEOperation.SENTIMENT),
                 )
@@ -246,16 +249,16 @@ export class FHEAnalyticsService {
         type: AnalyticsType.SENTIMENT_TREND,
         timestamp: Date.now(),
         data: analyticsData as Record<string, unknown>,
-        encryptionMode: this.fheService.getEncryptionMode() as EncryptionMode,
+        encryptionMode: this.fheService.getMode() as EncryptionMode,
         isEncrypted: false,
       }
 
       if (config.encryptResults) {
         // Convert the encrypted string to a record to satisfy the type
-        const encryptedData = await this.fheService.encrypt(
+        const encryptedDataString = await this.fheService.encryptData(
           JSON.stringify(analyticsData),
         )
-        finalResult.data = { encrypted: encryptedData } as Record<
+        finalResult.data = { encrypted: encryptedDataString } as Record<
           string,
           unknown
         >
@@ -297,10 +300,10 @@ export class FHEAnalyticsService {
               // Handle already encrypted messages
               const messageContent = message.encrypted
                 ? message.content
-                : await this.fheService.encrypt(message.content)
+                : await this.fheService.encryptData(message.content)
 
               // Use FHE to categorize the message
-              const topicResult = await this.fheService.processEncrypted(
+              const topicResult = await this.fheService.processEncrypted!(
                 messageContent,
                 mapOperation(FHEOperation.CATEGORIZE),
                 {
@@ -349,16 +352,16 @@ export class FHEAnalyticsService {
         type: AnalyticsType.TOPIC_CLUSTERING,
         timestamp: Date.now(),
         data: analyticsData as Record<string, unknown>,
-        encryptionMode: this.fheService.getEncryptionMode() as EncryptionMode,
+        encryptionMode: this.fheService.getMode() as EncryptionMode,
         isEncrypted: false,
       }
 
       if (config.encryptResults) {
         // Convert the encrypted string to a record to satisfy the type
-        const encryptedData = await this.fheService.encrypt(
+        const encryptedDataString = await this.fheService.encryptData(
           JSON.stringify(analyticsData),
         )
-        finalResult.data = { encrypted: encryptedData } as Record<
+        finalResult.data = { encrypted: encryptedDataString } as Record<
           string,
           unknown
         >
@@ -405,10 +408,10 @@ export class FHEAnalyticsService {
               // Handle already encrypted messages
               const messageContent = message.encrypted
                 ? message.content
-                : await this.fheService.encrypt(message.content)
+                : await this.fheService.encryptData(message.content)
 
               // Use custom operation to search for risk patterns
-              const riskResult = await this.fheService.processEncrypted(
+              const riskResult = await this.fheService.processEncrypted!(
                 messageContent,
                 mapOperation(FHEOperation.CUSTOM),
                 {
@@ -458,16 +461,16 @@ export class FHEAnalyticsService {
         type: AnalyticsType.RISK_ASSESSMENT,
         timestamp: Date.now(),
         data: analyticsData as Record<string, unknown>,
-        encryptionMode: this.fheService.getEncryptionMode() as EncryptionMode,
+        encryptionMode: this.fheService.getMode() as EncryptionMode,
         isEncrypted: false,
       }
 
       if (config.encryptResults) {
         // Convert the encrypted string to a record to satisfy the type
-        const encryptedData = await this.fheService.encrypt(
+        const encryptedDataString = await this.fheService.encryptData(
           JSON.stringify(analyticsData),
         )
-        finalResult.data = { encrypted: encryptedData } as Record<
+        finalResult.data = { encrypted: encryptedDataString } as Record<
           string,
           unknown
         >
@@ -526,14 +529,14 @@ export class FHEAnalyticsService {
             // Encrypt messages if not already encrypted
             const therapistContent = exchange.therapist.encrypted
               ? exchange.therapist.content
-              : await this.fheService.encrypt(exchange.therapist.content)
+              : await this.fheService.encryptData(exchange.therapist.content)
 
             const clientContent = exchange.client.encrypted
               ? exchange.client.content
-              : await this.fheService.encrypt(exchange.client.content)
+              : await this.fheService.encryptData(exchange.client.content)
 
             // Analyze therapist intervention approach
-            const interventionType = await this.fheService.processEncrypted(
+            const interventionType = await this.fheService.processEncrypted!(
               therapistContent,
               mapOperation(FHEOperation.CATEGORIZE),
               {
@@ -548,7 +551,7 @@ export class FHEAnalyticsService {
             )
 
             // Analyze client response sentiment
-            const responseSentiment = await this.fheService.processEncrypted(
+            const responseSentiment = await this.fheService.processEncrypted!(
               clientContent,
               mapOperation(FHEOperation.SENTIMENT),
             )
@@ -588,16 +591,16 @@ export class FHEAnalyticsService {
         type: AnalyticsType.INTERVENTION_EFFECTIVENESS,
         timestamp: Date.now(),
         data: analyticsData as Record<string, unknown>,
-        encryptionMode: this.fheService.getEncryptionMode() as EncryptionMode,
+        encryptionMode: this.fheService.getMode() as EncryptionMode,
         isEncrypted: false,
       }
 
       if (config.encryptResults) {
         // Convert the encrypted string to a record to satisfy the type
-        const encryptedData = await this.fheService.encrypt(
+        const encryptedDataString = await this.fheService.encryptData(
           JSON.stringify(analyticsData),
         )
-        finalResult.data = { encrypted: encryptedData } as Record<
+        finalResult.data = { encrypted: encryptedDataString } as Record<
           string,
           unknown
         >
@@ -671,10 +674,10 @@ export class FHEAnalyticsService {
                 // Encrypt if not already encrypted
                 const messageContent = message.encrypted
                   ? message.content
-                  : await this.fheService.encrypt(message.content)
+                  : await this.fheService.encryptData(message.content)
 
                 // Get emotional categorization
-                const emotionResult = await this.fheService.processEncrypted(
+                const emotionResult = await this.fheService.processEncrypted!(
                   messageContent,
                   mapOperation(FHEOperation.CATEGORIZE),
                   {
@@ -734,16 +737,16 @@ export class FHEAnalyticsService {
         type: AnalyticsType.EMOTIONAL_PATTERNS,
         timestamp: Date.now(),
         data: analyticsData as Record<string, unknown>,
-        encryptionMode: this.fheService.getEncryptionMode() as EncryptionMode,
+        encryptionMode: this.fheService.getMode() as EncryptionMode,
         isEncrypted: false,
       }
 
       if (config.encryptResults) {
         // Convert the encrypted string to a record to satisfy the type
-        const encryptedData = await this.fheService.encrypt(
+        const encryptedDataString = await this.fheService.encryptData(
           JSON.stringify(analyticsData),
         )
-        finalResult.data = { encrypted: encryptedData } as Record<
+        finalResult.data = { encrypted: encryptedDataString } as Record<
           string,
           unknown
         >

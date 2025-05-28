@@ -102,6 +102,7 @@ export interface SealOperationResult extends FHEOperationResult {
 export interface SealContextOptions {
   scheme: SealSchemeType
   params: SealEncryptionParamsOptions
+  defaultScale?: number // Default scale for CKKS encoding/encryption
 }
 
 /**

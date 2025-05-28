@@ -5,9 +5,9 @@ const EMAIL_REGEX = /^[\w.-]+@([\w-]+\.)+[\w-]{2,4}$/
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    let data: any
+    let data: Record<string, unknown>
     try {
-      data = await request.json()
+      data = (await request.json()) as Record<string, unknown>
     } catch (_e) {
       return new Response(
         JSON.stringify({
@@ -21,11 +21,18 @@ export const POST: APIRoute = async ({ request }) => {
     // Validate required fields and their types/formats
     const fieldsToValidate = [
       {
-        name: 'name',
+        name: 'firstName',
         required: true,
         type: 'string',
         minLength: 2,
-        maxLength: 100,
+        maxLength: 50,
+      },
+      {
+        name: 'lastName',
+        required: true,
+        type: 'string',
+        minLength: 2,
+        maxLength: 50,
       },
       {
         name: 'email',
@@ -35,18 +42,16 @@ export const POST: APIRoute = async ({ request }) => {
         maxLength: 100,
       },
       {
-        name: 'subject',
-        required: true,
-        type: 'string',
-        minLength: 5,
-        maxLength: 150,
-      },
-      {
         name: 'message',
         required: true,
         type: 'string',
         minLength: 10,
-        maxLength: 5000,
+        maxLength: 1000,
+      },
+      {
+        name: 'timestamp',
+        required: false,
+        type: 'string',
       },
     ]
 
@@ -125,7 +130,13 @@ export const POST: APIRoute = async ({ request }) => {
     // It's important that any data used in dynamic HTML rendering later is properly escaped/sanitized
     // at the point of rendering to prevent XSS, even with input validation.
 
-    console.log('Contact form submission (validated):', data)
+    console.log('Contact form submission (validated):', {
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      messageLength: typeof data.message === 'string' ? data.message.length : 0,
+      timestamp: data.timestamp,
+    })
 
     // Simulate processing delay
     await new Promise((resolve) => setTimeout(resolve, 500))

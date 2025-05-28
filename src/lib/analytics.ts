@@ -6,7 +6,6 @@
  * Uses differential privacy techniques and aggregation to ensure HIPAA compliance.
  */
 
-import process from 'node:process'
 import { getLogger } from './logging'
 
 // Initialize logger
@@ -79,11 +78,11 @@ const DEFAULT_CONFIG: AnalyticsConfig = {
   enabled: true,
   differentialPrivacyEnabled: true,
   privacyBudget: 1.0, // Epsilon value for differential privacy
-  endpointUrl: process.env.ANALYTICS_ENDPOINT,
+  endpointUrl: import.meta.env.PUBLIC_ANALYTICS_ENDPOINT,
   bufferSize: 20,
   flushIntervalMs: 30000, // 30 seconds
   anonymize: true,
-  debugMode: process.env.NODE_ENV === 'development',
+  debugMode: import.meta.env.DEV,
 }
 
 /**
@@ -268,7 +267,7 @@ export class AnalyticsService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-API-Key': process.env.ANALYTICS_API_KEY || '',
+          'X-API-Key': import.meta.env.PUBLIC_ANALYTICS_API_KEY || '',
         },
         body: JSON.stringify({
           events,

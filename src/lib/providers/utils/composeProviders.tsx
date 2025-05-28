@@ -39,6 +39,7 @@ export function composeProviders(
           <Current {...props}>{children}</Current>
         </Accumulated>
       )
+
       NextProvider.displayName = `ComposedProvider(${Current.displayName || 'Component'})`
       return NextProvider
     },
@@ -81,6 +82,7 @@ export function createProviderComposition(
             {acc}
           </Provider>
         ),
+
         children,
       )
 

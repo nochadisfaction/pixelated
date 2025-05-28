@@ -1,24 +1,36 @@
 ---
+export const prerender = false
+
 import DashboardLayout from '@/layouts/DashboardLayout.astro'
 import { Card } from '@/components/ui/card'
 import { requireAuth } from '@/lib/auth'
 import { ProfileComponent } from '@/components/profile/ProfileComponent'
 import type { User } from '@/types/user'
+import type { APIContext } from 'astro';
 
-// Check authentication and redirect if not authenticated
-const authRedirect = await requireAuth({
-  cookies: Astro.cookies,
-  redirect: Astro.redirect,
-  request: Astro.request,
-})
+export async function GET(context: APIContext) {
+  // Check authentication and redirect if not authenticated
+  const authRedirect = await requireAuth({
+    cookies: context.cookies,
+    redirect: context.redirect,
+    request: context.request,
+  });
 
-// If authentication fails, return the redirect response
-if (authRedirect) {
-  return authRedirect
+  // If authentication fails, return the redirect response
+  if (authRedirect) {
+    return authRedirect;
+  }
+
+  // Get the current user from the auth session
+  const user = context.locals.user as User;
+
+  return {
+    props: { user }
+  };
 }
 
-// Get the current user from the auth session
-const user = Astro.locals.user as User
+// @ts-expect-error Astro.props is injected at runtime
+const { user } = Astro.props as { user: User };
 ---
 
 <DashboardLayout
@@ -181,3 +193,4 @@ const user = Astro.locals.user as User
     </div>
   </div>
 </DashboardLayout>
+

@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for gradiant on 2025-03-26T05:27:27-04:00
+# fly.toml app configuration file generated for pixelated on 2025-03-26T05:27:27-04:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'gradiant'
+app = 'pixelated'
 primary_region = 'ord'
 
 [build]

@@ -8,6 +8,7 @@ vi.mock('@/simulator', () => ({
   SimulatorProvider: ({ children }: { children: ReactNode }) => (
     <div data-testid="simulator-provider">{children}</div>
   ),
+
   SimulationContainer: ({
     scenarioId,
     className,
@@ -23,6 +24,7 @@ vi.mock('@/simulator', () => ({
       Simulation Container
     </div>
   ),
+
   ScenarioSelector: ({
     onSelect,
     className,
@@ -36,6 +38,7 @@ vi.mock('@/simulator', () => ({
       </button>
     </div>
   ),
+
   useAnonymizedMetrics: () => ({
     metrics: {},
     recordEvent: vi.fn(),

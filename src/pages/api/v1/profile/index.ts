@@ -4,6 +4,8 @@ import { supabase } from '../../../../lib/supabase'
 import { getLogger } from '../../../../lib/logging'
 import type { AuthAPIContext } from '../../../../lib/auth/apiRouteTypes'
 
+export const prerender = false
+
 // Initialize logger with correct object format
 const logger = getLogger({ prefix: 'profile-api' })
 

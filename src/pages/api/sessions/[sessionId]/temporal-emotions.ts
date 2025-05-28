@@ -1,3 +1,5 @@
+export const prerender = false
+
 import type { APIRoute } from 'astro'
 import { createLogger } from '../../../../utils/logger'
 import { protectRoute } from '../../../../lib/auth/serverAuth'

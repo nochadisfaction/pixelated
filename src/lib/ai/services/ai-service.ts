@@ -14,7 +14,6 @@ import type { CacheConfig } from './cache-service'
 import type { ConnectionPoolConfig } from './connection-pool'
 import type { FallbackServiceConfig } from './fallback-service'
 import type { PromptOptimizerConfig } from './prompt-optimizer'
-import process from 'node:process'
 import {
   AICapability as AICapabilityEnum,
   AIModelType as AIModelTypeEnum,
@@ -25,6 +24,16 @@ import { ConnectionPoolManager } from './connection-pool'
 import { FallbackService } from './fallback-service'
 import { PromptOptimizerService } from './prompt-optimizer'
 import { createTogetherAIService } from './together'
+
+// Environment detection and safe access
+const isServer = typeof window === 'undefined'
+
+function getEnvVar(key: string): string | undefined {
+  if (isServer) {
+    return process.env[key]
+  }
+  return (import.meta.env as any)[key]
+}
 
 // Define proper interfaces for API responses
 interface ServiceResponse {
@@ -53,7 +62,7 @@ export interface AIServiceConfig {
   temperature: number
   maxTokens: number
   useCache: boolean
-  advancedPerformanceOptions?: any
+  advancedPerformanceOptions?: unknown
   cache: CacheConfig
   promptOptimizer: PromptOptimizerConfig
   connectionPool: ConnectionPoolConfig
@@ -97,9 +106,9 @@ export class AIService implements AIServiceInterface {
           togetherBaseUrl: config.together.baseUrl,
         })
       : createTogetherAIService({
-          apiKey: process.env.TOGETHER_API_KEY || '',
-          togetherApiKey: process.env.TOGETHER_API_KEY || '',
-          togetherBaseUrl: process.env.TOGETHER_BASE_URL,
+          apiKey: getEnvVar('TOGETHER_API_KEY') || '',
+          togetherApiKey: getEnvVar('TOGETHER_API_KEY') || '',
+          togetherBaseUrl: getEnvVar('TOGETHER_BASE_URL'),
         })
 
     // Set usage callback

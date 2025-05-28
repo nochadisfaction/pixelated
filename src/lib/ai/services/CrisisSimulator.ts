@@ -1,7 +1,7 @@
 export class CrisisSimulator {
   triggerCrisis(
-    type: 'suicidal' | 'dissociative' | 'panic' | 'anger',
-    intensity: number,
+    _type: 'suicidal' | 'dissociative' | 'panic' | 'anger',
+    _intensity: number,
   ) {
     // Temporarily modify patient responses to simulate crisis
     // Track therapist response appropriateness

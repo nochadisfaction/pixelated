@@ -158,6 +158,7 @@ export function NotificationPreferences({
                 })
               }
             />
+
             <Label htmlFor="quiet-hours">Enable quiet hours</Label>
           </div>
 

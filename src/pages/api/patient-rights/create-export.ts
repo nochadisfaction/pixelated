@@ -21,7 +21,7 @@ const createExportSchema = z.object({
   includeEncryptionKey: z.boolean().optional().default(true),
 })
 
-export const post: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request }) => {
   try {
     // Verify user is authenticated and authorized
     const session = await auth.verifySession(request)

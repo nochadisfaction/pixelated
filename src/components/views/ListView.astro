@@ -99,17 +99,26 @@ if (collectionType === 'feeds') {
 
   // Access the data correctly - the feed collection returns an array in the first item's data
   const feedsData =
-    feedItems.length > 0 ? (feedItems[0].data as FeedItem[]) : []
+    feedItems.length > 0 ? feedItems[0].data : undefined // Keep it potentially undefined or not an array
 
-  // Sort the feed data (which is an array)
-  sortedFeedItems = [...feedsData].sort((a, b) => {
-    if (!a.pubDate || !b.pubDate)
-      throw new Error("Feed item is missing 'pubDate' field.")
+  // Sort the feed data only if it's an array
+  if (Array.isArray(feedsData)) {
+    sortedFeedItems = [...feedsData].sort((a, b) => {
+      if (!a.pubDate || !b.pubDate)
+        throw new Error("Feed item is missing 'pubDate' field.")
 
-    return new Date(b.pubDate).valueOf() - new Date(a.pubDate).valueOf()
-  })
+      return new Date(b.pubDate).valueOf() - new Date(a.pubDate).valueOf()
+    })
+  } else {
+    // If feedsData is not an array (or undefined), default to empty
+    sortedFeedItems = []
+    // Optionally, log a warning if feedsData is present but not an array
+    if (feedsData !== undefined) {
+      console.warn(`Expected feedsData to be an array, but got: ${typeof feedsData}. Check the structure of your 'feeds' collection.`);
+    }
+  }
 
-  if (tocEnabled) {
+  if (tocEnabled && sortedFeedItems.length > 0) { // Check sortedFeedItems.length too
     const yearsSet = new Set<number>()
     sortedFeedItems.forEach((item) => {
       const year = getYear(new Date(item.pubDate))

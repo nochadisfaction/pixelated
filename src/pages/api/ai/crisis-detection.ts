@@ -2,11 +2,95 @@ import type { APIRoute } from 'astro'
 import { CrisisDetectionService } from '../../../lib/ai/services/crisis-detection'
 import { getAIServiceByProvider } from '../../../lib/ai/providers'
 import { getSession } from '../../../lib/auth/session'
+import type { SessionData } from '../../../lib/auth/session'
 import { getLogger } from '../../../lib/logging'
-import { createAuditLog } from '../../../lib/audit/log'
-import type { AuditResource, AuditLogEntry } from '../../../lib/audit/log'
+import { createAuditLog, AuditEventType, AuditEventStatus, type AuditDetails } from '../../../lib/audit'
+import type { AuditResource } from '../../../lib/audit/types'
+import { CrisisProtocol } from '../../../lib/ai/crisis/CrisisProtocol';
+import { recordCrisisEventToDb } from '../../../services/crisisEventDb';
+import type { CrisisEventData } from '../../../services/crisisEventDb';
+import type { AlertConfiguration } from '../../../lib/ai/crisis/types'; // Import AlertConfiguration
 
+// Initialize logger first
 const logger = getLogger({ prefix: 'api-crisis-detection' })
+
+// --- BEGIN CrisisProtocol Initialization ---
+
+// Basic Alert Configurations (customize as needed)
+// Ensure this matches the AlertConfiguration interface from ../../../lib/ai/crisis/types.ts
+const alertConfigurations: AlertConfiguration[] = [
+  {
+    level: 'concern',
+    name: 'Concern Level Alert',
+    description: 'Initial level of concern, requires monitoring.',
+    thresholdScore: 0.3, // Score threshold that triggers this alert level
+    triggerTerms: ['sad', 'lonely', 'worried', 'stressed'], // Terms that can trigger this alert
+    autoEscalateAfterMs: 1000 * 60 * 60 * 2, // 2 hours
+    requiredActions: ['Log event', 'Monitor user activity'],
+    responseTemplate: 'We notice you might be feeling {triggerTerms}. We are here to help.',
+    escalationTimeMs: 1000 * 60 * 30, // 30 minutes for escalation review if not addressed
+  },
+  {
+    level: 'moderate',
+    name: 'Moderate Level Alert',
+    description: 'Moderate level of concern, requires active review.',
+    thresholdScore: 0.5, // Score threshold that triggers this alert level
+    triggerTerms: ['depressed', 'hopeless', 'anxious', 'grief'], // Terms that can trigger this alert
+    autoEscalateAfterMs: 1000 * 60 * 60 * 1, // 1 hour
+    requiredActions: ['Log event', 'Notify support staff', 'Review user history'],
+    responseTemplate: 'It sounds like you are going through a tough time with {triggerTerms}. A support member will reach out.',
+    escalationTimeMs: 1000 * 60 * 15, // 15 minutes
+  },
+  {
+    level: 'severe',
+    name: 'Severe Level Alert',
+    description: 'Severe level of concern, requires immediate attention.',
+    thresholdScore: 0.7, // Score threshold that triggers this alert level
+    triggerTerms: ['self-harm', 'suicidal thoughts', 'hurting myself'], // Terms that can trigger this alert
+    autoEscalateAfterMs: 1000 * 60 * 30, // 30 minutes
+    requiredActions: ['Log event', 'Immediate notification to crisis team', 'Engage safety protocol'],
+    responseTemplate: 'We are very concerned about your safety regarding {triggerTerms}. Our crisis team is being notified immediately.',
+    escalationTimeMs: 1000 * 60 * 5, // 5 minutes
+  },
+  {
+    level: 'emergency',
+    name: 'Emergency Level Alert',
+    description: 'Emergency situation, requires immediate intervention and possibly external services.',
+    thresholdScore: 0.9, // Score threshold that triggers this alert level
+    triggerTerms: ['suicide plan', 'immediate danger', 'want to die'], // Terms that can trigger this alert
+    autoEscalateAfterMs: 1000 * 60 * 10, // 10 minutes
+    requiredActions: ['Log event', 'Activate emergency response plan', 'Contact emergency services if necessary'],
+    responseTemplate: 'This is an emergency concerning {triggerTerms}. We are taking immediate action to ensure your safety.',
+    escalationTimeMs: 0, // Immediate escalation
+  },
+];
+
+// Staff Channels - Using a special identifier for Slack.
+// Add other channels (email, SMS) as needed.
+const staffChannels = {
+  concern: ['SLACK_WEBHOOK_CHANNEL'], // Send 'concern' level to Slack
+  moderate: ['SLACK_WEBHOOK_CHANNEL'], // Send 'moderate' level to Slack
+  severe: ['SLACK_WEBHOOK_CHANNEL'],   // Send 'severe' level to Slack
+  emergency: ['SLACK_WEBHOOK_CHANNEL'], // Send 'emergency' level to Slack
+};
+
+// Retrieve Slack Webhook URL from environment variables
+// Make sure SLACK_WEBHOOK_URL is available in your deployment environment.
+const slackWebhookUrl = process.env.SLACK_WEBHOOK_URL;
+
+if (!slackWebhookUrl) {
+  logger.warn('SLACK_WEBHOOK_URL is not set in environment variables. Slack notifications for crisis alerts will be disabled.');
+}
+
+const crisisProtocolInstance = CrisisProtocol.getInstance();
+crisisProtocolInstance.initialize({
+  alertConfigurations: alertConfigurations,
+  staffChannels: staffChannels,
+  crisisEventRecorder: recordCrisisEventToDb as unknown as (eventData: Record<string, any>) => Promise<void>,
+  slackWebhookUrl: slackWebhookUrl, // Pass the retrieved URL
+  // alertTimeoutMs: 300000, // Optional: 5 minutes default
+});
+// --- END CrisisProtocol Initialization ---
 
 /**
  * API route for crisis detection
@@ -14,14 +98,14 @@ const logger = getLogger({ prefix: 'api-crisis-detection' })
 export const POST: APIRoute = async ({ request }) => {
   const startTime = Date.now()
   let crisisDetected = false
-  let session: any = null
+  let session: SessionData | null = null
 
   try {
     // Get session for authentication
     session = await getSession(request)
 
     // Check if user is authenticated
-    if (!session?.user) {
+    if (!session) {
       return new Response(
         JSON.stringify({
           error: 'Unauthorized',
@@ -98,7 +182,23 @@ export const POST: APIRoute = async ({ request }) => {
       // Check if any crisis was detected
       for (const detection of result) {
         if (detection.isCrisis) {
-          crisisDetected = true
+          crisisDetected = true // General flag
+          // Call CrisisProtocol for each detected crisis in the batch
+          try {
+            await crisisProtocolInstance.handleCrisis(
+              session.user.id,
+              session.session?.access_token?.substring(0, 8) || `batch-item-session-${crypto.randomUUID()}`, // Use part of access token or generate UUID
+              detection.content, // Text sample from CrisisDetectionResult
+              detection.confidence, // Detection score from CrisisDetectionResult
+              detection.category ? [detection.category] : [] // Detected risks from CrisisDetectionResult
+            );
+          } catch (error) {
+            logger.error('Error handling crisis event in batch:', {
+              error: error instanceof Error ? error.message : String(error),
+              stack: error instanceof Error ? error.stack : undefined,
+              detection,
+            });
+          }
         }
       }
     } else {
@@ -111,6 +211,22 @@ export const POST: APIRoute = async ({ request }) => {
       // Check if crisis was detected
       if (result?.isCrisis) {
         crisisDetected = true
+        // Call CrisisProtocol for the detected crisis
+        try {
+          await CrisisProtocol.getInstance().handleCrisis(
+            session.user.id,
+            session.session?.access_token?.substring(0, 8) || `single-item-session-${crypto.randomUUID()}`, // Use part of access token or generate UUID
+            result.content, // Text sample from CrisisDetectionResult
+            result.confidence, // Detection score from CrisisDetectionResult
+            result.category ? [result.category] : [] // Detected risks from CrisisDetectionResult
+          );
+        } catch (error) {
+          logger.error('Error handling single crisis event:', {
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+            result,
+          });
+        }
       }
     }
 
@@ -133,41 +249,39 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // Create audit log entry for the request
-    const requestAuditEntry: AuditLogEntry = {
-      id: crypto.randomUUID(),
-      userId: session?.user?.id || 'anonymous',
-      action: 'ai.crisis.request',
-      resource: aiResource,
-      metadata: {
+    await createAuditLog(
+      AuditEventType.AI_OPERATION,
+      'ai.crisis.request',
+      session.user.id,
+      aiResource.id, // resource is a string
+      {
+        // details instead of metadata
         modelName: aiService.getModelInfo('default')?.name || 'unknown',
         sensitivityLevel,
         batchSize: batch ? batch.length : 0,
         textLength: text ? text.length : 0,
-      },
-      timestamp: new Date(),
-    }
-
-    // Log the request
-    await createAuditLog(requestAuditEntry)
+        resourceType: aiResource.type,
+      } as AuditDetails,
+      AuditEventStatus.SUCCESS,
+    )
 
     // Create audit log entry for the response
-    const responseAuditEntry: AuditLogEntry = {
-      id: crypto.randomUUID(),
-      userId: session?.user?.id || 'anonymous',
-      action: 'ai.crisis.response',
-      resource: aiResource,
-      metadata: {
+    await createAuditLog(
+      AuditEventType.AI_OPERATION,
+      'ai.crisis.response',
+      session.user.id,
+      aiResource.id, // resource is a string
+      {
+        // details instead of metadata
         modelName: aiService.getModelInfo('default')?.name || 'unknown',
-        resultCount: batch ? (result as any[]).length : 1,
+        resultCount: batch ? (result as unknown[]).length : 1,
         crisisDetected,
         latencyMs: Date.now() - startTime,
         priority: crisisDetected ? 'high' : 'normal',
-      },
-      timestamp: new Date(),
-    }
-
-    // Log the response
-    await createAuditLog(responseAuditEntry)
+        resourceType: aiResource.type,
+      } as AuditDetails,
+      AuditEventStatus.SUCCESS,
+    )
 
     // Return response
     return new Response(JSON.stringify(result), {
@@ -190,21 +304,20 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // Create audit log entry for the error
-    const errorAuditEntry: AuditLogEntry = {
-      id: crypto.randomUUID(),
-      userId: session?.user?.id || 'anonymous',
-      action: 'ai.crisis.error',
-      resource: aiResource,
-      metadata: {
+    await createAuditLog(
+      AuditEventType.AI_OPERATION,
+      'ai.crisis.error',
+      session?.user?.id || 'anonymous',
+      aiResource.id, // resource is a string
+      {
+        // details instead of metadata
         error: errorMessage,
         stack: error instanceof Error ? error.stack : undefined,
-        status: 'error',
-      },
-      timestamp: new Date(),
-    }
-
-    // Create audit log for the error
-    await createAuditLog(errorAuditEntry)
+        status: 'error', // This can go into details
+        resourceType: aiResource.type,
+      } as AuditDetails,
+      AuditEventStatus.FAILURE,
+    )
 
     return new Response(
       JSON.stringify({

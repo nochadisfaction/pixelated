@@ -16,7 +16,7 @@ export interface AuditLogEntry {
   resourceId?: string
   action: string
   status: 'success' | 'failure'
-  details: Record<string, any>
+  details: Record<string, unknown>
   metadata: {
     ip?: string
     userAgent?: string
@@ -49,7 +49,7 @@ export class AuditLoggingService {
     resource: string
     resourceId: string
     userId: string
-    details: Record<string, any>
+    details: Record<string, unknown>
   }): Promise<void> {
     return this.logEvent({
       eventType: this.context,

@@ -1,8 +1,13 @@
 import type { AstroCookies } from 'astro'
 import type { AuthRole } from '../config/auth.config'
-import type { AuditMetadata } from './audit/log'
+import type { AuditMetadata } from './audit/types'
 import { authConfig, hasRolePrivilege } from '../config/auth.config'
-import { createAuditLog } from './audit/log'
+import {
+  createHIPAACompliantAuditLog,
+  AuditEventType,
+  AuditEventStatus,
+  AuditDetails,
+} from './audit'
 import { supabase } from './supabase'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
@@ -131,16 +136,14 @@ export async function createAuthAuditLog(entry: {
   metadata?: AuditMetadata
 }): Promise<void> {
   try {
-    await createAuditLog({
-      id: crypto.randomUUID(),
-      timestamp: new Date(),
+    await createHIPAACompliantAuditLog({
       userId: entry.userId,
       action: entry.action,
-      resource: {
-        id: entry.resourceId || '',
-        type: entry.resource,
-      },
-      metadata: entry.metadata || {},
+      resource: entry.resource,
+      resourceId: entry.resourceId,
+      details: entry.metadata as AuditDetails | undefined,
+      eventType: AuditEventType.SECURITY,
+      status: AuditEventStatus.SUCCESS,
     })
   } catch (error) {
     console.error('Error logging auth audit event:', error)
@@ -157,16 +160,14 @@ export async function createAuditLogFromParams(
   resourceId?: string | null,
   metadata?: AuditMetadata | null,
 ): Promise<void> {
-  await createAuditLog({
-    id: crypto.randomUUID(),
-    timestamp: new Date(),
+  await createHIPAACompliantAuditLog({
     userId: userId || 'system',
     action,
-    resource: {
-      id: resourceId || '',
-      type: resource,
-    },
-    metadata: metadata || {},
+    resource,
+    resourceId: resourceId || undefined,
+    details: (metadata as AuditDetails | undefined) || undefined,
+    eventType: AuditEventType.SYSTEM,
+    status: AuditEventStatus.SUCCESS,
   })
 }
 

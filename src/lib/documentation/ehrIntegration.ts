@@ -1,5 +1,5 @@
 import type { SessionDocumentation } from '../ai/interfaces/therapy'
-import type { FHIRClient } from '../ehr/types'
+import type { FHIRClient, FHIRResource } from '../ehr/types'
 import { getLogger } from '../logging'
 
 const logger = getLogger({ prefix: 'ehr-integration' })
@@ -154,7 +154,7 @@ export class EHRIntegration {
   private async formatDocumentForEHR(
     documentation: SessionDocumentation,
     options: EHRExportOptions,
-  ): Promise<any> {
+  ): Promise<Record<string, unknown>> {
     switch (options.format) {
       case 'fhir':
         return this.convertToFHIRDocument(documentation, options)
@@ -176,7 +176,7 @@ export class EHRIntegration {
   private convertToFHIRDocument(
     documentation: SessionDocumentation,
     options: EHRExportOptions,
-  ): any {
+  ): Record<string, unknown> {
     // Create a FHIR Composition resource
     return {
       resourceType: 'Composition',
@@ -263,7 +263,7 @@ export class EHRIntegration {
   private convertToCCDA(
     documentation: SessionDocumentation,
     _options: EHRExportOptions,
-  ): any {
+  ): Record<string, unknown> {
     return {
       documentType: 'CCDA',
       content: `<?xml version="1.0" encoding="UTF-8"?>
@@ -305,7 +305,7 @@ export class EHRIntegration {
   private convertToPDF(
     documentation: SessionDocumentation,
     _options: EHRExportOptions,
-  ): any {
+  ): Record<string, unknown> {
     return {
       documentType: 'PDF',
       content: Buffer.from(`
@@ -355,9 +355,9 @@ export class EHRIntegration {
    * @returns The created DocumentReference resource
    */
   private async createDocumentReference(
-    formattedDocument: any,
+    formattedDocument: Record<string, unknown>,
     options: EHRExportOptions,
-  ): Promise<any> {
+  ): Promise<FHIRResource> {
     const now = new Date().toISOString()
 
     // Create the DocumentReference resource
@@ -498,7 +498,7 @@ export class EHRIntegration {
    * @param document The document
    * @returns Base64 encoded data
    */
-  private getEncodedData(document: any): string {
+  private getEncodedData(document: Record<string, unknown>): string {
     if (typeof document.content === 'string') {
       return Buffer.from(document.content).toString('base64')
     }

@@ -1,3 +1,4 @@
+import React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { PatternVisualization } from '../PatternVisualizationReact'
 import type {
@@ -25,7 +26,7 @@ const mockTrends: TrendPattern[] = [
     confidence: 0.75,
     indicators: ['depression'],
     description: 'Decreasing depression trend',
-    significance: 'medium',
+    significance: 0.6,
   },
 ]
 
@@ -36,7 +37,7 @@ const mockPatterns: CrossSessionPattern[] = [
     sessions: ['session-1', 'session-2'],
     confidence: 0.9,
     description: 'Recurring pattern across sessions',
-    significance: 'high',
+    significance: 0.9,
   },
   {
     id: 'pattern-2',
@@ -44,7 +45,7 @@ const mockPatterns: CrossSessionPattern[] = [
     sessions: ['session-3', 'session-4'],
     confidence: 0.8,
     description: 'Oscillating pattern across sessions',
-    significance: 'medium',
+    significance: 0.6,
   },
 ]
 
@@ -58,6 +59,7 @@ const mockCorrelations: RiskCorrelation[] = [
       { factor: 'Irritability', strength: 0.7 },
     ],
     significance: 'High risk factor',
+    severityScore: 0.85,
   },
   {
     id: 'risk-2',
@@ -65,6 +67,7 @@ const mockCorrelations: RiskCorrelation[] = [
     confidence: 0.6,
     correlatedFactors: [{ factor: 'Depression', strength: 0.5 }],
     significance: 'Medium risk factor',
+    severityScore: 0.5,
   },
 ]
 
@@ -76,19 +79,24 @@ vi.mock('recharts', () => {
     ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
       <div data-testid="responsive-container">{children}</div>
     ),
+
     LineChart: ({ children }: { children: React.ReactNode }) => (
       <div data-testid="line-chart">{children}</div>
     ),
+
     AreaChart: ({ children }: { children: React.ReactNode }) => (
       <div data-testid="area-chart">{children}</div>
     ),
+
     Line: () => <div data-testid="line" />,
     Area: () => <div data-testid="area" />,
     CartesianGrid: () => <div data-testid="cartesian-grid" />,
+
     XAxis: () => <div data-testid="x-axis" />,
     YAxis: () => <div data-testid="y-axis" />,
     Tooltip: () => <div data-testid="tooltip" />,
     ReferenceLine: () => <div data-testid="reference-line" />,
+
     ReferenceArea: () => <div data-testid="reference-area" />,
   }
 })

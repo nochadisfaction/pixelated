@@ -1,10 +1,10 @@
-import type { APIRoute } from 'astro'
 import type { TherapeuticGoal } from '@/lib/ai/types/TherapeuticGoals'
+import type { APIRoute, APIContext } from 'astro'
 import { goalSchema, goals } from './index' // Reuse schema if possible
 
-export const get: APIRoute = async ({ params }) => {
-  const { id } = params
-  const goal = goals.find((g: TherapeuticGoal) => g.id === id)
+export const GET: APIRoute = async ({ params }: APIContext) => {
+  const { id } = params;
+  const goal = goals.find((g: TherapeuticGoal) => g.id === id);
   if (!goal) {
     return new Response(JSON.stringify({ error: 'Goal not found' }), {
       status: 404,
@@ -17,18 +17,19 @@ export const get: APIRoute = async ({ params }) => {
   })
 }
 
-export const put: APIRoute = async ({ params, request }) => {
-  const { id } = params
-  const idx = goals.findIndex((g: TherapeuticGoal) => g.id === id)
-  if (idx === -1) {
-    return new Response(JSON.stringify({ error: 'Goal not found' }), {
-      status: 404,
-      headers: { 'Content-Type': 'application/json' },
-    })
-  }
+export const PUT: APIRoute = async ({ params, request }: APIContext) => {
+  const { id } = params;
+
   if (typeof id !== 'string') {
     return new Response(JSON.stringify({ error: 'Invalid ID format' }), {
       status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
+  const idx = goals.findIndex((g: TherapeuticGoal) => g.id === id);
+  if (idx === -1) {
+    return new Response(JSON.stringify({ error: 'Goal not found' }), {
+      status: 404,
       headers: { 'Content-Type': 'application/json' },
     })
   }
@@ -66,9 +67,9 @@ export const put: APIRoute = async ({ params, request }) => {
   }
 }
 
-export const del: APIRoute = async ({ params }) => {
-  const { id } = params
-  const idx = goals.findIndex((g: TherapeuticGoal) => g.id === id)
+export const DELETE: APIRoute = async ({ params }: APIContext) => {
+  const { id } = params;
+  const idx = goals.findIndex((g: TherapeuticGoal) => g.id === id);
   if (idx === -1) {
     return new Response(JSON.stringify({ error: 'Goal not found' }), {
       status: 404,
@@ -78,3 +79,5 @@ export const del: APIRoute = async ({ params }) => {
   goals.splice(idx, 1)
   return new Response(null, { status: 204 })
 }
+
+export const prerender = false

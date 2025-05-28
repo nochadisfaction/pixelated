@@ -116,6 +116,7 @@ export default function CubePaths() {
 
           <div className="inline-block group relative">
             <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-white/5 blur-xl" />
+
             <Button
               variant="ghost"
               className="relative px-7 py-5 text-base font-normal backdrop-blur-sm

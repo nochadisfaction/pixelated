@@ -3,16 +3,21 @@ import { PerformanceLogger } from '../logging/performance-logger'
 import type {
   EmotionAnalysis,
   TherapyAIOptions,
-  TherapyAIResponse,
   TherapySession,
   TherapyAIProvider,
   EmotionRepository,
-  // MentalHealthMetrics,
-  // BehavioralTrait,
-  // CommunicationStyle,
-  // CognitivePattern,
-  // Emotion,
-} from './interfaces/therapy'
+  TherapyAIResponse,
+} from './interfaces/therapy';
+import type {
+  Emotion,
+  EmotionData,
+  EmotionType,
+  EmotionIntensity,
+  MentalHealthAssessment,
+  BehavioralTrait,
+  CommunicationStyle,
+  CognitivePattern,
+} from './emotions/types';
 import type { ContextFactors } from './services/ContextualAwarenessService'
 
 // Add import for EmotionDetectionEngine
@@ -96,6 +101,42 @@ export type {
 // Utility function for generating request IDs
 function generateRequestId(): string {
   return `req_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`
+}
+
+// Helper functions for type conversion
+function getIntensityLevel(intensity: number): EmotionIntensity {
+  if (intensity < 0.33) {
+    return 'low';
+  }
+  if (intensity < 0.66) {
+    return 'moderate';
+  }
+  if (intensity < 0.9) {
+    return 'high';
+  }
+  return 'extreme';
+}
+
+function mapEmotionDataToEmotion(emotionData: EmotionData, timestamp: Date): Emotion {
+  return {
+    type: emotionData.type as EmotionType, // Assuming string is compatible
+    intensity: emotionData.intensity,
+    confidence: emotionData.confidence,
+    intensityLevel: getIntensityLevel(emotionData.intensity),
+    timestamp: timestamp,
+  };
+}
+
+function mapSentimentToNumber(sentiment?: string): number {
+  if (sentiment === undefined || sentiment === null) {
+    return 0.5; // Default for undefined/null (neutral)
+  }
+  switch (sentiment.toLowerCase()) {
+    case 'positive': return 0.75;
+    case 'neutral': return 0.5;
+    case 'negative': return 0.25;
+    default: return 0.5; // Default for unknown strings
+  }
 }
 
 export class AIService {
@@ -602,7 +643,7 @@ Structure the documentation according to best practices in mental health record-
           recentInterventions: interventions
             .flatMap(
               (inv) =>
-                inv.suggestedInterventions?.map((si) => si.description) || [
+                inv.suggestedInterventions?.map((si: { type: string; priority: number; description: string; evidence: string }) => si.description) || [
                   'No intervention suggested',
                 ],
             )
@@ -951,40 +992,37 @@ Structure the documentation according to best practices in mental health record-
       )
 
       // Map EngineResult to TherapyAPI.EmotionAnalysis
+      const currentTimestamp = new Date();
+      const defaultEmotions: Emotion[] = [{
+        type: 'neutral' as EmotionType,
+        confidence: 1.0,
+        intensity: 0.5,
+        intensityLevel: getIntensityLevel(0.5),
+        timestamp: currentTimestamp
+      }];
+
+      const processedEmotions = (engineResult as { emotions?: EmotionData[] }).emotions && Array.isArray((engineResult as { emotions?: EmotionData[] }).emotions)
+        ? (engineResult as { emotions: EmotionData[] }).emotions.map(ed => mapEmotionDataToEmotion(ed, currentTimestamp))
+        : defaultEmotions;
+
       const analysis: EmotionAnalysis = {
-        id: engineResult.id || generateRequestId().replace('req_', 'emotion_'),
-        timestamp: engineResult.timestamp
-          ? new Date(engineResult.timestamp)
-          : new Date(),
-        emotions: (engineResult as unknown as { emotions?: unknown[] })
-          .emotions || [{ type: 'neutral', confidence: 1.0, intensity: 0.5 }],
-        overallSentiment:
-          (engineResult as unknown as { overallSentiment?: string })
-            .overallSentiment || 'neutral',
+        id: (engineResult as {id?: string}).id || generateRequestId().replace('req_', 'emotion_'),
+        timestamp: (engineResult as {timestamp?: number | string | Date}).timestamp
+          ? new Date((engineResult as {timestamp: number | string | Date}).timestamp)
+          : currentTimestamp,
+        emotions: processedEmotions,
+        overallSentiment: mapSentimentToNumber((engineResult as { overallSentiment?: string }).overallSentiment),
         userId: userId,
         source:
-          (engineResult as unknown as { source?: string }).source || 'text',
-        input: (engineResult as unknown as { input?: unknown }).input || text,
-        error: (engineResult as unknown as { error?: string }).error,
-        mentalHealth: (
-          engineResult as unknown as { mentalHealth?: Record<string, unknown> }
-        ).mentalHealth,
-        behavioralTraits: (
-          engineResult as unknown as { behavioralTraits?: unknown[] }
-        ).behavioralTraits,
-        communicationStyle: (
-          engineResult as unknown as {
-            communicationStyle?: Record<string, unknown>
-          }
-        ).communicationStyle,
-        cognitivePatterns: (
-          engineResult as unknown as { cognitivePatterns?: unknown[] }
-        ).cognitivePatterns,
-        stressLevel: (engineResult as unknown as { stressLevel?: number })
-          .stressLevel,
-        copingMechanisms: (
-          engineResult as unknown as { copingMechanisms?: string[] }
-        ).copingMechanisms,
+          (engineResult as { source?: string }).source || 'text',
+        input: (engineResult as { input?: unknown }).input || text,
+        error: (engineResult as { error?: string }).error,
+        mentalHealth: (engineResult as { mentalHealth?: MentalHealthAssessment }).mentalHealth,
+        behavioralTraits: (engineResult as { behavioralTraits?: BehavioralTrait[] }).behavioralTraits,
+        communicationStyle: (engineResult as { communicationStyle?: CommunicationStyle }).communicationStyle,
+        cognitivePatterns: (engineResult as { cognitivePatterns?: CognitivePattern[] }).cognitivePatterns,
+        stressLevel: (engineResult as { stressLevel?: number }).stressLevel,
+        copingMechanisms: (engineResult as { copingMechanisms?: string[] }).copingMechanisms,
       }
 
       // Store the analysis if we have a emotion repository
@@ -1063,7 +1101,7 @@ export interface AICache {
   ) => Promise<AIResponse | null>
 }
 
-interface AIProvider {
+export interface AIProvider {
   createChatCompletion: (
     messages: Message[],
     options?: AIServiceOptions,

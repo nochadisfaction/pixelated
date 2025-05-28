@@ -97,6 +97,7 @@ export default function SessionDocumentationComponent({
         'Work performance concerns are primary stressor',
         'Family conflict with spouse about division of household duties',
       ],
+
       therapeuticTechniques: [
         {
           name: 'Progressive Muscle Relaxation',
@@ -117,6 +118,7 @@ export default function SessionDocumentationComponent({
           effectiveness: 6,
         },
       ],
+
       emotionalPatterns: [
         {
           pattern: 'Anxiety -> Self-criticism -> Avoidance',
@@ -129,6 +131,7 @@ export default function SessionDocumentationComponent({
             'Physical manifestation of stress affecting sleep quality',
         },
       ],
+
       recommendedFollowUp:
         'Schedule sleep assessment, continue practicing PMR daily, maintain anxiety log for next session',
       treatmentProgress: {
@@ -152,6 +155,7 @@ export default function SessionDocumentationComponent({
               'Successfully initiated conversation about household responsibilities',
           },
         ],
+
         overallAssessment:
           'Client is making steady progress toward treatment goals, demonstrating good engagement with homework assignments and increasing insight into anxiety patterns.',
       },
@@ -160,6 +164,7 @@ export default function SessionDocumentationComponent({
       emergentIssues: [
         'Potential financial stressor mentioned briefly at end of session - explore next time',
       ],
+
       clientStrengths: [
         'Strong self-awareness',
         'Commitment to practice',
@@ -362,6 +367,7 @@ export default function SessionDocumentationComponent({
                           const newInsights = [
                             ...editableDocumentation.keyInsights,
                           ]
+
                           newInsights[index] = e.target.value
                           handleChange('keyInsights', newInsights)
                         }}
@@ -450,6 +456,7 @@ export default function SessionDocumentationComponent({
                               const newTechniques = [
                                 ...editableDocumentation.therapeuticTechniques,
                               ]
+
                               newTechniques[index] = {
                                 ...technique,
                                 name: e.target.value,
@@ -474,6 +481,7 @@ export default function SessionDocumentationComponent({
                             const newTechniques = [
                               ...editableDocumentation.therapeuticTechniques,
                             ]
+
                             newTechniques[index] = {
                               ...technique,
                               description: e.target.value,
@@ -500,6 +508,7 @@ export default function SessionDocumentationComponent({
                             const newTechniques = [
                               ...editableDocumentation.therapeuticTechniques,
                             ]
+
                             newTechniques[index] = {
                               ...technique,
                               effectiveness: parseInt(e.target.value),
@@ -572,6 +581,7 @@ export default function SessionDocumentationComponent({
                                 ...editableDocumentation.treatmentProgress
                                   .goals,
                               ]
+
                               newGoals[index] = {
                                 ...goal,
                                 description: e.target.value,
@@ -604,6 +614,7 @@ export default function SessionDocumentationComponent({
                                 ...editableDocumentation.treatmentProgress
                                   .goals,
                               ]
+
                               newGoals[index] = {
                                 ...goal,
                                 progress: parseInt(e.target.value),
@@ -636,6 +647,7 @@ export default function SessionDocumentationComponent({
                                 ...editableDocumentation.treatmentProgress
                                   .goals,
                               ]
+
                               newGoals[index] = {
                                 ...goal,
                                 notes: e.target.value,
@@ -666,6 +678,7 @@ export default function SessionDocumentationComponent({
                           notes: '',
                         },
                       ]
+
                       handleChange('treatmentProgress', {
                         ...editableDocumentation.treatmentProgress,
                         goals: newGoals,
@@ -719,6 +732,7 @@ export default function SessionDocumentationComponent({
                             const newStrengths = [
                               ...(editableDocumentation.clientStrengths || []),
                             ]
+
                             newStrengths[index] = e.target.value
                             handleChange('clientStrengths', newStrengths)
                           }}
@@ -769,6 +783,7 @@ export default function SessionDocumentationComponent({
                             const newPatterns = [
                               ...editableDocumentation.emotionalPatterns,
                             ]
+
                             newPatterns[index] = {
                               ...pattern,
                               pattern: e.target.value,
@@ -790,6 +805,7 @@ export default function SessionDocumentationComponent({
                           const newPatterns = [
                             ...editableDocumentation.emotionalPatterns,
                           ]
+
                           newPatterns[index] = {
                             ...pattern,
                             significance: e.target.value,
@@ -837,6 +853,7 @@ export default function SessionDocumentationComponent({
                           const newIssues = [
                             ...(editableDocumentation.emergentIssues || []),
                           ]
+
                           newIssues[index] = e.target.value
                           handleChange('emergentIssues', newIssues)
                         }}

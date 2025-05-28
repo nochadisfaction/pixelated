@@ -7,8 +7,7 @@
 
 import { detectAndRedactPHI } from './phiDetection'
 import { getLogger } from '../logging'
-import { AuditEventType } from '../audit'
-import { logAuditEvent } from '../audit/log'
+import { AuditEventType, logAuditEvent } from '../audit'
 
 const logger = getLogger({ prefix: 'dlp-service' })
 

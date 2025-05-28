@@ -1,6 +1,23 @@
+export const prerender = false
+
 import type { APIRoute } from 'astro'
 import { createClient } from '@supabase/supabase-js'
 import { getRedisHealth } from '../../lib/redis'
+
+interface HealthStatusDetail {
+  status: 'healthy' | 'unhealthy' | 'unknown' | 'degraded'
+  timestamp?: string
+  message?: string
+  error?: string
+  responseTimeMs?: number
+}
+
+interface OverallHealthStatus {
+  status: 'healthy' | 'unhealthy'
+  api: HealthStatusDetail
+  supabase?: HealthStatusDetail
+  redis?: HealthStatusDetail
+}
 
 /**
  * Health check API endpoint
@@ -12,7 +29,7 @@ import { getRedisHealth } from '../../lib/redis'
  */
 export const GET: APIRoute = async ({ request }) => {
   const startTime = performance.now()
-  const healthStatus: Record<string, any> = {
+  const healthStatus: OverallHealthStatus = {
     status: 'healthy',
     api: {
       status: 'healthy',
@@ -64,7 +81,7 @@ export const GET: APIRoute = async ({ request }) => {
   // Check Redis connection
   try {
     healthStatus.redis = await getRedisHealth()
-    if (healthStatus.redis.status === 'unhealthy') {
+    if (healthStatus.redis && healthStatus.redis.status === 'unhealthy') {
       healthStatus.status = 'unhealthy'
     }
   } catch (error) {
@@ -96,7 +113,7 @@ export const GET: APIRoute = async ({ request }) => {
 async function checkSupabaseConnection(
   supabaseUrl: string,
   supabaseAnonKey: string,
-): Promise<Record<string, any>> {
+): Promise<HealthStatusDetail> {
   // Create Supabase client if credentials are available
   const supabase = createClient(supabaseUrl, supabaseAnonKey)
 

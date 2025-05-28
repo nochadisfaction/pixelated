@@ -8,7 +8,7 @@ import {
   AuditEventStatus,
 } from '../../../../lib/audit'
 
-export const get: APIRoute = async ({ request }) => {
+export const GET: APIRoute = async ({ request }) => {
   const logger = getLogger({ prefix: 'validation-history' })
 
   try {

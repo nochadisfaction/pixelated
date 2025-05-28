@@ -1,5 +1,5 @@
 ---
-import TreatmentPlanner from '../components/ai/TreatmentPlanner.tsx';
+import TreatmentPlanner from '../components/treatment/TreatmentPlanner.tsx';
 
 // Page metadata
 const title = 'Treatment Planning';
@@ -7,6 +7,9 @@ const description = 'Personalized, evidence-based treatment recommendations for 
 ---
 
 <main class="max-w-4xl mx-auto py-10 px-4">
+  <h1 class="text-3xl font-bold mb-2">{title}</h1>
+  <p class="text-lg text-gray-600 mb-8">{description}</p>
+
   <TreatmentPlanner client:load pageTitle={title} pageDescription={description} />
 </main>
 

@@ -7,9 +7,13 @@ import { z } from 'zod'
 import { generateVAPIDKeys, sendNotification } from './pushUtils'
 import type { PushSubscription } from './pushUtils'
 import { sendSMS, isValidPhoneNumber } from './smsUtils'
+import type { RoutingContext } from '@/lib/ai/mental-llama/routing/MentalHealthTaskRouter'
 
 // Create a logger instance
 const logger = getLogger('NotificationService')
+
+// Crisis Alert Template ID
+const CRISIS_ALERT_TEMPLATE_ID = 'crisis_alert_v1'
 
 // Notification channel types
 export const NotificationChannel = {
@@ -122,6 +126,34 @@ const NotificationItemSchema = z.object({
 
 type NotificationItem = z.infer<typeof NotificationItemSchema>
 
+/**
+ * Defines the context for a crisis alert.
+ */
+export interface CrisisAlertContext extends RoutingContext {
+  timestamp: string // ISO 8601 timestamp
+  textSample: string // A sample of the text that triggered the crisis
+  decisionDetails?: Record<string, unknown> // Details from the routing decision
+  // Add other relevant fields like internal user ID, session ID if available and permissible
+}
+
+/**
+ * Interface for a service that handles sending notifications,
+ * particularly for critical events like crisis alerts.
+ */
+export interface ICrisisNotificationHandler {
+  /**
+   * Sends a crisis alert.
+   *
+   * @param alertContext Contextual information about the crisis.
+   * @returns Promise<void> Resolves when the alert has been dispatched, or rejects on failure.
+   * @throws Error if the notification dispatch fails and cannot be handled gracefully.
+   */
+  sendCrisisAlert(alertContext: CrisisAlertContext): Promise<void>
+
+  // Potentially other notification methods can be added here, e.g.:
+  // sendSystemNotification(message: string, level: 'info' | 'warn' | 'error'): Promise<void>;
+}
+
 export class NotificationService {
   private emailService: EmailService
   private wsClients: Map<string, WebSocket>
@@ -137,6 +169,7 @@ export class NotificationService {
     this.wsClients = new Map()
     this.templates = new Map()
     this.initializeVAPIDKeys()
+    this.initializeCrisisTemplate() // Ensure crisis template is set up
   }
 
   private async initializeVAPIDKeys() {
@@ -150,6 +183,37 @@ export class NotificationService {
       // Generate new VAPID keys if not configured
       this.vapidKeys = await generateVAPIDKeys()
       logger.info('Generated new VAPID keys')
+    }
+  }
+
+  private async initializeCrisisTemplate(): Promise<void> {
+    if (!this.templates.has(CRISIS_ALERT_TEMPLATE_ID)) {
+      const adminEmail = config.notifications.adminEmail()
+      if (!adminEmail) {
+        logger.warn(
+          'Admin email not configured. Crisis email alerts will not be sent by default template.',
+        )
+      }
+      const crisisTemplate: NotificationTemplate = {
+        id: CRISIS_ALERT_TEMPLATE_ID,
+        title: 'CRITICAL ALERT: Potential Crisis Detected',
+        // Body can be simple, actual details will be in the data payload
+        body: 'A potential user crisis has been detected by the MentalLLaMA system. Urgent review required. Details: {{textSample}} UserID: {{userId}} SessionID: {{sessionId}} Timestamp: {{timestamp}}',
+        channels: adminEmail ? [NotificationChannel.EMAIL] : [], // Add other channels like SMS if admin phone is configured
+        priority: NotificationPriority.URGENT,
+        metadata: { isCrisisAlert: true },
+      }
+      try {
+        await this.registerTemplate(crisisTemplate)
+        logger.info(
+          `Default crisis alert template '${CRISIS_ALERT_TEMPLATE_ID}' registered.`,
+        )
+      } catch (error) {
+        logger.error(
+          `Failed to register default crisis alert template: ${CRISIS_ALERT_TEMPLATE_ID}`,
+          { error },
+        )
+      }
     }
   }
 
@@ -535,5 +599,92 @@ export class NotificationService {
       to: notification.userId,
       notificationId: notification.id,
     })
+  }
+
+  /**
+   * Sends a crisis alert by formatting it and queuing it through the standard notification pipeline.
+   *
+   * @param alertContext Contextual information about the crisis.
+   * @throws Error if queuing the notification fails.
+   */
+  async sendCrisisAlert(alertContext: CrisisAlertContext): Promise<void> {
+    logger.warn('Dispatching crisis alert via NotificationService:', {
+      alertContext,
+    })
+
+    const {
+      userId,
+      sessionId,
+      sessionType,
+      explicitTaskHint,
+      timestamp,
+      textSample,
+      decisionDetails,
+    } = alertContext
+
+    const notificationData: NotificationData = {
+      // For system alerts like crisis, userId might be an admin or a system user ID.
+      // Or, if it's about a specific user, use their ID for context, but the notification itself goes to admins.
+      // For this implementation, let's assume the template handles targeting admins.
+      // If no specific admin user ID, we rely on the template's channel configuration (e.g., admin email).
+      userId: 'system_crisis_monitoring', // A placeholder user ID for system-generated alerts
+      templateId: CRISIS_ALERT_TEMPLATE_ID,
+      data: {
+        userId: userId || 'N/A',
+        sessionId: sessionId || 'N/A',
+        sessionType: sessionType || 'N/A',
+        explicitTaskHint:
+          typeof explicitTaskHint === 'string' ? explicitTaskHint : 'N/A',
+        timestamp,
+        textSample,
+        decisionDetails: JSON.stringify(decisionDetails) || 'N/A',
+        // Add any other critical pieces of information from alertContext
+      },
+      priority: NotificationPriority.URGENT, // Ensure it's marked as urgent
+      // Channels can be overridden here if needed, but typically template defines them
+    }
+
+    try {
+      const notificationId = await this.queueNotification(notificationData)
+      logger.info(
+        `Crisis alert queued successfully. Notification ID: ${notificationId}`,
+        { userId, sessionId },
+      )
+    } catch (error) {
+      logger.error('Failed to queue crisis alert notification.', {
+        error,
+        alertContext,
+      })
+      // Rethrow to indicate failure to dispatch, allowing caller to handle
+      throw new Error(
+        'Failed to dispatch crisis alert via NotificationService.',
+        { cause: error },
+      )
+    }
+  }
+}
+
+/**
+ * Example implementation or placeholder for a NotificationService.
+ * In a real application, this would integrate with an actual notification system
+ * (e.g., email, SMS, PagerDuty, Slack, dedicated monitoring dashboard).
+ */
+export class ConsoleNotificationService implements ICrisisNotificationHandler {
+  private logger = console // Or use a more sophisticated logger
+
+  async sendCrisisAlert(alertContext: CrisisAlertContext): Promise<void> {
+    this.logger.error(
+      'CRISIS ALERT DISPATCHED (ConsoleNotificationService):',
+      JSON.stringify(alertContext, null, 2),
+    )
+    // In a real implementation, this would make an API call, send an email, etc.
+    // For example:
+    // await sendToPagerDuty({ ... });
+    // await sendEmailToAdmin({ ... });
+
+    // Simulate potential failure for robustness testing
+    // if (Math.random() < 0.1) { // 10% chance of failure
+    //   throw new Error('Simulated failure sending crisis alert via console.');
+    // }
   }
 }

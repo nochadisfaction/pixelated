@@ -94,6 +94,7 @@ export function ExportToEHR({
             onChange={(e) => setIncludeEmotionData(e.target.checked)}
             disabled={isExporting}
           />
+
           <label
             htmlFor="include-emotion-data"
             className="ml-2 block text-sm text-gray-700 dark:text-gray-300"

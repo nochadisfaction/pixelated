@@ -1,9 +1,9 @@
 
-> gradiant-astro@0.0.1 prebuild /home/vivi/astro
+> pixelated-astro@0.0.1 prebuild /home/vivi/astro
 > pnpm run polyfills && node scripts/download-fonts.mjs
 
 
-> gradiant-astro@0.0.1 polyfills /home/vivi/astro
+> pixelated-astro@0.0.1 polyfills /home/vivi/astro
 > node scripts/copy-polyfills.js
 
 
@@ -30,7 +30,7 @@ Creating font fallbacks for offline builds...
 
 🎉 Font setup complete! Your build should now work offline.
 
-> gradiant-astro@0.0.1 build /home/vivi/astro
+> pixelated-astro@0.0.1 build /home/vivi/astro
 > node scripts/verify-env-startup.js && node scripts/safe-build.js
 
 🔍 Verifying environment variables...

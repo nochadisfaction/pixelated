@@ -60,6 +60,7 @@ export function ChatInput({
         )}
         rows={1}
       />
+
       <button
         type="submit"
         disabled={isLoading || disabled || !value.trim()}

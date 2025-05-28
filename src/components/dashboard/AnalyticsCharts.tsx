@@ -70,6 +70,7 @@ export function Chart({
             })}
           </div>
         )
+
       case 'pie': {
         const total = dataPoints.reduce((sum, value) => sum + value, 0) || 1 // Prevent division by zero
 
@@ -112,6 +113,7 @@ export function Chart({
                     } ${
                       64 + 64 * Math.sin((segment.endAngle * Math.PI) / 180)
                     } Z')`,
+
                     transform: `rotate(${segment.startAngle}deg)`,
                     transformOrigin: 'center',
                   }}
@@ -126,6 +128,7 @@ export function Chart({
                     className="w-3 h-3 rounded-full mr-2"
                     style={{ backgroundColor: segment.color }}
                   />
+
                   <span className="text-xs">
                     {segment.label}: {segment.percentage.toFixed(1)}%
                   </span>

@@ -9,8 +9,7 @@ import { Buffer as BufferClass } from 'buffer'
 
 // Make Buffer available globally
 if (typeof globalThis.Buffer === 'undefined') {
-  // @ts-expect-error
-  globalThis.Buffer = BufferClass
+  (globalThis as any).Buffer = BufferClass
 }
 
 // Export the Buffer for use in other modules
@@ -18,17 +17,16 @@ export const Buffer = BufferClass
 
 // Ensure process is available
 if (typeof globalThis.process === 'undefined') {
-  // @ts-expect-error
-  globalThis.process = {
+  globalThis.process = ({
     env: {},
     version: '',
-    versions: {},
-    platform: '',
+    versions: { node: '0.0.0', v8: '0.0.0', uv: '0.0.0', zlib: '0.0.0', brotli: '0.0.0', ares: '0.0.0', modules: '0', nghttp2: '0.0.0', napi: '0', llhttp: '0.0.0', openssl: '0.0.0', cldr: '0.0', icu: '0.0', tz: '0000', unicode: '0.0', http_parser: '0.0.0' } as NodeJS.ProcessVersions,
+    platform: 'browser' as NodeJS.Platform,
     argv: [],
-    nextTick: (fn: Function, ...args: any[]) => {
+    nextTick: (fn: (...args: unknown[]) => void, ...args: unknown[]) => {
       setTimeout(() => fn(...args), 0)
-    },
-  }
+    }
+  }) as unknown as NodeJS.Process;
 }
 
 // Add other Node.js APIs as needed

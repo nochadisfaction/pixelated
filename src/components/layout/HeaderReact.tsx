@@ -56,6 +56,7 @@ export function Header({
                   className="h-8 mr-3"
                   alt="Gradiant Logo"
                 />
+
                 <span className="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap">
                   Gradiant
                 </span>
@@ -105,6 +106,7 @@ export function Header({
                 className="h-8 mr-3"
                 alt="Gradiant Logo"
               />
+
               <span className="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap">
                 Gradiant
               </span>
@@ -192,6 +194,7 @@ export function Header({
                 showNoResults={true}
                 onResultClick={() => setIsSearchOpen(false)}
               />
+
               <div className="mt-4 text-xs text-muted-foreground">
                 <p>Privacy-focused client-side search powered by FlexSearch</p>
               </div>

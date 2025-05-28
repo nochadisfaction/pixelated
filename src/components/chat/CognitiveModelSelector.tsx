@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { KVStore } from '@/lib/db/KVStore'
 import type { ModelIdentifier } from '@/lib/ai/services/PatientModelService'
-import type { PatientResponseStyleConfig } from '@/lib/ai/types/CognitiveModel'
+import type {
+  PatientResponseStyleConfig,
+  CognitiveModel,
+} from '@/lib/ai/types/CognitiveModel'
 import { cn } from '@/lib/utils'
 
 interface CognitiveModelSelectorProps {
@@ -20,9 +23,8 @@ export function CognitiveModelSelector({
   const [models, setModels] = useState<ModelIdentifier[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [currentModelDetails, setCurrentModelDetails] = useState<any | null>(
-    null,
-  )
+  const [currentModelDetails, setCurrentModelDetails] =
+    useState<CognitiveModel | null>(null)
 
   // Response style configuration
   const [styleConfig, setStyleConfig] = useState<PatientResponseStyleConfig>({
@@ -68,6 +70,7 @@ export function CognitiveModelSelector({
                 'Low self-esteem',
                 'Work stress',
               ],
+
               diagnosisSummary: 'Major Depressive Disorder',
             },
             {
@@ -78,6 +81,7 @@ export function CognitiveModelSelector({
                 'Panic attacks',
                 'Social avoidance',
               ],
+
               diagnosisSummary: 'Generalized Anxiety Disorder',
             },
             {
@@ -88,6 +92,7 @@ export function CognitiveModelSelector({
                 'Nightmares',
                 'Hypervigilance',
               ],
+
               diagnosisSummary: 'Post-Traumatic Stress Disorder',
             },
           ])
@@ -116,7 +121,9 @@ export function CognitiveModelSelector({
 
     try {
       const kvStore = new KVStore('cognitive_models_', true)
-      const modelDetails = await kvStore.get<any>(`patient_model_${modelId}`)
+      const modelDetails = await kvStore.get<CognitiveModel>(
+        `patient_model_${modelId}`,
+      )
 
       if (modelDetails) {
         setCurrentModelDetails(modelDetails)
@@ -137,16 +144,47 @@ export function CognitiveModelSelector({
           },
           coreBeliefs: [
             {
+              id: 'belief-1',
               belief: "I'm not good enough",
               strength: 8,
+              evidence: [],
               relatedDomains: ['work', 'relationships'],
             },
             {
+              id: 'belief-2',
               belief: "I'm going to fail",
               strength: 7,
+              evidence: [],
               relatedDomains: ['career', 'future'],
             },
           ],
+          distortionPatterns: [],
+          behavioralPatterns: [],
+          emotionalPatterns: [],
+          relationshipPatterns: [],
+          formativeExperiences: [],
+          therapyHistory: {
+            previousApproaches: [],
+            helpfulInterventions: [],
+            unhelpfulInterventions: [],
+            insights: [],
+            progressMade: '',
+            remainingChallenges: [],
+          },
+          conversationalStyle: {
+            verbosity: 5,
+            emotionalExpressiveness: 5,
+            resistance: 5,
+            insightLevel: 3,
+            preferredCommunicationModes: [],
+          },
+          goalsForTherapy: [],
+          therapeuticProgress: {
+            insights: [],
+            resistanceLevel: 5,
+            changeReadiness: 'contemplation',
+            sessionProgressLog: [],
+          },
         })
       } else if (modelId === 'example-anxiety') {
         setCurrentModelDetails({
@@ -169,16 +207,47 @@ export function CognitiveModelSelector({
           },
           coreBeliefs: [
             {
+              id: 'belief-3',
               belief: "I'm always in danger",
               strength: 8,
+              evidence: [],
               relatedDomains: ['safety', 'health'],
             },
             {
+              id: 'belief-4',
               belief: "I can't handle uncertainty",
               strength: 9,
+              evidence: [],
               relatedDomains: ['control', 'future'],
             },
           ],
+          distortionPatterns: [],
+          behavioralPatterns: [],
+          emotionalPatterns: [],
+          relationshipPatterns: [],
+          formativeExperiences: [],
+          therapyHistory: {
+            previousApproaches: [],
+            helpfulInterventions: [],
+            unhelpfulInterventions: [],
+            insights: [],
+            progressMade: '',
+            remainingChallenges: [],
+          },
+          conversationalStyle: {
+            verbosity: 5,
+            emotionalExpressiveness: 5,
+            resistance: 5,
+            insightLevel: 3,
+            preferredCommunicationModes: [],
+          },
+          goalsForTherapy: [],
+          therapeuticProgress: {
+            insights: [],
+            resistanceLevel: 5,
+            changeReadiness: 'contemplation',
+            sessionProgressLog: [],
+          },
         })
       } else if (modelId === 'example-trauma') {
         setCurrentModelDetails({
@@ -197,16 +266,47 @@ export function CognitiveModelSelector({
           },
           coreBeliefs: [
             {
+              id: 'belief-5',
               belief: 'The world is dangerous',
               strength: 9,
+              evidence: [],
               relatedDomains: ['safety', 'trust'],
             },
             {
+              id: 'belief-6',
               belief: 'I have to be on guard at all times',
               strength: 8,
+              evidence: [],
               relatedDomains: ['safety', 'control'],
             },
           ],
+          distortionPatterns: [],
+          behavioralPatterns: [],
+          emotionalPatterns: [],
+          relationshipPatterns: [],
+          formativeExperiences: [],
+          therapyHistory: {
+            previousApproaches: [],
+            helpfulInterventions: [],
+            unhelpfulInterventions: [],
+            insights: [],
+            progressMade: '',
+            remainingChallenges: [],
+          },
+          conversationalStyle: {
+            verbosity: 5,
+            emotionalExpressiveness: 5,
+            resistance: 5,
+            insightLevel: 3,
+            preferredCommunicationModes: [],
+          },
+          goalsForTherapy: [],
+          therapeuticProgress: {
+            insights: [],
+            resistanceLevel: 5,
+            changeReadiness: 'contemplation',
+            sessionProgressLog: [],
+          },
         })
       }
     } catch (err) {
@@ -223,7 +323,7 @@ export function CognitiveModelSelector({
   // Handle style config changes
   const handleStyleChange = (
     field: keyof PatientResponseStyleConfig,
-    value: any,
+    value: string | number,
   ) => {
     const updatedConfig = {
       ...styleConfig,
@@ -343,9 +443,10 @@ export function CognitiveModelSelector({
                     <div className="text-xs text-gray-500">Core Beliefs</div>
                     <ul className="mt-1 text-sm">
                       {currentModelDetails.coreBeliefs.map(
-                        (belief: any, index: number) => (
+                        (belief, index: number) => (
                           <li key={index} className="mb-1">
-                            "{belief.belief}" (Strength: {belief.strength}/10)
+                            &ldquo;{belief.belief}&rdquo; (Strength:{' '}
+                            {belief.strength}/10)
                           </li>
                         ),
                       )}
@@ -375,6 +476,7 @@ export function CognitiveModelSelector({
                   }
                   className="w-full"
                 />
+
                 <div className="flex justify-between text-xs text-gray-500">
                   <span>Closed</span>
                   <span>Value: {styleConfig.openness}</span>
@@ -396,6 +498,7 @@ export function CognitiveModelSelector({
                   }
                   className="w-full"
                 />
+
                 <div className="flex justify-between text-xs text-gray-500">
                   <span>Disorganized</span>
                   <span>Value: {styleConfig.coherence}</span>
@@ -417,6 +520,7 @@ export function CognitiveModelSelector({
                   }
                   className="w-full"
                 />
+
                 <div className="flex justify-between text-xs text-gray-500">
                   <span>Low</span>
                   <span>Value: {styleConfig.defenseLevel}</span>

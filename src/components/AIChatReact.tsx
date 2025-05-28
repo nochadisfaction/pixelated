@@ -149,6 +149,7 @@ export default function AIChatReact({
           placeholder="Type your message..."
           disabled={isLoading}
         />
+
         <button
           type="submit"
           disabled={isLoading || !inputValue.trim()}

@@ -17,7 +17,7 @@ import { generateHash } from '../../crypto/hash'
  * In-memory implementation of AICache, including therapy-specific methods
  */
 export class MemoryTherapyAICache implements AICache {
-  private cacheStore: Map<string, any>
+  private cacheStore: Map<string, { timestamp: number; data: unknown }>
   private readonly TTL: number // Time to live in ms
 
   constructor(ttlMinutes = 60) {
@@ -49,7 +49,7 @@ export class MemoryTherapyAICache implements AICache {
     const cacheEntry = this.cacheStore.get(key)
 
     if (cacheEntry && Date.now() - cacheEntry.timestamp < this.TTL) {
-      return cacheEntry.data
+      return cacheEntry.data as AIResponse
     }
 
     return null
@@ -91,7 +91,7 @@ export class MemoryTherapyAICache implements AICache {
     const cacheEntry = this.cacheStore.get(key)
 
     if (cacheEntry && Date.now() - cacheEntry.timestamp < this.TTL) {
-      return cacheEntry.data
+      return cacheEntry.data as SessionDocumentation
     }
 
     return null

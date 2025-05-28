@@ -18,7 +18,7 @@ backupManager.initialize().catch((error) => {
   )
 })
 
-export const get: APIRoute = async ({ request, locals }) => {
+export const GET: APIRoute = async ({ request, locals }) => {
   try {
     // Protect this route - only admins can access backup functionality
     const user = await protectRoute(request, locals, { role: 'admin' })
@@ -73,7 +73,7 @@ export const get: APIRoute = async ({ request, locals }) => {
   }
 }
 
-export const post: APIRoute = async ({ request, locals }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
   try {
     // Protect this route - only admins can access backup functionality
     const user = await protectRoute(request, locals, { role: 'admin' })

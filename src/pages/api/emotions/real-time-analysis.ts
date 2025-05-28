@@ -1,3 +1,4 @@
+export const prerender = false
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { getAIService } from '../../../lib/ai'
 import { createLogger } from '../../../utils/logger'

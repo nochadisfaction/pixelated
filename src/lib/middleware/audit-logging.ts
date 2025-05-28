@@ -1,6 +1,6 @@
 import { defineMiddleware } from 'astro:middleware'
 import { v4 as uuidv4 } from 'uuid'
-import { createResourceAuditLog } from '../audit/log'
+import { createResourceAuditLog } from '../audit'
 import { getSession } from '../auth/session'
 import { getLogger } from '../logging'
 

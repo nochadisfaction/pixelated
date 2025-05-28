@@ -40,6 +40,7 @@ export function FormStyleGuide() {
               placeholder="Invalid input"
               className="border-destructive focus-visible:ring-destructive"
             />
+
             <p className="text-sm text-destructive">This field is required</p>
           </div>
 
@@ -47,6 +48,7 @@ export function FormStyleGuide() {
             <Label htmlFor="with-icon">Input with Icon</Label>
             <div className="relative">
               <Input id="with-icon" placeholder="Search..." />
+
               <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

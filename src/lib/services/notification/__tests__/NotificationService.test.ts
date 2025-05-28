@@ -8,6 +8,15 @@ import {
   NotificationStatus,
 } from '../NotificationService'
 
+// Type for accessing private properties in tests
+interface NotificationServiceTestInterface {
+  wsClients: Map<string, WebSocket>
+  emailService: {
+    upsertTemplate: (template: unknown) => Promise<void>
+  }
+  deliverInApp: (notification: unknown) => Promise<void>
+}
+
 // Mock dependencies
 vi.mock('@/lib/services/redis', () => ({
   redis: {
@@ -77,7 +86,9 @@ describe('notificationService', () => {
 
   // Helper function to check if a client exists for a user
   const hasClient = (service: NotificationService, userId: string): boolean => {
-    return (service as any).wsClients.has(userId)
+    return (
+      service as unknown as NotificationServiceTestInterface
+    ).wsClients.has(userId)
   }
 
   beforeEach(() => {
@@ -85,13 +96,18 @@ describe('notificationService', () => {
     notificationService = new NotificationService()
 
     // Spy on private methods
-    vi.spyOn(notificationService as any, 'emailService', 'get').mockReturnValue(
-      {
-        upsertTemplate: vi.fn(),
-      },
-    )
+    vi.spyOn(
+      notificationService as unknown as NotificationServiceTestInterface,
+      'emailService',
+      'get',
+    ).mockReturnValue({
+      upsertTemplate: vi.fn(),
+    })
 
-    vi.spyOn(notificationService as any, 'deliverInApp')
+    vi.spyOn(
+      notificationService as unknown as NotificationServiceTestInterface,
+      'deliverInApp',
+    )
   })
 
   describe('registerTemplate', () => {
@@ -100,7 +116,8 @@ describe('notificationService', () => {
 
       // Check if email template was registered
       expect(
-        (notificationService as any).emailService.upsertTemplate,
+        (notificationService as unknown as NotificationServiceTestInterface)
+          .emailService.upsertTemplate,
       ).toHaveBeenCalledWith({
         alias: mockTemplate.id,
         subject: mockTemplate.title,
@@ -116,10 +133,10 @@ describe('notificationService', () => {
         body: 'Test',
         channels: ['invalid'],
         priority: 'invalid',
-      }
+      } as unknown as Parameters<typeof notificationService.registerTemplate>[0]
 
       await expect(
-        notificationService.registerTemplate(invalidTemplate as any),
+        notificationService.registerTemplate(invalidTemplate),
       ).rejects.toThrow()
     })
   })
@@ -144,10 +161,12 @@ describe('notificationService', () => {
         userId: 123,
         templateId: 'test',
         data: null,
-      }
+      } as unknown as Parameters<
+        typeof notificationService.queueNotification
+      >[0]
 
       await expect(
-        notificationService.queueNotification(invalidNotification as any),
+        notificationService.queueNotification(invalidNotification),
       ).rejects.toThrow()
     })
 
@@ -380,7 +399,9 @@ describe('notificationService', () => {
       }
 
       // Directly call the private method through the spy
-      await (notificationService as any).deliverInApp(notification)
+      await (
+        notificationService as unknown as NotificationServiceTestInterface
+      ).deliverInApp(notification)
 
       expect(ws.send).toHaveBeenCalledWith(
         expect.stringContaining(notification.id),

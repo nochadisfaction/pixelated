@@ -5,14 +5,16 @@ import { ComplianceVerificationService } from '../../../../lib/security/baa/Comp
 import {
   BusinessAssociateType,
   ComplianceLevel,
+  ServiceCategory,
 } from '../../../../lib/security/baa/types'
 
 // Initialize services
 const businessAssociateService = new BusinessAssociateService()
 const verificationService = new ComplianceVerificationService()
-
 // Get current query parameters
-const { searchQuery = '', type = '', compliance = '' } = Astro.url.searchParams
+const searchQuery = Astro.url.searchParams.get('searchQuery') || ''
+const type = Astro.url.searchParams.get('type') || ''
+const compliance = Astro.url.searchParams.get('compliance') || ''
 
 // Initialize with sample data if empty (for demo purposes)
 if (businessAssociateService.getAllBusinessAssociates().length === 0) {
@@ -20,7 +22,7 @@ if (businessAssociateService.getAllBusinessAssociates().length === 0) {
   businessAssociateService.createBusinessAssociate(
     'Secure Health Storage Inc.',
     BusinessAssociateType.VENDOR,
-    ['data_storage'],
+    [ServiceCategory.DATA_STORAGE],
     'John Smith',
     'john@securehealth.example.com',
     ComplianceLevel.HIPAA_CERTIFIED,
@@ -33,7 +35,7 @@ if (businessAssociateService.getAllBusinessAssociates().length === 0) {
   businessAssociateService.createBusinessAssociate(
     'Analytics Partners LLC',
     BusinessAssociateType.SERVICE_PROVIDER,
-    ['analytics', 'data_processing'],
+    [ServiceCategory.ANALYTICS, ServiceCategory.DATA_PROCESSING],
     'Sarah Johnson',
     'sarah@analyticspartners.example.com',
     ComplianceLevel.SELF_ATTESTED,
@@ -46,7 +48,7 @@ if (businessAssociateService.getAllBusinessAssociates().length === 0) {
   businessAssociateService.createBusinessAssociate(
     'Healthcare API Solutions',
     BusinessAssociateType.PARTNER,
-    ['technical_support', 'data_processing'],
+    [ServiceCategory.TECHNICAL_SUPPORT, ServiceCategory.DATA_PROCESSING],
     'Michael Wong',
     'michael@hcapi.example.com',
     ComplianceLevel.THIRD_PARTY_VERIFIED,
@@ -516,13 +518,14 @@ const complianceStats = businessAssociateService.getComplianceStatistics()
     // Auto-submit form when filters change
     const typeSelect = document.getElementById('type')
     const complianceSelect = document.getElementById('compliance')
+    const searchForm = document.getElementById('search-form') as HTMLFormElement | null
 
     typeSelect?.addEventListener('change', () => {
-      document.getElementById('search-form')?.submit()
+      searchForm?.submit()
     })
 
     complianceSelect?.addEventListener('change', () => {
-      document.getElementById('search-form')?.submit()
+      searchForm?.submit()
     })
   })
 </script>

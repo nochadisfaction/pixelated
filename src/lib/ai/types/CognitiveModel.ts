@@ -7,11 +7,13 @@
  * Core belief structure in a cognitive model
  */
 export interface CoreBelief {
+  id: string // Unique identifier for the belief
   belief: string
   strength: number // 0-10 scale
   evidence: string[]
   formationContext?: string
   relatedDomains: string[]
+  associatedEmotions?: string[] // e.g., ["anxiety", "fear"] for a belief about danger
 }
 
 /**

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document outlines the admin layout architecture for the Gradiant project, explaining the relationship between different layout components and their usage.
+This document outlines the admin layout architecture for the Pixelated project, explaining the relationship between different layout components and their usage.
 
 Admin layouts provide a consistent structure for administrative pages, including navigation, authentication checks, and responsive design. The project is currently transitioning from React-based admin pages to Astro-based pages for improved performance.
 

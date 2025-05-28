@@ -119,7 +119,7 @@ export class LocalStorageProvider implements StorageProvider {
     try {
       // Convert Uint8Array to Base64 string for storage
       const base64Data = btoa(
-        String.fromCharCode.apply(null, Array.from(data) as any),
+        String.fromCharCode.apply(null, Array.from(data)),
       )
 
       // Store with prefix
@@ -203,7 +203,7 @@ export class IndexedDBStorageProvider implements StorageProvider {
       const request = indexedDB.open(this.dbName, 1)
 
       request.onerror = (event) => {
-        logger.error('Failed to open IndexedDB', event)
+        logger.error('Failed to open IndexedDB', { error: (event.target as IDBOpenDBRequest)?.error?.message || 'Unknown error' })
         reject(new Error('Failed to open IndexedDB'))
       }
 
@@ -356,7 +356,6 @@ export function getStorageProvider(
 // Default export for module
 export default {
   getStorageProvider,
-  StorageProvider,
   InMemoryStorageProvider,
   LocalStorageProvider,
   IndexedDBStorageProvider,

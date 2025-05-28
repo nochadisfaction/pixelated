@@ -41,7 +41,7 @@ export async function isModuleAvailable(moduleName: string): Promise<boolean> {
  * @param moduleName The name of the module to import
  * @returns Promise resolving to the module if available, null otherwise
  */
-export async function safeImport<T = any>(
+export async function safeImport<T = unknown>(
   moduleName: string,
 ): Promise<T | null> {
   if (isBrowser) {
@@ -89,7 +89,7 @@ export async function importCommonModules() {
     return Object.fromEntries(Object.keys(NodeModules).map((key) => [key, {}]))
   }
 
-  const modules: Record<string, any> = {}
+  const modules: Record<string, unknown> = {}
 
   // Import each module in parallel
   const imports = Object.entries(NodeModules).map(async ([key, name]) => {

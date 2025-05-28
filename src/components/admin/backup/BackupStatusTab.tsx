@@ -40,6 +40,7 @@ const renderStatusBadge = (status: BackupStatus) => {
   switch (status) {
     case BackupStatus.PENDING:
       return <Badge variant="outline">Pending</Badge>
+
     case BackupStatus.IN_PROGRESS:
       return (
         <Badge
@@ -49,6 +50,7 @@ const renderStatusBadge = (status: BackupStatus) => {
           In Progress
         </Badge>
       )
+
     case BackupStatus.COMPLETED:
       return (
         <Badge
@@ -58,8 +60,10 @@ const renderStatusBadge = (status: BackupStatus) => {
           Completed
         </Badge>
       )
+
     case BackupStatus.FAILED:
       return <Badge variant="destructive">Failed</Badge>
+
     case BackupStatus.VERIFIED:
       return (
         <Badge
@@ -69,8 +73,10 @@ const renderStatusBadge = (status: BackupStatus) => {
           Verified
         </Badge>
       )
+
     case BackupStatus.VERIFICATION_FAILED:
       return <Badge variant="destructive">Verification Failed</Badge>
+
     case BackupStatus.EXPIRED:
       return (
         <Badge
@@ -80,6 +86,7 @@ const renderStatusBadge = (status: BackupStatus) => {
           Expired
         </Badge>
       )
+
     default:
       return null
   }
@@ -97,6 +104,7 @@ const renderTypeBadge = (type: BackupType) => {
           Full
         </Badge>
       )
+
     case BackupType.DIFFERENTIAL:
       return (
         <Badge
@@ -106,6 +114,7 @@ const renderTypeBadge = (type: BackupType) => {
           Differential
         </Badge>
       )
+
     case BackupType.TRANSACTION:
       return (
         <Badge
@@ -115,6 +124,7 @@ const renderTypeBadge = (type: BackupType) => {
           Transaction
         </Badge>
       )
+
     default:
       return null
   }

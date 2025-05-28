@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro'
-import { createAuditLog } from '../../../lib/audit/log'
+import { createAuditLog } from '../../../lib/audit'
 import { getSession } from '../../../lib/auth/session'
 import { supabase } from '../../../lib/db/supabase'
 

@@ -99,16 +99,48 @@ function createMockClient() {
       signInWithPassword: () =>
         Promise.resolve({ data: { user: null, session: null }, error: null }),
       signOut: () => Promise.resolve({ error: null }),
-    },
-    from: () => ({
-      insert: () => Promise.resolve({ error: null }),
-      select: () => ({
-        eq: () => ({
-          order: () => ({
-            range: () => Promise.resolve({ data: [], error: null }),
-          }),
-        }),
+      onAuthStateChange: () => ({
+        data: { subscription: { unsubscribe: () => {} } },
       }),
+      refreshSession: () =>
+        Promise.resolve({ data: { session: null }, error: null }),
+      updateUser: () => Promise.resolve({ data: { user: null }, error: null }),
+      signUp: () =>
+        Promise.resolve({ data: { user: null, session: null }, error: null }),
+      signInWithOtp: () => Promise.resolve({ error: null }),
+      resetPasswordForEmail: () => Promise.resolve({ error: null }),
+    },
+    from: (_table: string) => ({
+      insert: () => Promise.resolve({ error: null }),
+      select: (_columns?: string) => ({
+        eq: (_column: string, _value: unknown) => ({
+          order: (_column: string, _options?: { ascending?: boolean }) => ({
+            range: (_from: number, _to: number) =>
+              Promise.resolve({ data: [], error: null }),
+            limit: (_count: number) =>
+              Promise.resolve({ data: [], error: null }),
+          }),
+          limit: (_count: number) => Promise.resolve({ data: [], error: null }),
+        }),
+        neq: (_column: string, _value: unknown) => ({
+          order: (_column: string, _options?: { ascending?: boolean }) =>
+            Promise.resolve({ data: [], error: null }),
+        }),
+        gt: (_column: string, _value: unknown) => ({
+          order: (_column: string, _options?: { ascending?: boolean }) =>
+            Promise.resolve({ data: [], error: null }),
+        }),
+        single: () => Promise.resolve({ data: null, error: null }),
+      }),
+      update: () => ({
+        eq: (_column: string, _value: unknown) =>
+          Promise.resolve({ error: null }),
+      }),
+      delete: () => ({
+        eq: (_column: string, _value: unknown) =>
+          Promise.resolve({ error: null }),
+      }),
+      upsert: () => Promise.resolve({ error: null }),
     }),
   }
 }
@@ -128,7 +160,7 @@ export const supabase = hasValidCredentials
         autoRefreshToken: true,
       },
     })
-  : (createMockClient() as any)
+  : (createMockClient() as unknown as SupabaseClient)
 
 // Create an admin client with service role (for server-side only!)
 export const supabaseAdmin =
@@ -139,7 +171,7 @@ export const supabaseAdmin =
           autoRefreshToken: false,
         },
       })
-    : (createMockClient() as any)
+    : (createMockClient() as unknown as SupabaseClient)
 
 // Create a server client (from headers)
 export function createServerClient(headers: Headers) {
@@ -157,7 +189,7 @@ export function createServerClient(headers: Headers) {
           },
         },
       })
-    : (createMockClient() as any)
+    : (createMockClient() as unknown as SupabaseClient)
 }
 
 // Example PHI audit logging - uncomment and customize as needed

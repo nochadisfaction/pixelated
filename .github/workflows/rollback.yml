@@ -95,7 +95,7 @@ jobs:
 
           pages_build_output_dir = "./dist"
           EOL
-          wrangler pages deploy dist --project-name=gradiant --branch=staging
+          wrangler pages deploy dist --project-name=pixelated --branch=staging
 
       - name: Create rollback tag
         run: |
@@ -184,7 +184,7 @@ jobs:
 
           pages_build_output_dir = "./dist"
           EOL
-          wrangler pages deploy dist --project-name=gradiant --branch=production
+          wrangler pages deploy dist --project-name=pixelated --branch=production
 
       - name: Create rollback tag
         run: |

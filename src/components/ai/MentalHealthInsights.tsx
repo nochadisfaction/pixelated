@@ -67,8 +67,11 @@ export const MentalHealthInsights: React.FC<MentalHealthInsightsProps> = ({
         title="Cognitive Patterns"
         items={analysis.cognitivePatterns}
       />
+
       <ListSection title="Strengths" items={analysis.strengths} />
+
       <ListSection title="Primary Concerns" items={analysis.primaryConcerns} />
+
       <ListSection
         title="Therapeutic Recommendations"
         items={analysis.therapeuticRecommendations}

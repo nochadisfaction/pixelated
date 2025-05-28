@@ -447,19 +447,19 @@ export class AIPerformanceMonitor {
 export function monitorPerformance(
   operationType: AIOperationType,
   options?: {
-    getInputTokens?: (args: any[]) => number
-    getOutputTokens?: (result: any) => number
-    getMetadata?: (args: any[]) => Record<string, unknown>
+    getInputTokens?: (args: unknown[]) => number
+    getOutputTokens?: (result: unknown) => number
+    getMetadata?: (args: unknown[]) => Record<string, unknown>
   },
 ) {
   return function (
-    target: any,
+    target: unknown,
     propertyKey: string,
     descriptor: PropertyDescriptor,
   ) {
     const originalMethod = descriptor.value
 
-    descriptor.value = async function (...args: any[]) {
+    descriptor.value = async function (...args: unknown[]) {
       const monitor = AIPerformanceMonitor.getInstance()
       const metadata = options?.getMetadata ? options.getMetadata(args) : {}
 
@@ -559,7 +559,32 @@ export interface PerformanceMetrics {
   /**
    * Additional metadata about the operation
    */
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
+
+  /**
+   * User ID associated with the operation
+   */
+  userId?: string
+
+  /**
+   * Number of input tokens (optional)
+   */
+  inputTokens?: number
+
+  /**
+   * Number of output tokens (optional)
+   */
+  outputTokens?: number
+
+  /**
+   * Total tokens used (optional)
+   */
+  totalTokens?: number
+
+  /**
+   * Error code if the operation failed (optional)
+   */
+  errorCode?: string
 }
 
 /**
@@ -930,7 +955,7 @@ export function createOptimizedAIService(
           latency: endTime - startTime,
           success: false,
           errorCode,
-          cached,
+          cached: false,
           optimized: false,
         })
 
@@ -963,6 +988,8 @@ export function createOptimizedAIService(
           endTime,
           latency: endTime - startTime,
           success,
+          cached: false, // Streaming responses are not cached
+          optimized: false, // Streaming responses are not typically optimized in this context
         })
 
         return response
@@ -984,6 +1011,8 @@ export function createOptimizedAIService(
           latency: endTime - startTime,
           success: false,
           errorCode,
+          cached: false,
+          optimized: false,
         })
 
         throw error

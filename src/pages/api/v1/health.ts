@@ -1,3 +1,4 @@
+export const prerender = false
 import type { APIRoute } from 'astro'
 import * as os from 'node:os'
 import { createClient } from '@supabase/supabase-js'
@@ -15,7 +16,7 @@ import { getRedisHealth } from '../../../lib/redis'
  */
 export const GET: APIRoute = async ({ request }) => {
   const startTime = performance.now()
-  const healthStatus: Record<string, any> = {
+  const healthStatus: Record<string, unknown> = {
     status: 'healthy',
     api: {
       status: 'healthy',
@@ -39,6 +40,11 @@ export const GET: APIRoute = async ({ request }) => {
   // If no Supabase credentials, return partial health status
   const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL
   const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+
+  interface RedisHealth {
+    status: string
+    [key: string]: unknown
+  }
 
   if (!supabaseUrl || !supabaseAnonKey) {
     console.warn(
@@ -69,7 +75,8 @@ export const GET: APIRoute = async ({ request }) => {
   // Check Redis connection
   try {
     healthStatus.redis = await getRedisHealth()
-    if (healthStatus.redis.status === 'unhealthy') {
+    const redisInfo = healthStatus.redis as RedisHealth
+    if (redisInfo && redisInfo.status === 'unhealthy') {
       healthStatus.status = 'unhealthy'
     }
   } catch (error) {
@@ -86,7 +93,15 @@ export const GET: APIRoute = async ({ request }) => {
 
   // Calculate response time
   const endTime = performance.now()
-  healthStatus.api.responseTimeMs = Math.round(endTime - startTime)
+  if (
+    healthStatus.api &&
+    typeof healthStatus.api === 'object' &&
+    healthStatus.api !== null &&
+    'responseTimeMs' in healthStatus.api
+  ) {
+    ;(healthStatus.api as { responseTimeMs: number }).responseTimeMs =
+      Math.round(endTime - startTime)
+  }
 
   // Return the health status
   return new Response(JSON.stringify(healthStatus, null, 2), {
@@ -104,7 +119,7 @@ export const GET: APIRoute = async ({ request }) => {
 async function checkSupabaseConnection(
   supabaseUrl: string,
   supabaseAnonKey: string,
-): Promise<Record<string, any>> {
+): Promise<Record<string, unknown>> {
   // Create Supabase client if credentials are available
   const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
@@ -137,7 +152,7 @@ async function checkSupabaseConnection(
 /**
  * Get system information including memory, CPU, and runtime details
  */
-function getSystemInformation(): Record<string, any> {
+function getSystemInformation(): Record<string, unknown> {
   // Get memory usage
   const totalMemory = os.totalmem()
   const freeMemory = os.freemem()

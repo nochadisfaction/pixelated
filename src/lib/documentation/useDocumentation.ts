@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import type { DocumentationSystem } from './DocumentationSystem'
 import { createDocumentationSystem } from './DocumentationSystem'
 import { AIRepository } from '../db/ai/repository'
-import { AIService } from '../ai/AIService'
+import { AIService, type AICache, type AIProvider, type Message, type AIServiceOptions, type AIResponse } from '../ai/AIService'
 import type {
   SessionDocumentation,
   TherapyAIOptions,
@@ -42,10 +42,10 @@ export function useDocumentation(sessionId: string) {
         const repository = new AIRepository()
 
         // Create a mock cache and provider for AIService
-        const mockCache = { get: async () => null } as any
-        const mockProvider = {
-          createChatCompletion: async () => ({ content: '' }),
-        } as any
+        const mockCache: AICache = { get: async (_messages: Message[], _options?: AIServiceOptions): Promise<AIResponse | null> => null, }
+        const mockProvider: AIProvider = {
+          createChatCompletion: async (_messages: Message[], _options?: AIServiceOptions): Promise<AIResponse> => ({ content: '' }),
+        }
         const aiService = new AIService(mockCache, mockProvider)
 
         // Create documentation system
@@ -359,12 +359,12 @@ export function useDocumentation(sessionId: string) {
       const isActive = documentationSystem.isSessionActive(sessionId)
 
       if (isActive) {
-        toast({
-          title: 'Documentation refreshed',
-          description:
-            'Session is still active. Updates may continue to arrive.',
-          duration: 3000,
-        })
+        toast(
+          'Documentation refreshed. Session is still active. Updates may continue to arrive.',
+          {
+            duration: 3000,
+          }
+        )
       }
     } catch (error) {
       logger.error('Error refreshing documentation', { sessionId, error })

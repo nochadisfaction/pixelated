@@ -1,8 +1,10 @@
 import { protectRoute } from '../../../../lib/auth/serverAuth'
 import { supabase } from '../../../../lib/supabase'
 import { getLogger } from '../../../../lib/logging'
-import { createResourceAuditLog } from '../../../../lib/audit/log'
+import { createResourceAuditLog } from '../../../../lib/audit'
 import type { AuthAPIContext } from '../../../../lib/auth/apiRouteTypes'
+
+export const prerender = false
 
 const logger = getLogger({ prefix: 'admin-users-api' })
 

@@ -1,3 +1,5 @@
+export const prerender = false
+
 import type { APIRoute } from 'astro'
 import type { ExportResult } from '../../../../lib/export'
 import { getSession } from '../../../../lib/auth/session'

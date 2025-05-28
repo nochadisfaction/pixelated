@@ -5,7 +5,7 @@ import { verifyMentalLLaMAModelConfiguration } from '../../../../lib/ai/mental-l
  * API endpoint to check the status of the MentalLLaMA model
  * Returns configuration status and any error messages
  */
-export const get: APIRoute = async () => {
+export const GET: APIRoute = async () => {
   try {
     const configResult = await verifyMentalLLaMAModelConfiguration()
 

@@ -3,6 +3,8 @@ import { createPatternRecognitionService } from '../../../lib/ai/services/Patter
 import { getLogger } from '../../../lib/logging'
 import { protectRoute } from '../../../lib/auth/serverAuth'
 
+export const prerender = false
+
 // Get logger instance
 const logger = getLogger({ prefix: 'api-pattern-trends' })
 

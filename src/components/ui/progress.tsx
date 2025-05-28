@@ -126,10 +126,8 @@ export function ProgressCircular({
   className,
   ...props
 }: Omit<ProgressProps, 'size'> & {
-  /** Size of the circular progress in pixels */
-  size?: number
-  /** Width of the progress stroke */
-  strokeWidth?: number
+  /** Size of the circular progress in pixels */ size?: number
+  /** Width of the progress stroke */ strokeWidth?: number
 }) {
   // Calculate percentage and circle properties
   const percentage = Math.min(Math.max(0, (value / max) * 100), 100)

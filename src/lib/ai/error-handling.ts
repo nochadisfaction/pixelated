@@ -6,7 +6,7 @@ import type {
   AIStreamChunk,
   ModelInfo,
 } from './models/ai-types'
-import { createAuditLog } from '../audit/log'
+import { createAuditLog } from '../audit'
 
 /**
  * Standard error types for AI service operations

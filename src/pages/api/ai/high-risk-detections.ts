@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro'
-import { createAuditLog } from '../../../lib/audit/log.js'
+import { createAuditLog } from '../../../lib/audit'
 import { getSession } from '../../../lib/auth/session.js'
 import { aiRepository } from '../../../lib/db/ai/index.js'
 

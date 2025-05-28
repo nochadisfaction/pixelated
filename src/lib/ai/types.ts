@@ -331,7 +331,7 @@ export interface AIRequest {
   prompt: string
   userId?: string
   sessionId?: string
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
   // ... other relevant fields
 }
 
@@ -340,6 +340,6 @@ export interface AIResponse {
   text: string
   confidence?: number
   error?: string
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
   // ... other relevant fields
 }

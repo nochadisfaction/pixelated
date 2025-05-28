@@ -1,5 +1,5 @@
 import type { Database } from '../../types/supabase'
-import { createAuditLog } from '../audit/log'
+import { createAuditLog } from '../audit'
 import { supabase, supabaseAdmin } from '../supabase'
 
 export type Conversation = Database['public']['Tables']['conversations']['Row']

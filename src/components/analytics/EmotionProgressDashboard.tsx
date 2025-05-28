@@ -202,18 +202,21 @@ export default function EmotionProgressDashboard({
                     stroke="#22c55e"
                     activeDot={{ r: 8 }}
                   />
+
                   <Line
                     type="monotone"
                     dataKey="stabilityChange"
                     name="Stability"
                     stroke="#3b82f6"
                   />
+
                   <Line
                     type="monotone"
                     dataKey="positiveEmotionChange"
                     name="Positive Emotions"
                     stroke="#4ade80"
                   />
+
                   <Line
                     type="monotone"
                     dataKey="negativeEmotionChange"
@@ -279,6 +282,7 @@ export default function EmotionProgressDashboard({
                           : 'primary'
                     }
                   />
+
                   <div className="text-xs text-gray-500">
                     Previous: {(risk.previousLevel * 100).toFixed(0)}% →
                     Current: {(risk.currentLevel * 100).toFixed(0)}%
@@ -307,6 +311,7 @@ export default function EmotionProgressDashboard({
                     max={100}
                     variant={goal.progress >= 1 ? 'success' : 'primary'}
                   />
+
                   <div className="text-xs text-gray-500">
                     {(goal.progress * 100).toFixed(0)}% complete
                   </div>

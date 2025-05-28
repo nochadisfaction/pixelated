@@ -37,7 +37,13 @@ interface PatientModel {
   name: string
   presentingIssues: string[]
   primaryDiagnosis: string
-  responseStyle: any
+  responseStyle: {
+    emotionalExpression?: string
+    communicationStyle?: string
+    defensiveness?: number
+    openness?: number
+    [key: string]: unknown
+  }
   // Add other patient model properties as needed
 }
 
@@ -373,7 +379,7 @@ export function SupervisorFeedback({
                                 key={idx}
                                 className="text-sm text-gray-700 pl-2 border-l-2 border-green-300"
                               >
-                                "{example}"
+                                &ldquo;{example}&rdquo;
                               </li>
                             ))}
                         </ul>
@@ -407,7 +413,7 @@ export function SupervisorFeedback({
                         </div>
                         <div className="mt-2 text-sm">
                           <p className="text-gray-700 italic mb-2">
-                            Client: "{opportunity.context}"
+                            Client: &ldquo;{opportunity.context}&rdquo;
                           </p>
                           <p className="text-gray-600 mb-2">
                             {opportunity.rationale}
@@ -417,7 +423,7 @@ export function SupervisorFeedback({
                               Example response:
                             </p>
                             <p className="text-gray-700">
-                              "{opportunity.exampleResponse}"
+                              &ldquo;{opportunity.exampleResponse}&rdquo;
                             </p>
                           </div>
                         </div>

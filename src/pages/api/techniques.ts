@@ -1,63 +1,57 @@
-import type { APIRoute } from 'astro';
-import { getCollection } from 'astro:content';
-import { techniqueSchema } from '@/content/schema';
-import { OutcomeRecommendationEngine } from '@/lib/ai/services/OutcomeRecommendationEngine';
-import type { ContextFactors } from '@/lib/ai/services/ContextualAwarenessService';
+import type { APIRoute } from 'astro'
+import { getCollection } from 'astro:content'
+import { techniqueSchema, type TechniqueSchema } from '@/content/schema'
+import { OutcomeRecommendationEngine } from '@/lib/ai/services/OutcomeRecommendationEngine'
+import type { ContextFactors } from '@/lib/ai/services/ContextualAwarenessService'
+import type { CollectionEntry } from 'astro:content'
 
-const ALLOWED_CATEGORIES = [
-  'CBT',
-  'Mindfulness',
-  'DBT',
-  'ACT',
-  'EMDR',
-  'Other',
-];
-const ALLOWED_EVIDENCE = ['Strong', 'Moderate', 'Preliminary', 'Anecdotal'];
+const ALLOWED_CATEGORIES = ['CBT', 'Mindfulness', 'DBT', 'ACT', 'EMDR', 'Other']
+const ALLOWED_EVIDENCE = ['Strong', 'Moderate', 'Preliminary', 'Anecdotal']
 
-export const get: APIRoute = async ({ request }) => {
+export const GET: APIRoute = async ({ request }) => {
   try {
-    const url = new URL(request.url);
-    const category = url.searchParams.get('category');
-    const evidenceLevel = url.searchParams.get('evidenceLevel');
+    const url = new URL(request.url)
+    const category = url.searchParams.get('category')
+    const evidenceLevel = url.searchParams.get('evidenceLevel')
 
     // Validate query params
-    let categoryFilter: string | undefined = undefined;
+    let categoryFilter: string | undefined = undefined
     if (category) {
       if (!ALLOWED_CATEGORIES.includes(category)) {
         return new Response(
           JSON.stringify({ error: 'Invalid category parameter.' }),
-          { status: 400, headers: { 'Content-Type': 'application/json' } }
-        );
+          { status: 400, headers: { 'Content-Type': 'application/json' } },
+        )
       }
-      categoryFilter = category;
+      categoryFilter = category
     }
-    let evidenceFilter: string | undefined = undefined;
+    let evidenceFilter: string | undefined = undefined
     if (evidenceLevel) {
       if (!ALLOWED_EVIDENCE.includes(evidenceLevel)) {
         return new Response(
           JSON.stringify({ error: 'Invalid evidenceLevel parameter.' }),
-          { status: 400, headers: { 'Content-Type': 'application/json' } }
-        );
+          { status: 400, headers: { 'Content-Type': 'application/json' } },
+        )
       }
-      evidenceFilter = evidenceLevel;
+      evidenceFilter = evidenceLevel
     }
 
     // Fetch all techniques
-    const allTechniques = await getCollection('techniques');
+    const allTechniques = await getCollection('techniques')
     // Validate and filter
     const validTechniques = allTechniques
-      .map((entry) => {
-        const parsed = techniqueSchema.safeParse(entry.data);
-        return parsed.success ? parsed.data : null;
+      .map((entry: CollectionEntry<'techniques'>) => {
+        const parsed = techniqueSchema.safeParse(entry.data)
+        return parsed.success ? parsed.data : null
       })
-      .filter(Boolean);
+      .filter(Boolean)
 
-    let filtered = validTechniques;
+    let filtered = validTechniques
     if (categoryFilter) {
-      filtered = filtered.filter((t) => t.category === categoryFilter);
+      filtered = filtered.filter((t: TechniqueSchema) => t.category === categoryFilter)
     }
     if (evidenceFilter) {
-      filtered = filtered.filter((t) => t.evidenceLevel === evidenceFilter);
+      filtered = filtered.filter((t: TechniqueSchema) => t.evidenceLevel === evidenceFilter)
     }
 
     return new Response(JSON.stringify(filtered), {
@@ -68,57 +62,73 @@ export const get: APIRoute = async ({ request }) => {
         'X-Content-Type-Options': 'nosniff',
         'X-Frame-Options': 'DENY',
         'Referrer-Policy': 'same-origin',
-        'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
+        'Strict-Transport-Security':
+          'max-age=63072000; includeSubDomains; preload',
       },
-    });
+    })
   } catch (err) {
-    return new Response(
-      JSON.stringify({ error: 'Internal server error.' }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
+    return new Response(JSON.stringify({ error: 'Internal server error.' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    })
   }
-};
+}
 
-export const post: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request }) => {
   try {
     if (request.headers.get('content-type') !== 'application/json') {
       return new Response(
         JSON.stringify({ error: 'Content-Type must be application/json' }),
-        { status: 415, headers: { 'Content-Type': 'application/json' } }
-      );
+        { status: 415, headers: { 'Content-Type': 'application/json' } },
+      )
     }
-    const body = await request.json();
-    const { context, desiredOutcomes, maxResults } = body || {};
+    const body = await request.json()
+    const { context, desiredOutcomes, maxResults } = body || {}
 
     // Basic input validation
-    if (!context || !Array.isArray(desiredOutcomes) || desiredOutcomes.length === 0) {
+    if (
+      !context ||
+      !Array.isArray(desiredOutcomes) ||
+      desiredOutcomes.length === 0
+    ) {
       return new Response(
-        JSON.stringify({ error: 'context and desiredOutcomes[] are required.' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
+        JSON.stringify({
+          error: 'context and desiredOutcomes[] are required.',
+        }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } },
+      )
     }
     // Optionally, validate context structure (minimal check)
     if (!context.session || !context.chatSession) {
       return new Response(
-        JSON.stringify({ error: 'context.session and context.chatSession are required.' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
+        JSON.stringify({
+          error: 'context.session and context.chatSession are required.',
+        }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } },
+      )
     }
     // Defensive: limit maxResults
-    const safeMaxResults = typeof maxResults === 'number' && maxResults > 0 && maxResults <= 10 ? maxResults : 5;
+    const safeMaxResults =
+      typeof maxResults === 'number' && maxResults > 0 && maxResults <= 10
+        ? maxResults
+        : 5
 
     // Generate recommendations
-    let recommendations;
+    let recommendations
     try {
-      recommendations = OutcomeRecommendationEngine.recommend({ context, desiredOutcomes, maxResults: safeMaxResults });
+      recommendations = OutcomeRecommendationEngine.recommend({
+        context,
+        desiredOutcomes,
+        maxResults: safeMaxResults,
+      })
     } catch (err) {
       return new Response(
-        JSON.stringify({ error: 'Recommendation engine error', details: (err as Error).message }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } }
-      );
+        JSON.stringify({
+          error: 'Recommendation engine error',
+          details: (err as Error).message,
+        }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } },
+      )
     }
 
     return new Response(JSON.stringify(recommendations), {
@@ -129,16 +139,14 @@ export const post: APIRoute = async ({ request }) => {
         'X-Content-Type-Options': 'nosniff',
         'X-Frame-Options': 'DENY',
         'Referrer-Policy': 'same-origin',
-        'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
+        'Strict-Transport-Security':
+          'max-age=63072000; includeSubDomains; preload',
       },
-    });
+    })
   } catch (err) {
-    return new Response(
-      JSON.stringify({ error: 'Internal server error.' }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
+    return new Response(JSON.stringify({ error: 'Internal server error.' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    })
   }
-};
+}

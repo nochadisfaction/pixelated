@@ -10,12 +10,25 @@ interface WebSocketHookOptions {
   encrypted?: boolean
 }
 
-interface WebSocketMessage {
-  type: 'message' | 'status' | 'error'
-  data: any
-  sessionId?: string
-  encrypted?: boolean
-}
+type WebSocketMessage =
+  | {
+      type: 'message'
+      data: ChatMessage
+      sessionId?: string
+      encrypted?: boolean
+    }
+  | {
+      type: 'status'
+      data: { status: string }
+      sessionId?: string
+      encrypted?: boolean
+    }
+  | {
+      type: 'error'
+      data: { message?: string }
+      sessionId?: string
+      encrypted?: boolean
+    }
 
 export function useWebSocket({
   url,

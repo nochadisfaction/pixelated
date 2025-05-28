@@ -69,7 +69,26 @@ vi.mock('ws', () => ({
 }))
 
 // Import mocks after they're defined
-const { mockRedisClient } = vi.mocked(require('@/lib/services/redis'))
+import * as redisModule from '@/lib/services/redis'
+type MockRedisClient = {
+  lpush: ReturnType<typeof vi.fn>
+  rpoplpush: ReturnType<typeof vi.fn>
+  lrem: ReturnType<typeof vi.fn>
+  llen: ReturnType<typeof vi.fn>
+  lrange: ReturnType<typeof vi.fn>
+  zadd: ReturnType<typeof vi.fn>
+  zrangebyscore: ReturnType<typeof vi.fn>
+  zremrangebyscore: ReturnType<typeof vi.fn>
+  keys: ReturnType<typeof vi.fn>
+  hget: ReturnType<typeof vi.fn>
+  hgetall: ReturnType<typeof vi.fn>
+  hset: ReturnType<typeof vi.fn>
+  hdel: ReturnType<typeof vi.fn>
+  del: ReturnType<typeof vi.fn>
+}
+const { mockRedisClient } = vi.mocked(redisModule) as unknown as {
+  mockRedisClient: MockRedisClient
+}
 
 describe('analyticsService', () => {
   let analyticsService: AnalyticsService

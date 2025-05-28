@@ -16,9 +16,9 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Check if we're in the right environment
-if [ -z "${CONDA_DEFAULT_ENV}" ] || [ "${CONDA_DEFAULT_ENV}" != "gradiant" ]; then
-  echo -e "${YELLOW}Warning: Not in the gradiant conda environment.${NC}"
-  echo -e "${YELLOW}It's recommended to run: conda activate gradiant${NC}"
+if [ -z "${CONDA_DEFAULT_ENV}" ] || [ "${CONDA_DEFAULT_ENV}" != "pixelated" ]; then
+  echo -e "${YELLOW}Warning: Not in the pixelated conda environment.${NC}"
+  echo -e "${YELLOW}It's recommended to run: conda activate pixelated${NC}"
   read -p "Continue anyway? (y/n) " -n 1 -r
   echo
   if [[ ! ${REPLY} =~ ^[Yy]$ ]]; then

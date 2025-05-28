@@ -92,6 +92,7 @@ const EmotionVisualizationDemo: React.FC = () => {
                 onChange={handleDataPointsChange}
                 className="w-full"
               />
+
               <div className="flex justify-between text-xs mt-1">
                 <span>10</span>
                 <span>250</span>

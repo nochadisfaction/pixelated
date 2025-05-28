@@ -34,6 +34,35 @@ export interface SearchOptions {
   enrich?: boolean
 }
 
+// FlexSearch Document configuration interface
+interface FlexSearchDocumentConfig {
+  document: {
+    id: string
+    index: string[]
+    store: boolean
+  }
+  tokenize?: string
+  cache?: number
+  context?: boolean
+}
+
+// FlexSearch Document instance interface
+interface FlexSearchDocumentInstance {
+  search(
+    query: string,
+    options?: SearchOptions,
+  ): Array<{
+    field: string
+    result: Array<string | number>
+  }>
+  add(document: SearchDocument): void
+}
+
+// FlexSearch Document constructor interface
+interface FlexSearchDocumentConstructor {
+  new (config: FlexSearchDocumentConfig): FlexSearchDocumentInstance
+}
+
 // Define search index configuration type
 export interface SearchConfig {
   // FlexSearch indexing options
@@ -89,11 +118,14 @@ function createFallbackClient(): ISearchClient {
 
 // Client-side search implementation
 class BrowserSearchClient implements ISearchClient {
-  private index: any
+  private index: FlexSearchDocumentInstance
   private documents: Map<string | number, SearchDocument> = new Map()
   private config: SearchConfig
 
-  constructor(Document: any, config: Partial<SearchConfig> = {}) {
+  constructor(
+    Document: FlexSearchDocumentConstructor,
+    config: Partial<SearchConfig> = {},
+  ) {
     // Merge default config with provided config
     this.config = {
       ...DEFAULT_CONFIG,
@@ -202,14 +234,15 @@ export async function initBrowserSearch(
   // Browser implementation
   try {
     // Dynamic import with proper error handling
-    let Document
+    let Document: FlexSearchDocumentConstructor
 
     try {
       // Use dynamic import with module specifier pattern that Vite can analyze
       // First attempt - standard import path for ESM
       const flexsearchPath = 'flexsearch'
       const flexsearch = await import(flexsearchPath)
-      Document = flexsearch.default?.Document || flexsearch.Document
+      Document = (flexsearch.default?.Document ||
+        flexsearch.Document) as FlexSearchDocumentConstructor
     } catch (err) {
       console.warn(
         'Failed to load flexsearch directly, trying alternative path:',
@@ -220,7 +253,7 @@ export async function initBrowserSearch(
         const documentModulePath = 'flexsearch/dist/module/document'
         const documentModule = await import(documentModulePath)
         // Use default export as the Document class
-        Document = documentModule.default
+        Document = documentModule.default as FlexSearchDocumentConstructor
       } catch (docErr) {
         console.error(
           'Failed to load flexsearch Document from alternate path:',

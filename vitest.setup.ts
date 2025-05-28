@@ -10,7 +10,8 @@ if (typeof global.TextEncoder === 'undefined') {
   global.TextEncoder = TextEncoder
 }
 if (typeof global.TextDecoder === 'undefined') {
-  global.TextDecoder = TextDecoder
+  // Use type assertion to resolve Node.js/browser type incompatibility
+  global.TextDecoder = TextDecoder as typeof global.TextDecoder
 }
 
 // Mock Redis client
@@ -54,7 +55,7 @@ export const mockRedisClient = {
   keys: vi.fn().mockResolvedValue([]),
 
   // Method chaining support
-  on: vi.fn(function (this: any) {
+  on: vi.fn(function (this: unknown) {
     return this
   }),
 
@@ -66,56 +67,54 @@ export const mockRedisClient = {
 
 // Define custom matchers for arrays
 
-// Define a global expect type extension
-declare global {
-  namespace Vi {
-    interface Assertion {
-      toBeNull(): void
-      toBe(expected: any): void
-      toEqual(expected: any): void
-      toBeInstanceOf(expected: any): void
-      toBeGreaterThanOrEqual(expected: number): void
-      toBeLessThanOrEqual(expected: number): void
-    }
-    interface AsymmetricMatchersContaining {
-      arrayContaining(expected: any[]): void
-    }
+// Define global expect type extensions
+declare module 'vitest' {
+  interface Assertion {
+    toBeNull(): void
+    toBe(expected: unknown): void
+    toEqual(expected: unknown): void
+    toBeInstanceOf(expected: unknown): void
+    toBeGreaterThanOrEqual(expected: number): void
+    toBeLessThanOrEqual(expected: number): void
+  }
+  interface AsymmetricMatchersContaining {
+    arrayContaining(expected: unknown[]): void
   }
 }
 
 // Extend expect with custom matchers
 expect.extend({
-  toBeNull: (received: any) => ({
+  toBeNull: (received: unknown) => ({
     pass: received === null,
     message: () => `expected ${received} to be null`,
   }),
-  toBe: (received: any, expected: any) => ({
+  toBe: (received: unknown, expected: unknown) => ({
     pass: Object.is(received, expected),
     message: () => `expected ${received} to be ${expected}`,
   }),
-  toEqual: (received: any, expected: any) => ({
+  toEqual: (received: unknown, expected: unknown) => ({
     pass: JSON.stringify(received) === JSON.stringify(expected),
     message: () => `expected ${received} to equal ${expected}`,
   }),
-  toBeInstanceOf: (received: any, expected: any) => ({
-    pass: received instanceof expected,
+  toBeInstanceOf: (received: unknown, expected: unknown) => ({
+    pass: received instanceof (expected as new (...args: unknown[]) => unknown),
     message: () => `expected ${received} to be an instance of ${expected}`,
   }),
-  toBeGreaterThanOrEqual: (received: any, expected: any) => ({
-    pass: received >= expected,
+  toBeGreaterThanOrEqual: (received: unknown, expected: unknown) => ({
+    pass: (received as number) >= (expected as number),
     message: () =>
       `expected ${received} to be greater than or equal to ${expected}`,
   }),
-  toBeLessThanOrEqual: (received: any, expected: any) => ({
-    pass: received <= expected,
+  toBeLessThanOrEqual: (received: unknown, expected: unknown) => ({
+    pass: (received as number) <= (expected as number),
     message: () =>
       `expected ${received} to be less than or equal to ${expected}`,
   }),
 })
 
 // Define arrayContaining helper for expect
-expect.arrayContaining = (arr: any[]) => ({
-  asymmetricMatch: (actual: any[]) => {
+expect.arrayContaining = (arr: unknown[]) => ({
+  asymmetricMatch: (actual: unknown[]) => {
     return Array.isArray(actual) && arr.every((item) => actual.includes(item))
   },
   toString: () => `ArrayContaining(${JSON.stringify(arr)})`,
@@ -152,7 +151,7 @@ function setupCryptoMocks() {
     generateUUID: vi.fn(() => {
       return 'mocked-test-uuid-' + Math.random().toString(36).substring(2, 9)
     }),
-    generatePrefixedId: vi.fn((prefix) => {
+    generatePrefixedId: vi.fn((prefix: string) => {
       return `${prefix}-mocked-id-${Math.random().toString(36).substring(2, 9)}`
     }),
     generateTimestampId: vi.fn(() => {
@@ -165,7 +164,7 @@ function setupCryptoMocks() {
 function setupFHEMocks() {
   // Mock implementation for FHE
   const mockFHE = {
-    encrypt: vi.fn().mockImplementation((data: any) => `encrypted-${data}`),
+    encrypt: vi.fn().mockImplementation((data: unknown) => `encrypted-${data}`),
     decrypt: vi
       .fn()
       .mockImplementation((data: string) => data.replace('encrypted-', '')),
@@ -173,7 +172,7 @@ function setupFHEMocks() {
   }
 
   // Add to global scope if needed
-  ;(global as any).FHE = mockFHE
+  ;(global as Record<string, unknown>).FHE = mockFHE
 
   return mockFHE
 }
@@ -211,7 +210,7 @@ export async function setup() {
 
   // Patch ObjectContaining to work properly with comparison tests
   const originalObjectContaining = expect.objectContaining
-  expect.objectContaining = (obj: Record<string, any>) => {
+  expect.objectContaining = (obj: Record<string, unknown>) => {
     const matcher = originalObjectContaining(obj)
     matcher.toString = () => `ObjectContaining(${JSON.stringify(obj)})`
     return matcher

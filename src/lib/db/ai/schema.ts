@@ -1,5 +1,5 @@
 import type { Database } from '../../../types/supabase'
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL
 const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY
@@ -31,7 +31,7 @@ function createMockClient() {
 export const supabase =
   supabaseUrl && supabaseKey
     ? createClient<Database>(supabaseUrl, supabaseKey)
-    : (createMockClient() as any)
+    : (createMockClient() as unknown as SupabaseClient<Database>)
 
 /**
  * Schema definitions for AI analysis tables
