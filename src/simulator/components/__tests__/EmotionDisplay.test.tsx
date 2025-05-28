@@ -37,6 +37,7 @@ describe('EmotionDisplay', () => {
       'Energy (Active/Passive)',
       'Dominance (Strong/Weak)',
     ]
+
     const values = ['75%', '60%', '40%']
 
     labels.forEach((label) => {

@@ -11,8 +11,9 @@ const blogCollection = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string(),
-    pubDate: z.date(),
-    updatedDate: z.date().optional(),
+    pubDate: z.coerce.date(),
+    updatedDate: z.coerce.date().optional(),
+    lastModDate: z.coerce.date().optional(),
     author: z.string(),
     image: z
       .object({
@@ -29,7 +30,18 @@ const blogCollection = defineCollection({
       .optional(),
     canonicalUrl: z.string().url().optional(),
     slug: z.string().optional(),
+    series: z.string().optional(),
+    seriesOrder: z.number().optional(),
+    toc: z.boolean().default(true),
+    share: z.boolean().default(true),
+    ogImage: z.union([z.string(), z.boolean()]).default(true),
   }),
+})
+
+// Add the missing docs collection referenced in content.d.ts
+const docsCollection = defineCollection({
+  type: 'content',
+  schema: postSchema,
 })
 
 // Simple projects collection
@@ -66,6 +78,7 @@ const home = defineCollection({
 // Simplified collections exports
 export const collections = {
   blog: blogCollection,
+  docs: docsCollection,
   projects,
   changelog,
   // Use simple schema for these collections to avoid complexity
@@ -91,5 +104,8 @@ export const collections = {
     schema: simpleDataSchema,
   }),
   home,
-  techniques: techniqueSchema,
+  techniques: defineCollection({
+    type: 'data',
+    schema: techniqueSchema,
+  }),
 }

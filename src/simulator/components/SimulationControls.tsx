@@ -34,6 +34,7 @@ export const SimulationControls: React.FC<SimulationControlsProps> = ({
               onChange={() => toggleSpeechRecognition()}
               disabled={!isConnected}
             />
+
             <span>Speech Recognition</span>
           </label>
           <p className="control-description">
@@ -49,6 +50,7 @@ export const SimulationControls: React.FC<SimulationControlsProps> = ({
               onChange={(e) => toggleEnhancedModels(e.target.checked)}
               disabled={!isConnected}
             />
+
             <span>Enhanced Healthcare Models</span>
           </label>
           <p className="control-description">

@@ -53,7 +53,7 @@ export type BackupConfig = z.infer<typeof backupConfigSchema>
 export const defaultBackupConfig: BackupConfig = {
   storage: {
     provider: 's3',
-    bucket: 'gradiant-backups',
+    bucket: 'pixelated-backups',
     prefix: 'prod',
     region: 'us-east-1',
   },

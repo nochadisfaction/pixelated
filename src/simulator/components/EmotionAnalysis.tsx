@@ -27,6 +27,7 @@ export const EmotionAnalysis: React.FC<EmotionAnalysisProps> = ({ text }) => {
         text={text}
         onAnalysisComplete={handleAnalysisComplete}
       />
+
       <EmotionDisplay />
     </div>
   )

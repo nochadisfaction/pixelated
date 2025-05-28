@@ -983,7 +983,7 @@ function convertToCCD(data: PatientData): string {
   <ClinicalDocument xmlns="urn:hl7-org:v3">
     <typeId root="2.16.840.1.113883.1.3" extension="POCD_HD000040"/>
     <id root="2.16.840.1.113883.19.4" extension="${profile?.patient_id || 'unknown'}"/>
-    <title>Gradiant Mental Health Data Export</title>
+    <title>Pixelated Empathy Mental Health Data Export</title>
     <effectiveTime value="${new Date()
       .toISOString()
       .replace(/[-:T.]/g, '')

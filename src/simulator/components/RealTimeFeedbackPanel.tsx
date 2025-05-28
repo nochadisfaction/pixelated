@@ -90,6 +90,7 @@ export default function RealTimeFeedbackPanel({
             />
           </svg>
         )
+
       case 'therapeutic_alliance':
         return (
           <svg
@@ -107,6 +108,7 @@ export default function RealTimeFeedbackPanel({
             />
           </svg>
         )
+
       case 'technique_application':
         return (
           <svg
@@ -124,6 +126,7 @@ export default function RealTimeFeedbackPanel({
             />
           </svg>
         )
+
       case 'communication_style':
         return (
           <svg
@@ -141,6 +144,7 @@ export default function RealTimeFeedbackPanel({
             />
           </svg>
         )
+
       case 'question_formulation':
         return (
           <svg
@@ -158,6 +162,7 @@ export default function RealTimeFeedbackPanel({
             />
           </svg>
         )
+
       case 'active_listening':
         return (
           <svg
@@ -175,6 +180,7 @@ export default function RealTimeFeedbackPanel({
             />
           </svg>
         )
+
       default:
         return (
           <svg

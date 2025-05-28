@@ -164,7 +164,7 @@ export function TherapyChatClient() {
     <div className={`${isExpanded ? 'fixed inset-0 z-50' : ''}`}>
       {/* Header */}
       <div className="flex justify-between items-center mb-4 bg-gradient-to-r from-purple-900 via-purple-800 to-purple-900 rounded-t-lg p-3">
-        <h1 className="text-xl font-bold">Gradiant Therapy Chat</h1>
+        <h1 className="text-xl font-bold">Pixelated Empathy Therapy Chat</h1>
         <div className="flex items-center space-x-2">
           <SecurityBadge
             securityLevel={securityLevel}

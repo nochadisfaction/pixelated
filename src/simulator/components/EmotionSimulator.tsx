@@ -27,6 +27,7 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
       }`}
       aria-hidden="true"
     />
+
     <span className="text-sm text-muted-foreground">
       {isConnected ? 'Connected' : 'Disconnected'}
     </span>
@@ -107,6 +108,7 @@ export const EmotionSimulator: React.FC = () => {
             onCheckedChange={handleConsentChange}
             aria-label="Audio analysis consent"
           />
+
           <label htmlFor="consent-switch" className="text-sm">
             Allow audio analysis
           </label>

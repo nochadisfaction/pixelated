@@ -334,7 +334,7 @@ export class ExportService {
         margin: 50,
         info: {
           Title: 'Therapy Conversation Export',
-          Author: 'Gradiant System',
+          Author: 'Pixelated Empathy System',
           Subject: 'Therapy Session Transcript',
           Keywords: 'therapy, conversation, export',
           CreationDate: new Date(),

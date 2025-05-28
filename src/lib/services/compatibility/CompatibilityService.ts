@@ -211,7 +211,7 @@ export class CompatibilityService {
     const templateData = {
       name: 'Team',
       issueCount: issues.length,
-      projectName: process.env.PROJECT_NAME || 'Gradiant',
+      projectName: process.env.PROJECT_NAME || 'Pixelated Empathy',
       branchName: process.env.BRANCH_NAME || 'main',
       commitSha: process.env.COMMIT_SHA || '',
       detectionTime: new Date().toISOString(),

@@ -1,5 +1,5 @@
 /**
- * Real FHE (Fully Homomorphic Encryption) service for Gradiant
+ * Real FHE (Fully Homomorphic Encryption) service for Pixelated Empathy
  * Uses node-seal library for Microsoft SEAL implementation
  */
 

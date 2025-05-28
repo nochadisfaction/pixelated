@@ -64,7 +64,7 @@ interface NotificationTemplate {
 // Implement proper mock for HHS_NOTIFICATION_EMAIL
 // Make sure process.env values are handled safely
 const ENV = {
-  ORGANIZATION_NAME: process.env.ORGANIZATION_NAME || 'Gradiant Health',
+  ORGANIZATION_NAME: process.env.ORGANIZATION_NAME || 'Pixelated Empathy Health',
   SECURITY_CONTACT: process.env.SECURITY_CONTACT || 'security@example.com',
   ORGANIZATION_ADDRESS:
     process.env.ORGANIZATION_ADDRESS || '123 Health St, MedCity',

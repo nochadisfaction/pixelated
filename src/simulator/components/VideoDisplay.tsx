@@ -27,6 +27,7 @@ const ICE_SERVERS: IceServer[] = [
     urls: [
       process.env.TURN_SERVER_URL || 'turn:turn.pixelatedempathy.com:3478',
     ],
+
     username: process.env.TURN_SERVER_USERNAME,
     credential: process.env.TURN_SERVER_PASSWORD,
   },
@@ -361,6 +362,7 @@ const VideoDisplay: React.FC<VideoDisplayProps> = ({
                 : 'bg-gray-500'
           }`}
         />
+
         {getStatusMessage()}
       </div>
 

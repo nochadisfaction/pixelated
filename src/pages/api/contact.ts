@@ -1,166 +1,149 @@
 import type { APIRoute } from 'astro'
+import { ContactService } from '@/lib/services/contact/ContactService'
+import { logger } from '@/lib/utils/logger'
 
-// Basic email validation regex
-const EMAIL_REGEX = /^[\w.-]+@([\w-]+\.)+[\w-]{2,4}$/
+// Initialize contact service
+const contactService = new ContactService()
+
+// Helper function to get client IP address
+function getClientIP(request: Request): string {
+  // Check for forwarded headers (common in production with load balancers)
+  const forwardedFor = request.headers.get('x-forwarded-for')
+  if (forwardedFor) {
+    return forwardedFor.split(',')[0].trim()
+  }
+
+  const realIP = request.headers.get('x-real-ip')
+  if (realIP) {
+    return realIP
+  }
+
+  const remoteAddr = request.headers.get('x-remote-addr')
+  if (remoteAddr) {
+    return remoteAddr
+  }
+
+  // Fallback to localhost for development
+  return '127.0.0.1'
+}
 
 export const POST: APIRoute = async ({ request }) => {
+  const startTime = Date.now()
+  
   try {
-    let data: Record<string, unknown>
+    // Parse request data
+    let formData: Record<string, unknown>
     try {
-      data = (await request.json()) as Record<string, unknown>
-    } catch (_e) {
+      formData = await request.json()
+    } catch (error) {
+      logger.warn('Invalid JSON in contact form request', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        userAgent: request.headers.get('user-agent'),
+        ip: getClientIP(request),
+      })
+
       return new Response(
         JSON.stringify({
           success: false,
-          message: 'Invalid JSON payload.',
+          message: 'Invalid request format. Please check your data and try again.',
         }),
-        { status: 400 },
+        { 
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        }
       )
     }
 
-    // Validate required fields and their types/formats
-    const fieldsToValidate = [
-      {
-        name: 'firstName',
-        required: true,
-        type: 'string',
-        minLength: 2,
-        maxLength: 50,
-      },
-      {
-        name: 'lastName',
-        required: true,
-        type: 'string',
-        minLength: 2,
-        maxLength: 50,
-      },
-      {
-        name: 'email',
-        required: true,
-        type: 'string',
-        regex: EMAIL_REGEX,
-        maxLength: 100,
-      },
-      {
-        name: 'message',
-        required: true,
-        type: 'string',
-        minLength: 10,
-        maxLength: 1000,
-      },
-      {
-        name: 'timestamp',
-        required: false,
-        type: 'string',
-      },
-    ]
-
-    for (const field of fieldsToValidate) {
-      const value = data[field.name]
-
-      if (
-        field.required &&
-        (value === undefined || value === null || String(value).trim() === '')
-      ) {
+    // Validate required fields exist
+    const requiredFields = ['name', 'email', 'subject', 'message']
+    for (const field of requiredFields) {
+      if (!formData[field] || typeof formData[field] !== 'string' || !formData[field].toString().trim()) {
         return new Response(
           JSON.stringify({
             success: false,
-            message: `Missing required field: ${field.name}.`,
+            message: `Missing or invalid field: ${field}`,
           }),
-          { status: 400 },
-        )
-      }
-
-      // Skip further validation if field is not present and not required
-      if (
-        !field.required &&
-        (value === undefined || value === null || String(value).trim() === '')
-      ) {
-        continue
-      }
-
-      if (
-        value !== undefined &&
-        value !== null &&
-        typeof value !== field.type
-      ) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            message: `Field '${field.name}' must be a ${field.type}. Received: ${typeof value}`,
-          }),
-          { status: 400 },
-        )
-      }
-
-      if (field.minLength && String(value).length < field.minLength) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            message: `Field '${field.name}' must be at least ${field.minLength} characters long.`,
-          }),
-          { status: 400 },
-        )
-      }
-
-      if (field.maxLength && String(value).length > field.maxLength) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            message: `Field '${field.name}' must not exceed ${field.maxLength} characters.`,
-          }),
-          { status: 400 },
-        )
-      }
-
-      if (field.regex && !field.regex.test(String(value))) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            message: `Invalid format for field: ${field.name}.`,
-          }),
-          { status: 400 },
+          { 
+            status: 400,
+            headers: { 'Content-Type': 'application/json' }
+          }
         )
       }
     }
 
-    // Fields are validated. Proceed with application logic.
-    // E.g., check for spam, store the message, send notifications etc.
-    // For now, we'll just log it as before.
-    // It's important that any data used in dynamic HTML rendering later is properly escaped/sanitized
-    // at the point of rendering to prevent XSS, even with input validation.
+    // Prepare contact form data
+    const contactFormData = {
+      name: formData.name as string,
+      email: formData.email as string,
+      subject: formData.subject as string,
+      message: formData.message as string,
+    }
 
-    console.log('Contact form submission (validated):', {
-      firstName: data.firstName,
-      lastName: data.lastName,
-      email: data.email,
-      messageLength: typeof data.message === 'string' ? data.message.length : 0,
-      timestamp: data.timestamp,
+    // Prepare submission context
+    const submissionContext = {
+      ipAddress: getClientIP(request),
+      userAgent: request.headers.get('user-agent') || 'Unknown',
+      timestamp: new Date().toISOString(),
+    }
+
+    // Submit contact form through service
+    const result = await contactService.submitContactForm(
+      contactFormData,
+      submissionContext
+    )
+
+    // Log the submission attempt
+    const duration = Date.now() - startTime
+    logger.info('Contact form submission processed', {
+      success: result.success,
+      submissionId: result.submissionId,
+      email: contactFormData.email,
+      ipAddress: submissionContext.ipAddress,
+      duration: `${duration}ms`,
     })
 
-    // Simulate processing delay
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    // Return response
+    return new Response(
+      JSON.stringify(result),
+      {
+        status: result.success ? 200 : 400,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    )
+
+  } catch (error) {
+    const duration = Date.now() - startTime
+    
+    logger.error('Contact form submission failed with unexpected error', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      userAgent: request.headers.get('user-agent'),
+      ip: getClientIP(request),
+      duration: `${duration}ms`,
+    })
 
     return new Response(
       JSON.stringify({
-        success: true,
-        message:
-          'Your message has been received. We will get back to you soon!',
-      }),
-      { status: 200 },
-    )
-  } catch (error) {
-    console.error('Error processing contact form:', error)
-    return new Response(
-      JSON.stringify({
-        error: 'Failed to process form submission, please try again later',
+        success: false,
+        message: 'An unexpected error occurred. Please try again later or contact support if the problem persists.',
       }),
       {
         status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      },
+        headers: { 'Content-Type': 'application/json' }
+      }
     )
   }
+}
+
+// OPTIONS endpoint for CORS preflight
+export const OPTIONS: APIRoute = async () => {
+  return new Response(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Max-Age': '86400',
+    },
+  })
 }

@@ -22,7 +22,7 @@ const BackupHistoryTab = () => {
       status: 'completed',
       size: '256 MB',
       duration: '3m 45s',
-      location: 'AWS S3: gradiant-backups',
+      location: 'AWS S3: pixelated-backups',
       retention: '30 days',
     },
     {
@@ -32,7 +32,7 @@ const BackupHistoryTab = () => {
       status: 'completed',
       size: '253 MB',
       duration: '3m 30s',
-      location: 'Local Storage: /var/backups/gradiant',
+      location: 'Local Storage: /var/backups/pixelated',
       retention: '90 days',
       initiatedBy: 'admin@example.com',
     },
@@ -43,7 +43,7 @@ const BackupHistoryTab = () => {
       status: 'failed',
       size: '0 MB',
       duration: '0m 45s',
-      location: 'AWS S3: gradiant-backups',
+      location: 'AWS S3: pixelated-backups',
       retention: '30 days',
       errorMessage:
         'S3 authentication failed. Check IAM roles and permissions.',
@@ -55,7 +55,7 @@ const BackupHistoryTab = () => {
       status: 'completed',
       size: '248 MB',
       duration: '3m 15s',
-      location: 'AWS S3: gradiant-backups',
+      location: 'AWS S3: pixelated-backups',
       retention: '30 days',
     },
     {
@@ -65,7 +65,7 @@ const BackupHistoryTab = () => {
       status: 'completed',
       size: '245 MB',
       duration: '3m 20s',
-      location: 'AWS S3: gradiant-backups',
+      location: 'AWS S3: pixelated-backups',
       retention: '30 days',
     },
   ])
@@ -84,7 +84,7 @@ const BackupHistoryTab = () => {
       status: 'in-progress',
       size: 'Calculating...',
       duration: '-',
-      location: 'AWS S3: gradiant-backups',
+      location: 'AWS S3: pixelated-backups',
       retention: '90 days',
       initiatedBy: 'admin@example.com',
     }

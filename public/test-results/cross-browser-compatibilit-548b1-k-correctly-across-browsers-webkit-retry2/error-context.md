@@ -1,7 +1,7 @@
 # Test info
 
 - Name: Cross-browser compatibility >> forms work correctly across browsers
-- Location: /home/runner/work/gradiant/gradiant/src/tests/cross-browser-compatibility.test.ts:134:3
+- Location: /home/runner/work/pixelated/pixelated/src/tests/cross-browser-compatibility.test.ts:134:3
 
 # Error details
 
@@ -14,10 +14,10 @@ Received: hidden
 Call log:
   - expect.toBeVisible with timeout 15000ms
   - waiting for locator('text=Thank you for your message')
-    19 × locator resolved to <div id="success-message" data-astro-source-loc="120:96" class="hidden mt-6 p-4 bg-green-100 text-green-800 rounded-md" data-astro-source-file="/home/runner/work/gradiant/gradiant/src/pages/contact.astro">↵Thank you for your message↵</div>
+    19 × locator resolved to <div id="success-message" data-astro-source-loc="120:96" class="hidden mt-6 p-4 bg-green-100 text-green-800 rounded-md" data-astro-source-file="/home/runner/work/pixelated/pixelated/src/pages/contact.astro">↵Thank you for your message↵</div>
        - unexpected value "hidden"
 
-    at /home/runner/work/gradiant/gradiant/src/tests/cross-browser-compatibility.test.ts:162:67
+    at /home/runner/work/pixelated/pixelated/src/tests/cross-browser-compatibility.test.ts:162:67
 ```
 
 # Page snapshot
@@ -66,7 +66,7 @@ Call log:
     - link "Twitter":
       - /url: https://twitter.com/gradiantascent
     - link "LinkedIn":
-      - /url: https://www.linkedin.com/company/gradiant-ascent
+      - /url: https://www.linkedin.com/company/pixelated-ascent
     - link "GitHub":
       - /url: https://github.com/gradiantascent
     - heading "Send Us a Message" [level=2]

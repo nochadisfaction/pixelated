@@ -1,7 +1,7 @@
 # Test info
 
 - Name: Cross-browser compatibility >> responsive navigation works correctly in all browsers
-- Location: /home/runner/work/gradiant/gradiant/src/tests/cross-browser-compatibility.test.ts:98:3
+- Location: /home/runner/work/pixelated/pixelated/src/tests/cross-browser-compatibility.test.ts:98:3
 
 # Error details
 
@@ -14,12 +14,12 @@ Received: visible
 Call log:
   - expect.not.toBeVisible with timeout 15000ms
   - waiting for locator('nav ul')
-    3 × locator resolved to <ul data-astro-source-loc="26:41" class="flex items-center gap-6" data-astro-source-file="/home/runner/work/gradiant/gradiant/src/components/base/MainNav.astro">…</ul>
+    3 × locator resolved to <ul data-astro-source-loc="26:41" class="flex items-center gap-6" data-astro-source-file="/home/runner/work/pixelated/pixelated/src/components/base/MainNav.astro">…</ul>
       - unexpected value "visible"
     15 × locator resolved to <ul class="flex items-center gap-6">…</ul>
        - unexpected value "visible"
 
-    at /home/runner/work/gradiant/gradiant/src/tests/cross-browser-compatibility.test.ts:118:46
+    at /home/runner/work/pixelated/pixelated/src/tests/cross-browser-compatibility.test.ts:118:46
 ```
 
 # Page snapshot

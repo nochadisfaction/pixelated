@@ -1,7 +1,7 @@
 # Test info
 
 - Name: Cross-browser compatibility >> simulator page should work in all browsers
-- Location: /home/runner/work/gradiant/gradiant/src/tests/cross-browser-compatibility.test.ts:46:5
+- Location: /home/runner/work/pixelated/pixelated/src/tests/cross-browser-compatibility.test.ts:46:5
 
 # Error details
 
@@ -17,7 +17,7 @@ Error: expect(received).toEqual(expected) // deep equality
 +     at getEnv (http://localhost:3000/src/config/env.config.ts:102:5)
 +     at http://localhost:3000/src/config/env.config.ts:129:20",
 + ]
-    at /home/runner/work/gradiant/gradiant/src/tests/cross-browser-compatibility.test.ts:59:22
+    at /home/runner/work/pixelated/pixelated/src/tests/cross-browser-compatibility.test.ts:59:22
 ```
 
 # Page snapshot
@@ -26,10 +26,10 @@ Error: expect(received).toEqual(expected) // deep equality
 - link "Skip to content":
   - /url: "#main-content"
 - banner:
-  - link "Gradiant Logo Gradiant":
+  - link "Pixelated Empathy Logo Pixelated Empathy":
     - /url: /
-    - img "Gradiant Logo"
-    - text: Gradiant
+    - img "Pixelated Empathy Logo"
+    - text: Pixelated Empathy
   - navigation:
     - link "Home":
       - /url: /
@@ -95,10 +95,10 @@ Error: expect(received).toEqual(expected) // deep equality
     - text: About This Simulator
   - paragraph: This simulator allows you to practice therapeutic techniques in a private, safe environment. No audio or video data is recorded or stored at any time. All processing happens in real-time with zero data retention to ensure complete privacy and HIPAA compliance.
   - text: You can track your progress through anonymized metrics that are only stored in your browser.
-  - link "Logo Gradiant":
+  - link "Logo Pixelated Empathy":
     - /url: /
     - img "Logo"
-    - text: Gradiant
+    - text: Pixelated Empathy
   - paragraph: Secure AI therapy platform with advanced encryption for maximum privacy and HIPAA compliance.
   - link "Twitter":
     - /url: "#"
@@ -128,7 +128,7 @@ Error: expect(received).toEqual(expected) // deep equality
     - listitem:
       - link "FAQ":
         - /url: /faq
-  - paragraph: © 2025 Gradiant. All rights reserved.
+  - paragraph: © 2025 Pixelated Empathy. All rights reserved.
 ```
 
 # Test source
