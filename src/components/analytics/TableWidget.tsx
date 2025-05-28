@@ -224,6 +224,7 @@ export function TableWidget({
             onChange={handleSearch}
             className="pl-8"
           />
+
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
         </div>
       )}

@@ -55,7 +55,7 @@ describe('DashboardLayout', () => {
     expect(container.querySelector('main')).toBeInTheDocument()
 
     // Check default title and description
-    expect(document.title).toBe('Gradiant Therapy | Dashboard')
+    expect(document.title).toBe('Pixelated Therapy | Dashboard')
     expect(document.querySelector('meta[name="description"]')).toHaveAttribute(
       'content',
       'Advanced therapeutic tools for mental health professionals',

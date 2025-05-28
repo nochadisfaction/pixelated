@@ -1,18 +1,21 @@
 ---
+export const prerender = false
+
 import BaseLayout from '@/layouts/BaseLayout.astro'
 import { ClientRouter } from 'astro:transitions'
 import DashboardLayout from '@/layouts/DashboardLayout.astro'
 import EmotionDimensionalAnalysis from '@/components/dashboard/EmotionDimensionalAnalysis'
 import { requirePageAuth } from '@/lib/auth/serverAuth'
-
+import type { AstroCookies } from 'astro';
 // Ensure user is authenticated
-const result = await requirePageAuth(Astro)
+const result = await requirePageAuth(Astro as unknown as { request: Request; cookies: AstroCookies; redirect: (path: string) => Response; locals: Record<string, unknown> });
 if (result instanceof Response) {
-  return result
+  return result;
 }
+
 // Assert the user type
 type AuthUser = { id: string; [key: string]: any }
-const user = result as unknown as AuthUser
+const user = (Astro as unknown as { locals: { user: AuthUser | undefined } }).locals.user as AuthUser;
 
 // Page metadata
 const pageTitle = 'Dimensional Emotion Analysis'

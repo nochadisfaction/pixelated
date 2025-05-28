@@ -86,6 +86,7 @@ const renderStatusBadge = (status: RecoveryTestStatus) => {
   switch (status) {
     case RecoveryTestStatus.SCHEDULED:
       return <Badge variant="outline">Scheduled</Badge>
+
     case RecoveryTestStatus.IN_PROGRESS:
       return (
         <Badge
@@ -95,6 +96,7 @@ const renderStatusBadge = (status: RecoveryTestStatus) => {
           In Progress
         </Badge>
       )
+
     case RecoveryTestStatus.PASSED:
       return (
         <Badge
@@ -104,8 +106,10 @@ const renderStatusBadge = (status: RecoveryTestStatus) => {
           Passed
         </Badge>
       )
+
     case RecoveryTestStatus.FAILED:
       return <Badge variant="destructive">Failed</Badge>
+
     default:
       return null
   }

@@ -297,6 +297,7 @@ export default function MentalHealthChatDemoReact({
                 }}
                 disabled={processing}
               />
+
               <Button onClick={handleSendMessage} disabled={processing}>
                 Send
               </Button>
@@ -335,6 +336,7 @@ export default function MentalHealthChatDemoReact({
                           ...getAnalysisHistory()[
                             getAnalysisHistory().length - 1
                           ],
+
                           hasMentalHealthIssue: true,
                           confidence: 1,
                           supportingEvidence: [],

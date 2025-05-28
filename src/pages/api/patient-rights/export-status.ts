@@ -18,7 +18,7 @@ declare module '../../../lib/auth' {
   }
 }
 
-export const get: APIRoute = async ({ request, cookies }) => {
+export const GET: APIRoute = async ({ request, cookies }) => {
   try {
     // Extract query parameters from the URL
     const url = new URL(request.url)

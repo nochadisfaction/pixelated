@@ -72,7 +72,9 @@ export class TokenEncryptionService {
         cipher.final(),
       ])
 
-      const authTag = (cipher as any).getAuthTag()
+      const authTag = (
+        cipher as unknown as { getAuthTag(): Buffer }
+      ).getAuthTag()
 
       return {
         encryptedToken: Buffer.concat([encryptedToken, authTag]).toString(
@@ -102,7 +104,9 @@ export class TokenEncryptionService {
       const authTag = encryptedData.slice(-16)
       const encryptedContent = encryptedData.slice(0, -16)
 
-      ;(decipher as any).setAuthTag(authTag)
+      ;(decipher as unknown as { setAuthTag(tag: Buffer): void }).setAuthTag(
+        authTag,
+      )
 
       const decryptedToken = Buffer.concat([
         decipher.update(encryptedContent),

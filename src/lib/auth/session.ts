@@ -2,7 +2,7 @@ import type { Session, User } from '@supabase/supabase-js'
 // Import necessary libraries and types
 import { createClient } from '@supabase/supabase-js'
 
-import { createAuditLog } from '../audit/log.js'
+import { createAuditLog } from '../../lib/audit'
 
 export interface SessionData {
   user: User

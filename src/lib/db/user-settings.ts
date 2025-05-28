@@ -1,5 +1,5 @@
 import type { Database } from '../../types/supabase.js'
-import { logAuditEvent } from '../audit/log.js'
+import { logAuditEvent } from '../audit'
 import { supabase } from '../supabase.js'
 
 export type UserSettings = Database['public']['Tables']['user_settings']['Row']

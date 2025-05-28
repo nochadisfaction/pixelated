@@ -245,12 +245,14 @@ const Grid = () => {
     <group>
       {/* XZ plane (bottom) */}
       <gridHelper args={[2, 10, 'gray', 'gray']} rotation={[0, 0, 0]} />
+
       {/* XY plane (back) */}
       <gridHelper
         args={[2, 10, 'gray', 'gray']}
         rotation={[Math.PI / 2, 0, 0]}
         position={[0, 0, -1]}
       />
+
       {/* YZ plane (side) */}
       <gridHelper
         args={[2, 10, 'gray', 'gray']}

@@ -46,6 +46,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
                   src="https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff"
                   alt="Admin"
                 />
+
                 <span className="hidden md:inline">Admin</span>
               </button>
             </div>

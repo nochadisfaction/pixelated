@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense, lazy } from 'react'
 import { useMultidimensionalEmotions } from '@/lib/hooks/useMultidimensionalEmotions'
-import MultidimensionalEmotionChart from '@/components/session/MultidimensionalEmotionChart'
+const MultidimensionalEmotionChart = lazy(
+  () => import('@/components/session/MultidimensionalEmotionChart'),
+)
 import {
   Card,
   CardContent,
@@ -22,6 +24,24 @@ import { RefreshCw } from 'lucide-react'
 interface EmotionDimensionalAnalysisProps {
   userId: string
   sessionId?: string
+}
+
+interface SessionData {
+  sessionId: string
+  id: string
+  title: string
+  startTime: string
+  date: string
+}
+
+interface DimensionalMap {
+  valence: number
+  arousal: number
+  dominance: number
+  timestamp: number
+  type?: string
+  intensity?: number
+  confidence?: number
 }
 
 export default function EmotionDimensionalAnalysis({
@@ -71,7 +91,7 @@ export default function EmotionDimensionalAnalysis({
       const data = await response.json()
 
       // Transform API data to expected format
-      const formattedSessions = data.map((session: any) => ({
+      const formattedSessions = data.map((session: SessionData) => ({
         id: session.sessionId || session.id,
         title: session.title || 'Session',
         date: new Date(session.startTime).toLocaleDateString(),
@@ -222,7 +242,7 @@ export default function EmotionDimensionalAnalysis({
           {error && (
             <div className="p-4 mb-4 text-red-700 bg-red-100 rounded-md">
               <p className="font-medium">Error loading emotion data:</p>
-              <p>{error}</p>
+              <p>{error.message}</p>
             </div>
           )}
 
@@ -235,12 +255,14 @@ export default function EmotionDimensionalAnalysis({
 
             <TabsContent value="3d-view">
               <div className="border rounded-lg overflow-hidden">
-                <MultidimensionalEmotionChart
-                  dimensionalMaps={dimensionalMaps}
-                  patterns={patterns}
-                  isLoading={isLoading}
-                  height={500}
-                />
+                <Suspense fallback={<div>Loading 3D Chart...</div>}>
+                  <MultidimensionalEmotionChart
+                    dimensionalMaps={dimensionalMaps}
+                    patterns={patterns}
+                    isLoading={isLoading}
+                    height={500}
+                  />
+                </Suspense>
               </div>
             </TabsContent>
 
@@ -326,7 +348,12 @@ export default function EmotionDimensionalAnalysis({
                         Dominant Dimensions
                       </h4>
                       <p className="text-sm text-blue-700 mt-1">
-                        {generateDominantDimensionsInsight(dimensionalMaps)}
+                        {generateDominantDimensionsInsight(
+                          dimensionalMaps.map((dm) => ({
+                            ...dm.primaryVector,
+                            timestamp: (dm.timestamp as Date).getTime(),
+                          })),
+                        )}
                       </p>
                     </div>
 
@@ -335,7 +362,12 @@ export default function EmotionDimensionalAnalysis({
                         Emotional Movement
                       </h4>
                       <p className="text-sm text-green-700 mt-1">
-                        {generateMovementInsight(dimensionalMaps)}
+                        {generateMovementInsight(
+                          dimensionalMaps.map((dm) => ({
+                            ...dm.primaryVector,
+                            timestamp: (dm.timestamp as Date).getTime(),
+                          })),
+                        )}
                       </p>
                     </div>
 
@@ -344,7 +376,12 @@ export default function EmotionDimensionalAnalysis({
                         Quadrant Distribution
                       </h4>
                       <p className="text-sm text-purple-700 mt-1">
-                        {generateQuadrantInsight(dimensionalMaps)}
+                        {generateQuadrantInsight(
+                          dimensionalMaps.map((dm) => ({
+                            ...dm.primaryVector,
+                            timestamp: (dm.timestamp as Date).getTime(),
+                          })),
+                        )}
                       </p>
                     </div>
                   </div>
@@ -359,7 +396,9 @@ export default function EmotionDimensionalAnalysis({
 }
 
 // Generate insights about dominant dimensions (valence, arousal, dominance)
-function generateDominantDimensionsInsight(dimensionalMaps: any[]): string {
+function generateDominantDimensionsInsight(
+  dimensionalMaps: DimensionalMap[],
+): string {
   // This is simplified - in a real implementation you would perform statistical analysis
   if (dimensionalMaps.length === 0) return 'Insufficient data for analysis.'
 
@@ -405,7 +444,7 @@ function generateDominantDimensionsInsight(dimensionalMaps: any[]): string {
 }
 
 // Generate insights about emotional movement through dimensional space
-function generateMovementInsight(dimensionalMaps: any[]): string {
+function generateMovementInsight(dimensionalMaps: DimensionalMap[]): string {
   if (dimensionalMaps.length < 3)
     return 'More data points needed for movement analysis.'
 
@@ -466,7 +505,7 @@ function generateMovementInsight(dimensionalMaps: any[]): string {
 }
 
 // Generate insights about quadrant distribution in valence-arousal space
-function generateQuadrantInsight(dimensionalMaps: any[]): string {
+function generateQuadrantInsight(dimensionalMaps: DimensionalMap[]): string {
   if (dimensionalMaps.length === 0)
     return 'Insufficient data for quadrant analysis.'
 

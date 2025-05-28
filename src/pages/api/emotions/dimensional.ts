@@ -4,6 +4,9 @@ import { protectApi } from '../../../lib/auth/apiAuth'
 import { getCacheService } from '../../../lib/services/cacheService'
 import type { DimensionalEmotionMap } from '../../../lib/ai/emotions/dimensionalTypes'
 
+// Disable prerendering since this API route uses request.headers
+export const prerender = false
+
 /**
  * API endpoint for fetching dimensional emotion data with caching optimization.
  * Implements:
@@ -12,7 +15,7 @@ import type { DimensionalEmotionMap } from '../../../lib/ai/emotions/dimensional
  * - Variable TTL based on time range
  * - Conditional requests with If-None-Match
  */
-export const get: APIRoute = async ({ request }) => {
+export const GET: APIRoute = async ({ request }) => {
   try {
     // Protect the API endpoint
     const authResult = await protectApi(request)

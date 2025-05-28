@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro'
 import { requirePermission } from '../../../lib/access-control'
 import { getAIUsageStats } from '../../../lib/ai/analytics'
 import { handleApiError } from '../../../lib/ai/error-handling'
-import { createAuditLog } from '../../../lib/audit/log'
+import { createAuditLog } from '../../../lib/audit'
 import { getSession } from '../../../lib/auth/session'
 
 /**

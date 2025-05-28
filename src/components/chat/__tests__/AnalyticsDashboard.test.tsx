@@ -38,8 +38,10 @@ vi.mock('@/lib/utils/logger', () => ({
 // Mock icons
 vi.mock('../icons', () => ({
   IconAlertTriangle: () => <span data-testid="icon-alert-triangle" />,
+
   IconBarChart: () => <span data-testid="icon-bar-chart" />,
   IconLineChart: () => <span data-testid="icon-line-chart" />,
+
   IconLock: () => <span data-testid="icon-lock" />,
   IconPieChart: () => <span data-testid="icon-pie-chart" />,
   IconRefresh: () => <span data-testid="icon-refresh" />,
@@ -78,6 +80,7 @@ describe('analyticsDashboard', () => {
           { messageIndex: 0, sentiment: 0.8 },
           { messageIndex: 1, sentiment: 0.6 },
         ],
+
         userMessageCount: 2,
         processedCount: 2,
         errorCount: 0,
@@ -250,6 +253,7 @@ describe('analyticsDashboard', () => {
         name: 'User',
       },
     ]
+
     await act(async () => {
       rerender(
         <AnalyticsDashboardReact {...defaultProps} messages={newMessages} />,

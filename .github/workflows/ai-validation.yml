@@ -71,9 +71,9 @@ jobs:
       - name: Set environment variables
         run: |
           if [[ "$ENV_NAME" == "production" ]]; then
-            echo "APP_URL=https://app.gradiant.ai" >> $GITHUB_ENV
+            echo "APP_URL=https://app.pixelated.ai" >> $GITHUB_ENV
           else
-            echo "APP_URL=https://staging.gradiant.ai" >> $GITHUB_ENV
+            echo "APP_URL=https://staging.pixelated.ai" >> $GITHUB_ENV
           fi
 
       - name: Run model validation

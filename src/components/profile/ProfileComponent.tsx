@@ -98,6 +98,7 @@ export function ProfileComponent({ user }: ProfileComponentProps) {
               required
               disabled
             />
+
             <p className="text-xs text-muted-foreground">
               Email cannot be changed. Contact support for assistance.
             </p>

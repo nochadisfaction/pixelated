@@ -111,7 +111,7 @@ jobs:
           run_install: false
 
       - name: Ensure Directories Exist
-        run: mkdir -p /home/runner/work/gradiant/gradiant/node_modules/supabase/bin
+        run: mkdir -p /home/runner/work/pixelated/pixelated/node_modules/supabase/bin
 
       - name: Validate Environment
         run: |

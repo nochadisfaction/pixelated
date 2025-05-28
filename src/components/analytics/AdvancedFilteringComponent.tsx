@@ -273,6 +273,7 @@ export function AdvancedFilteringComponent({
                         handleArrayToggle('emotions', 'types', type)
                       }
                     />
+
                     <Label
                       htmlFor={`emotion-${type}`}
                       className="cursor-pointer"
@@ -425,6 +426,7 @@ export function AdvancedFilteringComponent({
                         handleArrayToggle('patterns', 'types', type)
                       }
                     />
+
                     <Label
                       htmlFor={`pattern-${type}`}
                       className="cursor-pointer text-sm"
@@ -491,6 +493,7 @@ export function AdvancedFilteringComponent({
                           handleArrayToggle('patterns', 'categories', category)
                         }
                       />
+
                       <Label
                         htmlFor={`category-${category}`}
                         className="cursor-pointer text-sm"

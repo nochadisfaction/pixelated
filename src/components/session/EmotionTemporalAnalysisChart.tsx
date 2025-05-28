@@ -233,6 +233,7 @@ export default function EmotionTemporalAnalysisChart({
               return [value, name]
             }}
           />
+
           <Legend />
           <ReferenceLine y={0} stroke="#666" />
           <defs>
@@ -246,6 +247,7 @@ export default function EmotionTemporalAnalysisChart({
                 y2="1"
               >
                 <stop offset="5%" stopColor={item.color} stopOpacity={0.8} />
+
                 <stop offset="95%" stopColor={item.color} stopOpacity={0.2} />
               </linearGradient>
             ))}
@@ -259,6 +261,7 @@ export default function EmotionTemporalAnalysisChart({
             fillOpacity={0.6}
             name="Trend"
           />
+
           <Area
             type="monotone"
             dataKey="correlation"
@@ -277,8 +280,11 @@ export default function EmotionTemporalAnalysisChart({
         <ScatterChart margin={{ top: 20, right: 30, left: 0, bottom: 10 }}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis type="category" dataKey="name" name="Emotion" />
+
           <YAxis type="number" dataKey="intensity" name="Intensity" />
+
           <ZAxis type="category" dataKey="sessionId" name="Session" />
+
           <Tooltip
             cursor={{ strokeDasharray: '3 3' }}
             formatter={(value, name, _props) => {
@@ -294,6 +300,7 @@ export default function EmotionTemporalAnalysisChart({
               return [value, name]
             }}
           />
+
           <Legend />
           {prepareCriticalPointsData().map((point) => (
             <Scatter
@@ -349,12 +356,14 @@ export default function EmotionTemporalAnalysisChart({
             dataKey="frequency"
             name="Frequency"
           />
+
           <YAxis
             yAxisId="right"
             orientation="right"
             dataKey="duration"
             name="Avg. Duration (min)"
           />
+
           <Tooltip
             formatter={(value, name, _props) => {
               if (name === 'frequency') {
@@ -366,6 +375,7 @@ export default function EmotionTemporalAnalysisChart({
               return [value, name]
             }}
           />
+
           <Legend />
           <Area
             yAxisId="left"
@@ -377,6 +387,7 @@ export default function EmotionTemporalAnalysisChart({
             strokeWidth={2}
             name="Frequency"
           />
+
           <Line
             yAxisId="right"
             type="monotone"
@@ -406,6 +417,7 @@ export default function EmotionTemporalAnalysisChart({
               return [value, name]
             }}
           />
+
           <Legend />
           <ReferenceLine y={0} stroke="#666" />
           <Area

@@ -21,7 +21,29 @@ import {
   type SealEncryptionParamsOptions,
   SEAL_PARAMETER_PRESETS,
 } from './seal-types'
-import { getLogger } from '../logging'
+import { getLogger } from '../logging';
+
+// Define specific return types for analyzePerformanceHistory
+interface OperationStat {
+  avgDuration: number;
+  count: number;
+  trend: 'improving' | 'stable' | 'degrading';
+}
+
+interface InsufficientPerformanceData {
+  sufficientData: false;
+  message: string;
+}
+
+interface PerformanceAnalysis {
+  sufficientData: true;
+  operationStats: Record<string, OperationStat>;
+  parameterRecommendations: Record<string, { action: string; suggestion: string; }>;
+  recommendations?: Record<string, unknown>;
+  overallTrend?: 'improving' | 'stable' | 'degrading';
+}
+
+type AnalyzePerformanceHistoryReturn = InsufficientPerformanceData | PerformanceAnalysis;
 
 // Get logger for this module
 const logger = getLogger({ prefix: 'fhe-parameter-optimizer' })
@@ -319,7 +341,7 @@ export class FHEParameterOptimizer {
    *
    * @returns Recommended parameter adjustments based on performance history
    */
-  public analyzePerformanceHistory(): Record<string, any> {
+  public analyzePerformanceHistory(): AnalyzePerformanceHistoryReturn {
     if (this.performanceHistory.length < 5) {
       return {
         sufficientData: false,
@@ -386,7 +408,7 @@ export class FHEParameterOptimizer {
     }
 
     // Generate recommendations based on stats
-    const recommendations: Record<string, any> = {
+    const result: PerformanceAnalysis = {
       sufficientData: true,
       operationStats,
       parameterRecommendations: {},
@@ -395,7 +417,7 @@ export class FHEParameterOptimizer {
     // Make specific recommendations for each operation type
     for (const [operation, stats] of Object.entries(operationStats)) {
       if (stats.trend === 'degrading') {
-        recommendations.parameterRecommendations[operation] = {
+        result.parameterRecommendations[operation] = {
           action: 'optimize',
           suggestion:
             stats.avgDuration > 400
@@ -405,7 +427,7 @@ export class FHEParameterOptimizer {
       }
     }
 
-    return recommendations
+    return result
   }
 
   /**

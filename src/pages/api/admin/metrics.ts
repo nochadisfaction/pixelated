@@ -1,6 +1,7 @@
+export const prerender = false
+
 import type { APIRoute } from 'astro'
 import { api } from '@/convex/generated/api'
-import { useConvexClient } from '@/lib/convex'
 
 /**
  * API endpoint for fetching system metrics (admin only)
@@ -8,7 +9,8 @@ import { useConvexClient } from '@/lib/convex'
  */
 export const GET: APIRoute = async () => {
   try {
-    const client = useConvexClient()
+    // Create Convex client outside of React hooks
+    const client = await import('@/lib/convex').then((m) => m.getConvexClient())
 
     // Fetch metrics from Convex
     const [

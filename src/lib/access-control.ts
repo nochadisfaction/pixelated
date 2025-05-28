@@ -1,5 +1,5 @@
 import type { AstroCookies } from 'astro'
-import { createAuditLog } from './audit/log'
+import { createAuditLog, AuditEventType } from '../lib/audit'
 import { getCurrentUser, hasRole } from './auth'
 
 // Define permission types
@@ -17,7 +17,7 @@ export const ROLES = {
   USER: 'user',
   STAFF: 'staff',
   ADMIN: 'admin',
-} as cons
+} as const
 
 export type Role = (typeof ROLES)[keyof typeof ROLES]
 
@@ -103,16 +103,16 @@ export async function hasPermission(
     permission.includes(':admin') ||
     permission.startsWith('manage:')
   ) {
-    await createAuditLog({
-      userId: user.id,
-      action: 'permission_check',
-      resource: 'access_control',
-      resourceId: null,
-      metadata: {
+    await createAuditLog(
+      AuditEventType.ACCESS,
+      'permission_check',
+      user.id,
+      'access_control',
+      {
         permission,
         granted: hasPermission,
       },
-    })
+    )
   }
 
   return hasPermission
@@ -157,16 +157,16 @@ export function requirePermission(permission: Permission) {
     const hasPermission = roleHasPermission(userRole, permission)
 
     // Log access control check
-    await createAuditLog({
-      userId: user.id,
-      action: 'permission_check',
-      resource: 'access_control',
-      resourceId: null,
-      metadata: {
+    await createAuditLog(
+      AuditEventType.ACCESS,
+      'permission_check',
+      user.id,
+      'access_control',
+      {
         permission,
         granted: hasPermission,
       },
-    })
+    )
 
     if (!hasPermission) {
       return redirect(

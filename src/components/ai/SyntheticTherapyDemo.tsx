@@ -92,6 +92,7 @@ export default function SyntheticTherapyDemo() {
                 'physical tension',
                 'avoidance of anxiety-provoking situations',
               ],
+
               cognitions: [
                 'catastrophizing',
                 'overestimation of threat',
@@ -114,9 +115,11 @@ export default function SyntheticTherapyDemo() {
                 'difficulty completing tasks',
                 'requiring more rest than usual',
               ],
+
               cognitions: ['feeling overwhelmed', 'diminished self-efficacy'],
             },
           ],
+
           decodedSymptoms: ['anxiety', 'insomnia', 'fatigue'],
           sessionSummary:
             "Session Summary:\n\nPatient presented with excessive worry, restlessness, fatigue.\nTherapist identified: anxiety, insomnia, fatigue.\n\nSymptom detection accuracy: 67%\n\nThe conversation covered the patient's experiences with excessive worry, fatigue.\nThe therapist may have missed: restlessness.\n\nThis simulated interaction demonstrates the importance of thorough assessment and active listening in the therapeutic relationship.",
@@ -181,6 +184,7 @@ export default function SyntheticTherapyDemo() {
                   setConfig({ ...config, numSessions: value[0] })
                 }
               />
+
               <div className="text-right text-sm text-muted-foreground">
                 {config.numSessions}
               </div>
@@ -198,6 +202,7 @@ export default function SyntheticTherapyDemo() {
                   setConfig({ ...config, maxTurns: value[0] })
                 }
               />
+
               <div className="text-right text-sm text-muted-foreground">
                 {config.maxTurns}
               </div>
@@ -262,6 +267,7 @@ export default function SyntheticTherapyDemo() {
                   setConfig({ ...config, usePythonBridge: checked })
                 }
               />
+
               <Label htmlFor="pythonBridge">Use Python Bridge</Label>
             </div>
           </CardContent>
@@ -581,6 +587,7 @@ export default function SyntheticTherapyDemo() {
             <Card className="h-[400px] flex items-center justify-center">
               <CardContent className="text-center">
                 <BrainIcon className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+
                 <h3 className="text-xl font-medium mb-2">
                   No Conversations Generated
                 </h3>

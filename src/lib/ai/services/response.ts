@@ -1,14 +1,21 @@
-import type { AIMessage } from '../models/ai-types'
+import type { AIMessage } from '../models/ai-types';
+
+interface TogetherAIServiceLike {
+  generateCompletion(
+    messages: { role: string; content: string; name: string }[],
+    options: Record<string, unknown>
+  ): Promise<Record<string, unknown>>;
+}
 
 // Create an adapter for the TogetherAIService
 export class TogetherAIAdapter {
-  private togetherService: any
+  private togetherService: unknown
 
-  constructor(togetherService: any) {
+  constructor(togetherService: unknown) {
     this.togetherService = togetherService
   }
 
-  async generateCompletion(messages: AIMessage[], options: any = {}) {
+  async generateCompletion(messages: AIMessage[], options: Record<string, unknown> = {}) {
     // Map messages to format expected by TogetherAI
     const adaptedMessages = messages.map((msg) => ({
       role: msg.role,
@@ -16,7 +23,7 @@ export class TogetherAIAdapter {
       name: msg.name || 'default_name',
     }))
     // Call the service and return result
-    const response = await this.togetherService.generateCompletion(
+    const response = await (this.togetherService as TogetherAIServiceLike).generateCompletion(
       adaptedMessages,
       options,
     )

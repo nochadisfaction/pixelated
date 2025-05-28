@@ -30,6 +30,22 @@ const {
     <meta property="og:url" content={Astro.url} />
     <meta name="twitter:card" content="summary_large_image" />
     <Analytics />
+
+    <!-- Font stylesheets -->
+    <link rel="stylesheet" href="/css/fonts.css" />
+    <link rel="stylesheet" href="/css/font-fix.css" />
+    
+    <!-- Background and UI fixes -->
+    <link rel="stylesheet" href="/css/background-fixes.css" />
+    
+    <!-- Polyfill detection script -->
+    <script src="/js/polyfill-detector.js" is:inline></script>
+    
+    <!-- Module preloader -->
+    <script src="/js/module-loader.js" defer></script>
+    
+    <!-- Background and font loader -->
+    <script src="/js/background-loader.js" defer></script>
   </head>
   <body
     class="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"

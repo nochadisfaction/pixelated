@@ -377,7 +377,7 @@ export class MentalArenaPythonBridge {
   /**
    * Create a JSON input file for Python script
    */
-  async createJsonInputFile(data: any, fileName: string): Promise<string> {
+  async createJsonInputFile(data: unknown, fileName: string): Promise<string> {
     this.ensureOutputDirectoryExists()
 
     const filePath = path.join(this.outputDir, fileName)

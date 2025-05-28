@@ -421,6 +421,7 @@ const BackupSettingsTab = () => {
                 onChange={handleEncryptionChange}
                 className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded"
               />
+
               <label
                 htmlFor="encryptionEnabled"
                 className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
@@ -459,6 +460,7 @@ const BackupSettingsTab = () => {
                     onChange={handleEncryptionChange}
                     className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded"
                   />
+
                   <label
                     htmlFor="keyRotation"
                     className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
@@ -509,6 +511,7 @@ const BackupSettingsTab = () => {
                 onChange={handleCompressionChange}
                 className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded"
               />
+
               <label
                 htmlFor="compressionEnabled"
                 className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
@@ -535,6 +538,7 @@ const BackupSettingsTab = () => {
                   onChange={handleCompressionChange}
                   className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer"
                 />
+
                 <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
                   <span>Faster</span>
                   <span>Current: {settings.compression.level}</span>
@@ -563,6 +567,7 @@ const BackupSettingsTab = () => {
                   onChange={handleNotificationChange}
                   className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded"
                 />
+
                 <label
                   htmlFor="notifyOnSuccess"
                   className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
@@ -580,6 +585,7 @@ const BackupSettingsTab = () => {
                   onChange={handleNotificationChange}
                   className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded"
                 />
+
                 <label
                   htmlFor="notifyOnFailure"
                   className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
@@ -606,6 +612,7 @@ const BackupSettingsTab = () => {
                   placeholder="Enter email address"
                   className="flex-1 min-w-0 block w-full px-3 py-2 rounded-l-md border border-r-0 border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                 />
+
                 <button
                   type="button"
                   onClick={handleAddEmail}

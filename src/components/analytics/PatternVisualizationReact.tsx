@@ -420,8 +420,12 @@ export function PatternVisualization({
           content = (
             <>
               <p className="label">{`${label} : ${trendData.date}`}</p>
-              <p className="intro">{`Significance: ${trendData.significance.toFixed(2)}`}</p>
-              <p className="desc">{`Confidence: ${trendData.confidence.toFixed(2)}`}</p>
+              <p className="intro">
+                {`Significance: ${trendData.significance.toFixed(2)}`}
+              </p>
+              <p className="desc">
+                {`Confidence: ${trendData.confidence.toFixed(2)}`}
+              </p>
               {trendData.original.description && (
                 <p className="desc text-xs italic">
                   {trendData.original.description}
@@ -440,7 +444,9 @@ export function PatternVisualization({
             <>
               <p className="label">{`${label} : ${patternData.pattern}`}</p>
               <p className="intro">{`Frequency: ${patternData.frequency}`}</p>
-              <p className="desc">{`Confidence: ${patternData.confidence.toFixed(2)}`}</p>
+              <p className="desc">
+                {`Confidence: ${patternData.confidence.toFixed(2)}`}
+              </p>
               {patternData.original.description && (
                 <p className="desc text-xs italic">
                   {patternData.original.description}
@@ -458,8 +464,12 @@ export function PatternVisualization({
           content = (
             <>
               <p className="label">{`Risk: ${riskData.riskFactor}`}</p>
-              <p className="intro">{`Severity: ${riskData.severityScore.toFixed(2)}`}</p>
-              <p className="desc">{`Confidence: ${riskData.confidence.toFixed(2)}`}</p>
+              <p className="intro">
+                {`Severity: ${riskData.severityScore.toFixed(2)}`}
+              </p>
+              <p className="desc">
+                {`Confidence: ${riskData.confidence.toFixed(2)}`}
+              </p>
               {riskData.description && (
                 <p className="desc text-xs italic">{riskData.description}</p>
               )}
@@ -566,15 +576,18 @@ export function PatternVisualization({
                   tickFormatter={(tick) => new Date(tick).toLocaleDateString()}
                   allowDuplicatedCategory={false}
                 />
+
                 <YAxis
                   type="number"
                   dataKey="significance"
                   name="Significance"
                 />
+
                 <Tooltip
                   content={<CustomTooltip />}
                   cursor={{ strokeDasharray: '3 3' }}
                 />
+
                 <Line
                   type="monotone"
                   dataKey="significance"
@@ -601,11 +614,14 @@ export function PatternVisualization({
                   tickFormatter={(tick) => tick}
                   allowDuplicatedCategory={false}
                 />
+
                 <YAxis type="number" dataKey="frequency" name="Frequency" />
+
                 <Tooltip
                   content={<CustomTooltip />}
                   cursor={{ fill: 'transparent' }}
                 />
+
                 <Area
                   type="monotone"
                   dataKey="frequency"
@@ -634,15 +650,18 @@ export function PatternVisualization({
                   tickFormatter={(tick) => tick}
                   allowDuplicatedCategory={false}
                 />
+
                 <YAxis
                   type="number"
                   dataKey="severityScore"
                   name="Severity Score"
                 />
+
                 <Tooltip
                   content={<CustomTooltip />}
                   cursor={{ fill: 'transparent' }}
                 />
+
                 <Area
                   type="monotone"
                   dataKey="severityScore"

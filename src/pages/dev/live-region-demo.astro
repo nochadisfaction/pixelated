@@ -159,12 +159,12 @@ const sections = [
   </div>
 </BaseLayout>
 
-<script>
+<script is:inline>
   // Progress demo functionality
   document.addEventListener('DOMContentLoaded', () => {
     const progressButton = document.getElementById(
       'progress-demo',
-    ) as HTMLButtonElement
+    )
     const progressBar = document.getElementById('progress-bar')
     const progressText = document.getElementById('progress-text')
 

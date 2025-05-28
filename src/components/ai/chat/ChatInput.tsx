@@ -65,6 +65,7 @@ export function ChatInput({
         className="flex-1 resize-none bg-transparent border-0 focus:ring-0 focus:outline-none p-2 max-h-[200px] min-h-[40px]"
         rows={1}
       />
+
       <button
         type="submit"
         disabled={!message.trim() || isLoading || disabled}

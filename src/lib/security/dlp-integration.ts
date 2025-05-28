@@ -7,7 +7,7 @@
 
 import type { NextApiRequest, NextApiResponse } from 'next'
 import type { AstroGlobal } from 'astro'
-import { dlpService } from './dlp'
+import { dlpService, type DLPResult } from './dlp'
 import { getLogger } from '../logging'
 
 const logger = getLogger({ prefix: 'dlp-integration' })
@@ -71,7 +71,9 @@ export function withDLPProtection(
     next: () => Promise<void>,
   ) => {
     try {
-      const userId = (req as any).user?.id || 'unknown'
+      const userId =
+        (req as NextApiRequest & { user?: { id?: string } }).user?.id ||
+        'unknown'
 
       // Check request body if enabled
       if (
@@ -91,7 +93,7 @@ export function withDLPProtection(
         if (!dlpResult.allowed) {
           return res.status(403).json({
             error: 'Blocked by DLP policy',
-            reason: dlpResult.reason,
+            reason: dlpResult.reason || 'Policy Violation',
             code: 'DLP_POLICY_VIOLATION',
           })
         }
@@ -114,7 +116,7 @@ export function withDLPProtection(
 
       if (checkResponseBody) {
         // Override res.json to scan outgoing data
-        res.json = function (body: any) {
+        res.json = function (body: unknown) {
           try {
             const contentString = JSON.stringify(body)
 
@@ -127,7 +129,7 @@ export function withDLPProtection(
             if (!dlpResult.allowed) {
               return res.status(403).json({
                 error: 'Blocked by DLP policy',
-                reason: dlpResult.reason,
+                reason: dlpResult.reason || 'Policy Violation',
                 code: 'DLP_POLICY_VIOLATION',
               })
             }
@@ -174,7 +176,11 @@ export function astroWithDLPProtection() {
         ctx.request.headers.get('content-disposition')?.includes('attachment')
       ) {
         // Original response
-        const response = await next()
+        const response: Response = (await next()) as unknown as Response
+        if (!response) {
+          // If next() doesn't return a response for some reason, pass through.
+          return next()
+        }
 
         // For text-based responses like JSON or HTML
         const contentType = response.headers.get('content-type') || ''
@@ -199,7 +205,7 @@ export function astroWithDLPProtection() {
               return new Response(
                 JSON.stringify({
                   error: 'Export blocked by DLP policy',
-                  reason: dlpResult.reason,
+                  reason: dlpResult.reason || 'Policy Violation',
                 }),
                 {
                   status: 403,
@@ -211,7 +217,11 @@ export function astroWithDLPProtection() {
             }
 
             // Return redacted content or original content
-            return new Response(dlpResult.redactedContent || text, response)
+            return new Response(dlpResult.redactedContent || text, {
+              status: response.status,
+              statusText: response.statusText,
+              headers: response.headers,
+            })
           } catch (e) {
             logger.error('Error processing export through DLP', { error: e })
           }
@@ -233,7 +243,21 @@ export function astroWithDLPProtection() {
  */
 export function clientSideDLP() {
   if (typeof window === 'undefined') {
-    return { scanContent: () => ({ allowed: true }) }
+    return {
+      scanContent: () => ({
+        allowed: true,
+        triggeredRules: [],
+      }),
+      safeClipboardCopy: async (_text: string) => true,
+      safeFileDownload: (_fileName: string, _content: string) => true,
+    } as {
+      scanContent: (
+        content: string,
+        context: { action: string; metadata?: Record<string, unknown> },
+      ) => DLPResult
+      safeClipboardCopy: (text: string) => Promise<boolean>
+      safeFileDownload: (fileName: string, content: string) => boolean
+    }
   }
 
   // Utility for client-side DLP checks
@@ -245,7 +269,7 @@ export function clientSideDLP() {
     scanContent: (
       content: string,
       context: { action: string; metadata?: Record<string, unknown> },
-    ) => {
+    ): DLPResult => {
       try {
         const userId = localStorage.getItem('userId') || 'unknown'
 
@@ -258,7 +282,12 @@ export function clientSideDLP() {
         })
       } catch (e) {
         console.error('Error in client-side DLP', e)
-        return { allowed: true }
+        // Return a DLPResult compatible object in case of an error
+        return {
+          allowed: true,
+          triggeredRules: [],
+          reason: 'Client-side DLP scan failed',
+        }
       }
     },
 
@@ -272,7 +301,10 @@ export function clientSideDLP() {
         })
 
         if (!result.allowed) {
-          console.warn('Clipboard copy blocked by DLP policy:', result.reason)
+          console.warn(
+            'Clipboard copy blocked by DLP policy:',
+            result.reason || 'Policy Violation',
+          )
           return false
         }
 
@@ -296,7 +328,10 @@ export function clientSideDLP() {
         })
 
         if (!result.allowed) {
-          console.warn('File download blocked by DLP policy:', result.reason)
+          console.warn(
+            'File download blocked by DLP policy:',
+            result.reason || 'Policy Violation',
+          )
           return false
         }
 

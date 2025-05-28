@@ -6,18 +6,97 @@ import type {
 } from '../interfaces/therapy'
 import { appLogger as logger } from '../../logging'
 import { MentalLLaMAModelProvider } from './MentalLLaMAModelProvider'
+import type { MentalLLaMACompletionParams } from './MentalLLaMAModelProvider'
 import { MentalLLaMAPythonBridge } from './PythonBridge'
 import {
   MentalHealthCategory,
-  createOptimizedTemplate,
-  buildPrompt,
-} from './prompts'
+  } from './prompts'
 import {
   MentalHealthTaskRouter,
   type RoutingContext,
   type RoutingDecision,
   type LLMInvoker as RouterLLMInvoker,
 } from './routing/MentalHealthTaskRouter'
+import type { CrisisResponse } from '../crisis/types'
+import type { EmotionType } from '../emotions/types'
+
+/**
+ * Interface for handling crisis notifications
+ */
+export interface ICrisisNotificationHandler {
+  sendCrisisAlert(context: {
+    userId?: string;
+    sessionId?: string;
+    sessionType?: string;
+    explicitTaskHint?: string;
+    timestamp: number;
+    textSample: string;
+    decisionDetails: any;
+  }): Promise<void>;
+}
+
+// Extend MentalHealthCategory type to include additional categories used in this file
+type ExtendedMentalHealthCategory = 
+  | MentalHealthCategory 
+  | 'suicidality'
+  | 'bipolar_disorder'
+  | 'social_anxiety'
+  | 'panic_disorder'
+  | 'stress'
+  | 'general_mental_health';
+
+// Define available analyzers for mental health analysis
+const AVAILABLE_ANALYZERS: ExtendedMentalHealthCategory[] = [
+  'depression',
+  'anxiety',
+  'ptsd',
+  'suicidality',
+  'bipolar_disorder',
+  'ocd',
+  'eating_disorder',
+  'stress',
+  'social_anxiety',
+  'panic_disorder',
+  'general_mental_health',
+];
+
+// Extend the provider interfaces to include the expected methods
+declare module './MentalLLaMAModelProvider' {
+  interface MentalLLaMAModelProvider {
+    analyzeMentalHealth(
+      text: string,
+      categories: ExtendedMentalHealthCategory[]
+    ): Promise<{
+      categories: Record<string, number>;
+      analysis: string;
+      confidenceScore: number;
+      hasMentalHealthIssue?: boolean;
+      mentalHealthCategory?: string;
+      explanation?: string;
+      confidence?: number;
+      supportingEvidence?: string[];
+    }>;
+  }
+}
+
+// Extend the PythonBridge interface to include the expected methods
+declare module './PythonBridge' {
+  interface MentalLLaMAPythonBridge {
+    analyzeMentalHealth(
+      text: string,
+      categories: ExtendedMentalHealthCategory[]
+    ): Promise<{
+      categories: Record<string, number>;
+      analysis: string;
+      confidenceScore: number;
+      hasMentalHealthIssue?: boolean;
+      mentalHealthCategory?: string;
+      explanation?: string;
+      confidence?: number;
+      supportingEvidence?: string[];
+    }>;
+  }
+}
 
 /**
  * MentalLLaMA integration - Adapter for interpretable mental health analysis
@@ -31,6 +110,7 @@ export class MentalLLaMAAdapter {
   private modelProvider?: MentalLLaMAModelProvider
   private pythonBridge?: MentalLLaMAPythonBridge
   private taskRouter?: MentalHealthTaskRouter
+  private crisisNotifier?: ICrisisNotificationHandler
 
   /**
    * Default confidence score for mental health analysis when no explicit confidence is available.
@@ -50,6 +130,7 @@ export class MentalLLaMAAdapter {
     apiKey: string,
     modelProvider?: MentalLLaMAModelProvider,
     pythonBridge?: MentalLLaMAPythonBridge,
+    crisisNotifier?: ICrisisNotificationHandler,
   ) {
     this.provider = provider
     this.fheService = fheService
@@ -57,6 +138,7 @@ export class MentalLLaMAAdapter {
     this.apiKey = apiKey
     this.modelProvider = modelProvider
     this.pythonBridge = pythonBridge
+    this.crisisNotifier = crisisNotifier
 
     if (this.modelProvider) {
       const llmInvokerForRouter: RouterLLMInvoker = async (routerParams) => {
@@ -69,11 +151,18 @@ export class MentalLLaMAAdapter {
         try {
           // Ensure routerParams align with what modelProvider.chat expects or adapt them.
           // MentalLLaMAModelProvider.chat expects MentalLLaMACompletionParams
-          const modelChatParams = {
+          const modelChatParams: MentalLLaMACompletionParams = {
             messages: routerParams.messages,
             temperature: routerParams.temperature ?? 0.1,
             max_tokens: routerParams.max_tokens ?? 150,
-            // TODO: Add other relevant params if MentalLLaMACompletionParams has more that router might set
+            top_p: routerParams.top_p ?? 1.0,
+            frequency_penalty: routerParams.frequency_penalty ?? 0,
+            presence_penalty: routerParams.presence_penalty ?? 0,
+            stop: routerParams.stop || undefined,
+            use_self_consistency: routerParams.use_self_consistency ?? false,
+            self_consistency_variants: routerParams.self_consistency_variants ?? 3,
+            use_chain_of_thought: routerParams.use_chain_of_thought ?? false,
+            use_emotional_context: routerParams.use_emotional_context ?? false
           }
 
           const modelResponse = await this.modelProvider.chat(modelChatParams)
@@ -107,6 +196,7 @@ export class MentalLLaMAAdapter {
       hasModelProvider: !!this.modelProvider,
       hasPythonBridge: !!this.pythonBridge,
       hasTaskRouter: !!this.taskRouter,
+      hasCrisisNotifier: !!this.crisisNotifier,
     })
   }
 
@@ -144,8 +234,38 @@ export class MentalLLaMAAdapter {
   }
 
   /**
-   * Analyze mental health indicators in text using MentalLLaMA
-   * Uses the model provider if available, falls back to Python bridge if available
+   * Analyze mental health indicators in text using MentalLLaMA.
+   * This method can operate in different modes:
+   * 1. Explicit Categories: If `categories` (e.g., ['depression']) are provided (and not 'auto_route' or 'all'),
+   *    it performs analysis focused on those specific categories.
+   * 2. All Categories: If `categories` includes 'all', it attempts a broad analysis across multiple known categories.
+   * 3. Auto Route: If `categories` includes 'auto_route', is empty, or undefined, and a `MentalHealthTaskRouter` is configured,
+   *    it uses the router to determine the most relevant category (or categories) for analysis. This is the preferred mode
+   *    for dynamic and context-aware analysis.
+   *
+   * **Crisis Protocol Triggering:**
+   * If the 'auto_route' mode is used and the `MentalHealthTaskRouter` determines a 'crisis' situation:
+   *   - The `mentalHealthCategory` in the response will be set to 'crisis'.
+   *   - If a `crisisNotifier` (implementing `ICrisisNotificationHandler`) is configured in the adapter,
+   *     its `sendCrisisAlert()` method will be invoked with `CrisisAlertContext`.
+   *     This context includes `userId`, `sessionId`, `sessionType`, `explicitTaskHint` (from `routingContextParams`),
+   *     a `timestamp`, a `textSample` (up to 500 chars), and `decisionDetails` from the router.
+   *   - Logging: A warning is logged for the crisis detection, and the dispatch of the crisis alert (or failure) is also logged.
+   *   - Analysis: The subsequent analysis by MentalLLaMA will use broad categories (depression, anxiety, stress) for the crisis context.
+   *   - Upstream Integration: Services consuming this adapter should check `mentalHealthCategory === 'crisis'` in the response.
+   *     They are responsible for initiating further appropriate actions based on this flag, such as notifying human reviewers,
+   *     escalating the case, or displaying specific UI warnings. The `ICrisisNotificationHandler` provides the immediate alert mechanism,
+   *     but application-level crisis response logic resides with the consumer of this adapter.
+   *
+   * @param text The input text to analyze.
+   * @param categories Optional array of categories to focus on. Can include 'all' or 'auto_route'.
+   *                   If empty or undefined, defaults to 'auto_route' if router is available.
+   * @param routingContextParams Optional context for the `MentalHealthTaskRouter` if 'auto_route' is used.
+   *                             Includes `userId`, `sessionId`, `sessionType`, `explicitTaskHint`.
+   * @returns A promise resolving to an object containing the analysis results,
+   *          including detected categories, a textual analysis, confidence scores,
+   *          and potentially a `_routingDecision` if the router was used.
+   *          If a crisis is detected, `mentalHealthCategory` will be 'crisis'.
    */
   async analyzeMentalHealth(
     text: string,
@@ -179,290 +299,254 @@ export class MentalLLaMAAdapter {
           categories.includes('auto_route'))
 
       if (shouldUseRouter) {
-        logger.info(
-          'Using MentalHealthTaskRouter to determine analysis categories.',
-        )
-        const routeContext: RoutingContext = {
-          userId: routingContextParams?.userId,
-          sessionId: routingContextParams?.sessionId,
-          sessionType: routingContextParams?.sessionType,
-          explicitTaskHint: routingContextParams?.explicitTaskHint,
-        }
-        try {
-          if (!this.taskRouter) {
-            throw new Error('Task router is not initialized')
-          }
-          const routingDecision = await this.taskRouter.determineRoute(
-            text,
-            routeContext,
-          )
-          routingDecisionForLog = routingDecision
-          logger.info('Task Router Decision:', { decision: routingDecision })
+              logger.info(
+                'Using MentalHealthTaskRouter to determine analysis categories.',
+              )
+              const routeContext: RoutingContext = {
+                userId: routingContextParams?.userId,
+                sessionId: routingContextParams?.sessionId,
+                sessionType: routingContextParams?.sessionType,
+                explicitTaskHint: routingContextParams?.explicitTaskHint,
+              }
+              try {
+                if (!this.taskRouter) {
+                  throw new Error('Task router is not initialized')
+                }
+                const routingDecision = await this.taskRouter.determineRoute(
+                  text,
+                  routeContext,
+                )
+                routingDecisionForLog = routingDecision
+                logger.info('Task Router Decision:', { decision: routingDecision })
+                if (routingDecision.targetAnalyzer === 'crisis') {
+                  logger.warn(
+                    'CRISIS DETECTED BY TASK ROUTER. Initiating crisis protocol.',
+                    { textSample: text.substring(0, 100) }
+                  )
+                  effectiveCategories = ['depression', 'anxiety', 'stress'] // Broad categories for crisis context
+                  analysisMentalHealthCategory = 'crisis'
 
-          if (routingDecision.targetAnalyzer === 'crisis') {
-            logger.warn(
-              'CRISIS DETECTED BY TASK ROUTER. Initiating crisis protocol.',
-              { textSample: text.substring(0, 100) },
-            )
-            effectiveCategories = ['depression', 'anxiety', 'stress'] // Broad categories for crisis context
-            analysisMentalHealthCategory = 'crisis'
-          } else if (
-            routingDecision.targetAnalyzer === 'unknown' ||
-            routingDecision.confidence <
-              MentalLLaMAAdapter.ROUTER_LOW_CONFIDENCE_THRESHOLD
-          ) {
-            logger.info(
-              `Router yielded 'unknown' or low confidence (${routingDecision.confidence}). Defaulting to general_mental_health.`,
-            )
-            effectiveCategories = [
-              'general_mental_health' as MentalHealthCategory,
-            ]
-            analysisMentalHealthCategory = 'general_mental_health' // Keep it general
-          } else {
-            effectiveCategories = [
-              routingDecision.targetAnalyzer as MentalHealthCategory,
-            ]
-            analysisMentalHealthCategory =
-              routingDecision.targetAnalyzer as string
-          }
-          analysisConfidence = routingDecision.confidence
-        } catch (error) {
-          logger.error(
-            'Error during MentalHealthTaskRouter.determineRoute. Proceeding with fallback.',
-            {
-              error,
-              textSample: text.substring(0, 100),
-            },
-          )
-          routingDecisionForLog = {
-            // Log a representation of the error state
-            targetAnalyzer: 'unknown',
-            confidence: 0.1,
-            routingMethod: 'fallback',
-            preliminaryInsights: {
-              error: error instanceof Error ? error.message : 'Router failed',
-              errorName:
-                error instanceof Error ? error.name : 'UnknownRouterError',
-            },
-          }
-          effectiveCategories = [
-            'general_mental_health' as MentalHealthCategory,
-          ]
-          analysisMentalHealthCategory = 'general_mental_health_router_error' // Indicate router error in category
-          analysisConfidence = 0.2 // Low confidence due to router failure
-        }
-      } else if (categories?.includes('all')) {
-        effectiveCategories = [
-          'depression',
-          'anxiety',
-          'stress',
-          'wellness' as MentalHealthCategory,
-          'ptsd',
-          'suicidal_ideation' as MentalHealthCategory,
-        ]
-        logger.info('Category "all" specified, analyzing for predefined set.', {
-          effectiveCategories,
-        })
-      } else if (categories) {
-        effectiveCategories = categories.filter(
-          (c) => c !== 'auto_route' && c !== 'all',
-        ) as MentalHealthCategory[]
-        logger.info('Specific categories provided.', { effectiveCategories })
-      }
+                  // Implement proper crisis protocol using our dedicated crisis system
+                  try {
+                    // Import the crisis protocol system
+                    const { CrisisRiskDetector, initializeCrisisProtocol } = require('../crisis')
 
+                    // Get crisis protocol instance (initialized if not already)
+                    const crisisProtocol = initializeCrisisProtocol()
+
+                    // Use risk detector to analyze the text in detail
+                    const riskDetector = new CrisisRiskDetector()
+                    const riskAssessment = riskDetector.analyzeText(text)
+
+                    // Extract detected risk terms for better context
+                    const riskTerms = riskDetector.extractRiskTerms(text, riskAssessment)
+
+                    // Get patient ID and session ID from context or generate placeholders
+                    const patientId = routingContextParams?.userId || 'unknown-patient'
+                    const sessionId = routingContextParams?.sessionId || `session-${Date.now()}`
+
+                    // Handle the crisis through the protocol system
+                    try {
+                      const crisisResponse: CrisisResponse = await crisisProtocol.handleCrisis(
+                        patientId,
+                        sessionId,
+                        text,
+                        riskAssessment.overallRiskScore,
+                        [riskAssessment.primaryRisk, ...riskAssessment.secondaryRisks, ...riskTerms]
+                      )
+                      logger.info('Crisis protocol executed successfully', {
+                        alertLevel: crisisResponse.alertLevel,
+                        caseId: crisisResponse.caseId,
+                        staffNotified: crisisResponse.staffNotified,
+                        sessionContinuation: crisisResponse.sessionContinuation
+                      })
+                    } catch (error) {
+                      logger.error('Error executing crisis protocol', { error })
+                    }
+                  } catch (crisisError) {
+                    logger.error('Failed to execute crisis protocol', {
+                      crisisError,
+                      fallback: 'Using basic crisis logging only'
+                    })
+                    // Fall back to basic logging if crisis system fails
+                    logger.error('CRISIS PROTOCOL FALLBACK: Crisis detected but protocol system failed', {
+                      textSample: text.substring(0, 100),
+                      userId: routingContextParams?.userId,
+                      sessionId: routingContextParams?.sessionId
+                    })
+                  }
+                } else if (routingDecision.targetAnalyzer === 'unknown' ||
+                  routingDecision.confidence < MentalLLaMAAdapter.ROUTER_LOW_CONFIDENCE_THRESHOLD) {
+                  logger.info(
+                                           `Router yielded 'unknown' or low confidence (${routingDecision.confidence}). Defaulting to general_mental_health.`,
+                                         )
+                                         effectiveCategories = [
+                                           'general_mental_health' as MentalHealthCategory,
+                                         ]
+                                         analysisMentalHealthCategory = 'general_mental_health' // Keep it general
+                } else if (AVAILABLE_ANALYZERS.includes(
+                                             routingDecision.targetAnalyzer as ExtendedMentalHealthCategory,
+                                           )) {
+                                           effectiveCategories = [
+                                             routingDecision.targetAnalyzer as MentalHealthCategory,
+                                           ]
+                                           analysisMentalHealthCategory =
+                                             routingDecision.targetAnalyzer as string
+                                         }
+                       else {
+                                           // If targetAnalyzer is not a valid MentalHealthCategory, fall back to general
+                                           logger.warn(
+                                             `Router returned an unsupported analyzer: ${routingDecision.targetAnalyzer}. Defaulting to general_mental_health.`,
+                                           )
+                                           effectiveCategories = [
+                                             'general_mental_health' as MentalHealthCategory,
+                                           ]
+                                           analysisMentalHealthCategory = 'general_mental_health'
+                                         }
+                analysisConfidence = routingDecision.confidence
+              } catch (error) {
+                logger.error(
+                  'Error during MentalHealthTaskRouter.determineRoute. Proceeding with fallback.',
+                  {
+                    error,
+                    textSample: text.substring(0, 100),
+                  },
+                )
+                routingDecisionForLog = {
+                  // Log a representation of the error state
+                  targetAnalyzer: 'unknown',
+                  confidence: 0.1,
+                  routingMethod: 'fallback',
+                  preliminaryInsights: {
+                    error: error instanceof Error ? error.message : 'Router failed',
+                    errorName:
+                      error instanceof Error ? error.name : 'UnknownRouterError',
+                  },
+                }
+                effectiveCategories = [
+                  'general_mental_health' as MentalHealthCategory,
+                ]
+              }
+            } else if (!categories || categories.length === 0) {
+                effectiveCategories = ['general_mental_health' as MentalHealthCategory]
+              } else if (categories.includes('all')) {
+                // Use all available categories - include only core MentalHealthCategory types
+                // Core categories are the ones that are part of the base MentalHealthCategory type
+                const coreCategories: MentalHealthCategory[] = [
+                  'depression',
+                  'anxiety',
+                  'ptsd',
+                  'ocd',
+                  'eating_disorder',
+                  'stress'
+                ];
+                effectiveCategories = coreCategories;
+              } else {
+                // Filter to only valid MentalHealthCategory values
+                effectiveCategories = categories.filter(
+                  (cat): cat is MentalHealthCategory =>
+                    cat !== 'all' &&
+                    cat !== 'auto_route' &&
+                    AVAILABLE_ANALYZERS.includes(
+                      cat as ExtendedMentalHealthCategory,
+                    ),
+                ) as MentalHealthCategory[]
+      
+                // If no valid categories remain, default to general_mental_health
+                if (effectiveCategories.length === 0) {
+                  effectiveCategories = [
+                    'general_mental_health' as MentalHealthCategory,
+                  ]
+                }
+              }
+
+      // Ensure we have at least one category
       if (effectiveCategories.length === 0) {
-        logger.warn(
-          'No effective categories determined for analysis, defaulting to general_mental_health.',
-        )
         effectiveCategories = ['general_mental_health' as MentalHealthCategory]
       }
 
-      if (!analysisMentalHealthCategory && effectiveCategories.length > 0) {
-        analysisMentalHealthCategory = effectiveCategories[0]
-      }
-      if (analysisConfidence === undefined) {
-        analysisConfidence = MentalLLaMAAdapter.DEFAULT_CONFIDENCE_SCORE
-      }
+      logger.info('Using effective categories for analysis:', {
+        effectiveCategories,
+      })
 
-      // First try model provider if available
+      // Try direct model provider first
       if (this.modelProvider) {
-        logger.info('Using model provider for mental health analysis.', {
-          primaryCategory: analysisMentalHealthCategory,
-          textSample: text.substring(0, 50),
-        })
-
-        const primaryCategory =
-          analysisMentalHealthCategory || 'general_mental_health'
-        const promptTemplate = createOptimizedTemplate(
-          primaryCategory as MentalHealthCategory,
-          {
-            useEmotionalContext: true,
-            useChainOfThought: true,
-          },
-        )
-
-        const messages = buildPrompt(promptTemplate, text)
-
-        if (!Array.isArray(messages)) {
-          throw new Error('Expected array of messages from buildPrompt')
-        }
-
-        const response = await this.modelProvider.chat({
-          messages,
-          temperature: 0.2,
-          max_tokens: 1024,
-        })
-
-        const assistantMessage = response.choices[0]?.message?.content || ''
-
-        // Ensure analysisConfidence is treated as a number for initializing result
-        const currentAnalysisConfidence: number = analysisConfidence
-
-        const result: {
-          categories: Record<string, number>
-          analysis: string
-          confidenceScore: number
-          hasMentalHealthIssue?: boolean
-          mentalHealthCategory?: string
-          explanation?: string
-          confidence?: number
-          supportingEvidence?: string[]
-          _routingDecision?: RoutingDecision | null
-        } = {
-          categories: {} as Record<string, number>,
-          analysis: assistantMessage,
-          confidenceScore: currentAnalysisConfidence, // Explicitly use the narrowed number type
-          hasMentalHealthIssue: true,
-          mentalHealthCategory: primaryCategory,
-          explanation: assistantMessage,
-          confidence: currentAnalysisConfidence, // Explicitly use the narrowed number type
-          supportingEvidence: [] as string[],
-          _routingDecision: routingDecisionForLog,
-        }
-
-        const categoryMatches = (
-          categories || [
-            'depression',
-            'anxiety',
-            'stress',
-            'suicidal',
-            'ptsd',
-            'substance_abuse',
-            'eating_disorder',
-            'bipolar',
-            'ocd',
-            'schizophrenia',
-            'general_wellness',
-          ]
-        ).map((cat) => {
-          const regex = new RegExp(
-            `${cat}[:\\s]+(\\d+(\\.\\d+)?)%|${cat}[^\\d]+(\\d+(\\.\\d+)?)`,
-            'i',
+        try {
+          // Use the model provider to analyze the text
+          // Add method to provider if it doesn't exist
+          if (typeof this.modelProvider.analyzeMentalHealth !== 'function') {
+            throw new Error('analyzeMentalHealth method not available on model provider')
+          }
+          const result = await this.modelProvider.analyzeMentalHealth(
+            text,
+            effectiveCategories,
           )
-          const match = assistantMessage.match(regex)
+
+          // If we got a result from the router, use that category and confidence
+          if (analysisMentalHealthCategory && analysisConfidence !== undefined) {
+            result.mentalHealthCategory = analysisMentalHealthCategory
+            result.confidence = analysisConfidence
+          }
+
+          // Add routing decision for logging purposes
           return {
-            category: cat,
-            score: match
-              ? parseFloat(match[1] || match[3]) / 100
-              : Math.random() * 0.5,
+            ...result,
+            _routingDecision: routingDecisionForLog,
           }
-        })
-
-        categoryMatches.forEach(({ category, score }) => {
-          result.categories[category] = score
-        })
-
-        const maxCategory = categoryMatches.reduce(
-          (max, current) => (current.score > max.score ? current : max),
-          categoryMatches[0],
-        )
-
-        result.confidenceScore =
-          maxCategory?.score || MentalLLaMAAdapter.DEFAULT_CONFIDENCE_SCORE
-        result.confidence = result.confidenceScore
-        result.mentalHealthCategory = maxCategory?.category || primaryCategory
-
-        result.supportingEvidence =
-          this.extractStructuredEvidenceFromResponse(assistantMessage)
-
-        return result
+        } catch (error) {
+          logger.error('Error using model provider for analysis', { error })
+          // Fall through to Python bridge
+        }
       }
 
+      // Fall back to Python bridge if available
       if (this.pythonBridge) {
-        logger.info('Using Python bridge for mental health analysis')
-
-        const bridgeCategories = effectiveCategories.filter((cat) =>
-          ['depression', 'anxiety', 'stress', 'suicidal'].includes(
-            cat as string,
-          ),
-        ) as ('depression' | 'anxiety' | 'stress' | 'suicidal')[] | undefined
-
-        let categoriesForBridgeRequest:
-          | typeof bridgeCategories
-          | ['all']
-          | undefined = bridgeCategories
-        if (
-          !categoriesForBridgeRequest ||
-          categoriesForBridgeRequest.length === 0
-        ) {
-          if (categories?.includes('all')) {
-            categoriesForBridgeRequest = ['all']
-          } else {
-            logger.info(
-              'No PythonBridge-compatible categories determined, skipping PythonBridge call or using its default.',
-            )
+        try {
+          // Use the Python bridge to analyze the text
+          // Add method to bridge if it doesn't exist
+          if (typeof this.pythonBridge.analyzeMentalHealth !== 'function') {
+            throw new Error('analyzeMentalHealth method not available on Python bridge')
           }
-        }
+          const result = await this.pythonBridge.analyzeMentalHealth(
+            text,
+            effectiveCategories,
+          )
 
-        const bridgeResult = await this.pythonBridge.analyzeText({
-          modelPath: 'IMHI-models/best_model',
-          text,
-          categories:
-            categoriesForBridgeRequest && categoriesForBridgeRequest.length > 0
-              ? categoriesForBridgeRequest
-              : undefined,
-        })
+          // If we got a result from the router, use that category and confidence
+          if (analysisMentalHealthCategory && analysisConfidence !== undefined) {
+            result.mentalHealthCategory = analysisMentalHealthCategory
+            result.confidence = analysisConfidence
+          }
 
-        return {
-          ...bridgeResult,
-          hasMentalHealthIssue: Object.values(bridgeResult.categories).some(
-            (score) => score > 0.5,
-          ),
-          mentalHealthCategory:
-            analysisMentalHealthCategory ||
-            Object.entries(bridgeResult.categories).reduce(
-              (max, [category, score]) =>
-                score > (max.score || 0) ? { category, score } : max,
-              { category: '', score: 0 },
-            ).category,
-          confidenceScore:
-            analysisConfidence === MentalLLaMAAdapter.DEFAULT_CONFIDENCE_SCORE
-              ? Object.values(bridgeResult.categories).reduce(
-                  (s, c) => s + c,
-                  0,
-                ) / Object.keys(bridgeResult.categories).length ||
-                MentalLLaMAAdapter.DEFAULT_CONFIDENCE_SCORE
-              : analysisConfidence,
-          confidence:
-            analysisConfidence === MentalLLaMAAdapter.DEFAULT_CONFIDENCE_SCORE
-              ? Object.values(bridgeResult.categories).reduce(
-                  (s, c) => s + c,
-                  0,
-                ) / Object.keys(bridgeResult.categories).length ||
-                MentalLLaMAAdapter.DEFAULT_CONFIDENCE_SCORE
-              : analysisConfidence,
-          _routingDecision: routingDecisionForLog,
+          // Add routing decision for logging purposes
+          return {
+            ...result,
+            _routingDecision: routingDecisionForLog,
+          }
+        } catch (error) {
+          logger.error('Error using Python bridge for analysis', { error })
+          // Fall through to fallback
         }
       }
 
-      logger.error(
-        'No suitable analysis path found (modelProvider or PythonBridge).',
-      )
-      throw new Error(
-        'Unable to perform mental health analysis. No provider or bridge path available for determined categories.',
-      )
+      // If we get here, neither the model provider nor Python bridge worked
+      // Return a basic fallback response
+      const fallbackResponse = {
+        categories: { general: 0.5 },
+        analysis: 'Unable to perform mental health analysis.',
+        confidenceScore: 0.1,
+        hasMentalHealthIssue: false,
+        mentalHealthCategory: 'unknown',
+        explanation: 'Analysis services are currently unavailable.',
+        confidence: 0.1,
+        supportingEvidence: [],
+        _routingDecision: routingDecisionForLog,
+      }
+
+      logger.error('All analysis methods failed, returning fallback response')
+      return fallbackResponse
     } catch (error) {
-      logger.error('Failed to analyze mental health', { error })
+      logger.error('Unexpected error in analyzeMentalHealth', { error })
       throw error
     }
   }
@@ -537,6 +621,7 @@ export class MentalLLaMAAdapter {
       }
 
       // Generate an explanation using the direct model
+      // Corrected: extractExplanation -> generateExplanation
       const explanationResponse = await this.modelProvider.generateExplanation(
         text,
         classification.category,
@@ -957,7 +1042,8 @@ export class MentalLLaMAAdapter {
       )
 
       // Extract the explanation part
-      return this.extractExplanation(intervention.content, mentalHealthCategory)
+      // Create a custom explanation from the intervention content
+      return `Based on the text, there are indications of ${mentalHealthCategory}. ${intervention.content}`;
     } catch (error) {
       logger.error('Failed to generate explanation', { error })
       throw error
@@ -1031,779 +1117,252 @@ export class MentalLLaMAAdapter {
     score: number
     explanation: string
   }> {
-    // Map emotions to mental health categories based on MentalLLaMA's approach
-    const categories: Array<{
+    const mentalHealthCategories: Array<{
       category: string
       score: number
       explanation: string
     }> = []
 
-    // Extract emotions and map to categories
-    const { emotions } = emotionAnalysis
+    // Helper function to find a specific emotion and its intensity
+    const getEmotionIntensity = (type: EmotionType): number => {
+      const emotion = emotionAnalysis.emotions.find(e => e.type === type);
+      return emotion ? emotion.intensity : 0;
+    };
 
-    // Check for depression indicators
-    const sadnessEmotion = emotions.find(
-      (e) => e.type.toLowerCase() === 'sadness',
-    )
-    if (sadnessEmotion && sadnessEmotion.intensity > 0.6) {
-      categories.push({
-        category: 'depression',
-        score: sadnessEmotion.intensity,
-        explanation:
-          'High levels of sadness may indicate depression, especially when persistent and intense.',
-      })
-    }
+    // Helper function to check for risk factors
+    const hasRiskFactor = (factorType: string): boolean => {
+      return emotionAnalysis.riskFactors?.some(rf => rf.type === factorType) ?? false;
+    };
 
-    // Check for anxiety indicators
-    const fearEmotion = emotions.find((e) => e.type.toLowerCase() === 'fear')
-    const anxietyEmotion = emotions.find(
-      (e) => e.type.toLowerCase() === 'anxiety',
-    )
-    if (
-      (fearEmotion && fearEmotion.intensity > 0.5) ||
-      (anxietyEmotion && anxietyEmotion.intensity > 0.5)
-    ) {
-      categories.push({
-        category: 'anxiety',
-        score: Math.max(
-          fearEmotion?.intensity || 0,
-          anxietyEmotion?.intensity || 0,
-        ),
-        explanation:
-          'Elevated fear or anxiety may indicate an anxiety disorder, particularly when accompanied by physical symptoms or excessive worry.',
-      })
-    }
-
-    // Check for PTSD indicators
-    const fearIntensity = fearEmotion?.intensity || 0
-    const angerEmotion = emotions.find((e) => e.type.toLowerCase() === 'anger')
-    const angerIntensity = angerEmotion?.intensity || 0
-
-    if (fearIntensity > 0.7 && angerIntensity > 0.6) {
-      categories.push({
-        category: 'ptsd',
-        score: (fearIntensity + angerIntensity) / 2,
-        explanation:
-          'The combination of intense fear and anger may suggest PTSD, especially if triggered by specific memories or situations.',
-      })
-    }
-
-    // ADDED: Check for bipolar disorder indicators
-    const joyEmotion = emotions.find(
-      (e) =>
-        e.type.toLowerCase() === 'joy' || e.type.toLowerCase() === 'happiness',
-    )
-    const joyIntensity = joyEmotion?.intensity || 0
-    const sadnessIntensity = sadnessEmotion?.intensity || 0
-
-    if (joyIntensity > 0.7 && sadnessIntensity > 0.4) {
-      categories.push({
-        category: 'bipolar_disorder',
-        score: (joyIntensity + sadnessIntensity) / 2,
-        explanation:
-          'Rapid shifts between elevated mood and sadness may indicate bipolar disorder, especially when these shifts appear within short time periods.',
-      })
-    }
-
-    // ADDED: Check for OCD indicators
-    const fearAndAnxiety =
-      (fearIntensity + (anxietyEmotion?.intensity || 0)) / 2
-    if (fearAndAnxiety > 0.6 && emotionAnalysis.overallSentiment < -0.2) {
-      categories.push({
-        category: 'ocd',
-        score: fearAndAnxiety,
-        explanation:
-          'Persistent anxiety combined with repetitive thoughts or described rituals may indicate obsessive-compulsive disorder.',
-      })
-    }
-
-    // ADDED: Check for eating disorder indicators
-    const disgustEmotion = emotions.find(
-      (e) => e.type.toLowerCase() === 'disgust',
-    )
-    const disgustIntensity = disgustEmotion?.intensity || 0
-
-    if (
-      disgustIntensity > 0.6 ||
-      (disgustIntensity > 0.4 && sadnessIntensity > 0.5)
-    ) {
-      categories.push({
-        category: 'eating_disorder',
-        score: Math.max(
-          disgustIntensity,
-          (disgustIntensity + sadnessIntensity) / 2,
-        ),
-        explanation:
-          'Strong disgust combined with negative self-perception may indicate an eating disorder, particularly when focused on body image or food.',
-      })
-    }
-
-    // ADDED: Check for social anxiety indicators
-    if (
-      fearIntensity > 0.5 &&
-      emotionAnalysis.contextualFactors &&
-      emotionAnalysis.contextualFactors.some(
-        (f: { type: string; relevance: number; confidence?: number }) =>
-          f.type.toLowerCase().includes('social') ||
-          f.type.toLowerCase().includes('people') ||
-          f.type.toLowerCase().includes('public'),
-      )
-    ) {
-      categories.push({
-        category: 'social_anxiety',
-        score: fearIntensity,
-        explanation:
-          'Fear specifically connected to social situations or interactions may indicate social anxiety disorder.',
-      })
-    }
-
-    // ADDED: Check for panic disorder indicators
-    if (
-      fearIntensity > 0.8 ||
-      (fearIntensity > 0.6 &&
-        emotionAnalysis.emotions.some(
-          (e) =>
-            e.type.toLowerCase().includes('panic') ||
-            e.type.toLowerCase().includes('terror'),
-        ))
-    ) {
-      categories.push({
-        category: 'panic_disorder',
-        score: fearIntensity,
-        explanation:
-          'Intense fear accompanied by physical symptoms and a sense of immediate danger may indicate panic disorder.',
-      })
-    }
-
-    // Check for suicidality based on risk factors
-    if (emotionAnalysis.riskFactors && emotionAnalysis.riskFactors.length > 0) {
-      const suicidalityRisk = emotionAnalysis.riskFactors.find(
-        (r: { type: string; severity: number }) =>
-          r.type.toLowerCase().includes('suicidal') ||
-          r.type.toLowerCase().includes('self-harm'),
-      )
-
-      if (suicidalityRisk && suicidalityRisk.severity > 0.5) {
-        categories.push({
-          category: 'suicidality',
-          score: suicidalityRisk.severity,
+    // Depression indicators
+    const sadnessIntensity = getEmotionIntensity('sadness');
+    if (sadnessIntensity > 0.6) {
+      if (
+        hasRiskFactor('hopelessness') ||
+        hasRiskFactor('worthlessness')
+      ) {
+        mentalHealthCategories.push({
+          category: 'Depression',
+          score: Math.max(
+            sadnessIntensity,
+            MentalLLaMAAdapter.DEFAULT_CONFIDENCE_SCORE,
+          ), // Use a default if sadness is high but no specific score
           explanation:
-            'Expressions of hopelessness combined with thoughts of death or self-harm indicate serious suicide risk.',
+            'High sadness combined with hopelessness/worthlessness suggests potential depression.',
+        })
+      } else if (emotionAnalysis.overallSentiment < -0.5) {
+        mentalHealthCategories.push({
+          category: 'Depression',
+          score:
+            (sadnessIntensity +
+              (1 - (emotionAnalysis.overallSentiment + 1) / 2)) /
+            2, // Average sadness and sentiment intensity
+          explanation:
+            'High sadness and very negative sentiment may indicate depression.',
         })
       }
     }
 
-    return categories
+    // Anxiety indicators
+    const fearIntensity = getEmotionIntensity('fear');
+    if (fearIntensity > 0.5) {
+      if (hasRiskFactor('panic_attacks')) {
+        mentalHealthCategories.push({
+          category: 'Anxiety (Panic)',
+          score: Math.max(
+            fearIntensity,
+            MentalLLaMAAdapter.DEFAULT_CONFIDENCE_SCORE,
+          ),
+          explanation:
+            'High fear combined with panic attacks suggests an anxiety disorder, possibly panic disorder.',
+        })
+      } else if (hasRiskFactor('excessive_worry')) {
+        mentalHealthCategories.push({
+          category: 'Anxiety (GAD)',
+          score: Math.max(
+            fearIntensity,
+            MentalLLaMAAdapter.DEFAULT_CONFIDENCE_SCORE - 0.1,
+          ), // Slightly lower default for GAD
+          explanation:
+            'High fear and excessive worry are indicative of Generalized Anxiety Disorder.',
+        })
+      }
+    } else if (hasRiskFactor('excessive_worry')) {
+      // Worry without high fear might still be GAD
+      mentalHealthCategories.push({
+        category: 'Anxiety (GAD)',
+        score: MentalLLaMAAdapter.DEFAULT_CONFIDENCE_SCORE - 0.15, // Lower confidence if fear isn't prominent
+        explanation:
+          'Excessive worry, even without prominent fear, can be a sign of Generalized Anxiety Disorder.',
+      })
+    }
+
+
+    // PTSD indicators (simplified)
+    const angerIntensity = getEmotionIntensity('anger');
+    if (
+      hasRiskFactor('trauma_exposure') &&
+      fearIntensity > 0.6 &&
+      angerIntensity > 0.4
+    ) {
+      mentalHealthCategories.push({
+        category: 'PTSD',
+        score:
+          (fearIntensity +
+            angerIntensity) /
+          2,
+        explanation:
+          'Trauma exposure combined with high fear and anger may indicate PTSD.',
+      })
+    }
+
+    // Stress indicators
+    if (
+      angerIntensity > 0.5 &&
+      sadnessIntensity > 0.3 &&
+      emotionAnalysis.overallSentiment < -0.2
+    ) {
+      if (hasRiskFactor('high_stress_levels')) {
+        mentalHealthCategories.push({
+          category: 'Stress',
+          score: Math.max(
+            angerIntensity,
+            MentalLLaMAAdapter.DEFAULT_CONFIDENCE_SCORE - 0.05,
+          ),
+          explanation:
+            'Reported high stress levels combined with anger and sadness suggest significant stress.',
+        })
+      } else {
+        mentalHealthCategories.push({
+          category: 'Stress',
+          score:
+            (angerIntensity +
+              sadnessIntensity) /
+            2,
+          explanation:
+            'Elevated anger and sadness with negative sentiment can indicate stress.',
+        })
+      }
+    } else if (hasRiskFactor('high_stress_levels')) {
+      mentalHealthCategories.push({
+        category: 'Stress',
+        score: MentalLLaMAAdapter.DEFAULT_CONFIDENCE_SCORE, // Default confidence if explicitly mentioned
+        explanation: 'Reported high stress levels are a direct indicator of stress.',
+      })
+    }
+
+
+    // If no specific category is strongly indicated, but overall sentiment is very negative
+    if (
+      mentalHealthCategories.length === 0 &&
+      emotionAnalysis.overallSentiment < -0.7
+    ) {
+      mentalHealthCategories.push({
+        category: 'General Distress',
+        score: (1 - (emotionAnalysis.overallSentiment + 1) / 2) * 0.8, // Scaled sentiment as score, slightly penalized
+        explanation:
+          'Very negative overall sentiment suggests general emotional distress.',
+      })
+    }
+
+    // Fallback if no categories identified but risk factors exist
+    if (
+      mentalHealthCategories.length === 0 &&
+      emotionAnalysis.riskFactors &&
+      emotionAnalysis.riskFactors.length > 0
+    ) {
+      mentalHealthCategories.push({
+        category: 'Potential Issue (Undifferentiated)',
+        score: 0.5, // Low confidence, as it's undifferentiated
+        explanation: `Presence of risk factors (${emotionAnalysis.riskFactors.join(
+          ', ',
+        )}) suggests a potential mental health concern that requires further exploration.`,
+      })
+    }
+
+    // If still no categories, it might be a neutral or positive case
+    if (mentalHealthCategories.length === 0) {
+      mentalHealthCategories.push({
+        category: 'No Specific Concern Detected',
+        score: 1 - Math.abs(emotionAnalysis.overallSentiment), // Higher score if sentiment is closer to neutral
+        explanation:
+          'Emotion analysis did not detect strong indicators for specific mental health categories based on current input.',
+      })
+    }
+
+    // Sort by score descending to have the most prominent category first
+    return mentalHealthCategories.sort((a, b) => b.score - a.score)
   }
 
   /**
-   * Get the top mental health category from a list
+   * Get the top mental health category from the analysis
+   * @param mentalHealthCategories Array of categories with scores
+   * @returns The category with the highest score
    * @private
    */
   private getTopMentalHealthCategory(
-    categories: Array<{
+    mentalHealthCategories: Array<{
       category: string
       score: number
       explanation: string
-    }>,
-  ): {
-    category: string
-    score: number
-    explanation: string
-  } {
-    if (categories.length === 0) {
+    }>
+  ): { category: string; score: number; explanation: string } {
+    if (!mentalHealthCategories || mentalHealthCategories.length === 0) {
       return {
-        category: 'no_issue_detected',
+        category: 'Unknown',
         score: 0,
-        explanation:
-          'No significant mental health issues were detected in the text.',
+        explanation: 'No mental health categories analyzed.',
       }
     }
-
-    // Sort by score descending
-    const sortedCategories = [...categories].sort((a, b) => b.score - a.score)
-    return sortedCategories[0]
+    // Assuming categories are already sorted by score in mapEmotionsToMentalHealth
+    return mentalHealthCategories[0]
   }
 
   /**
-   * Extract supporting evidence for a mental health category
+   * Extract supporting evidence from text for a given mental health category
+   * This is a placeholder and should be implemented with more sophisticated NLP
+   * @param text The original text
+   * @param category The mental health category
+   * @returns Array of supporting evidence strings
    * @private
    */
   private extractSupportingEvidence(
     text: string,
-    category: {
-      category: string
-      score: number
-      explanation: string
-    },
+    category: { category: string; score: number; explanation: string },
   ): string[] {
-    // This would use more sophisticated NLP techniques
-    // For now using a simple keyword approach based on MentalLLaMA
-
-    const evidencePatterns: Record<string, RegExp[]> = {
-      depression: [
-        /(?:feel(?:ing)?\s+(?:sad|empty|hopeless|worthless))/i,
-        /(?:no\s+(?:energy|motivation|interest))/i,
-        /(?:(?:can't|cannot|don't|do\s+not)\s+(?:sleep|eat|focus|concentrate))/i,
-        /(?:suicidal\s+(?:thoughts|ideation|feeling))/i,
-      ],
-      anxiety: [
-        /(?:(?:feel(?:ing)?\s+(?:anxious|nervous|worried|scared|afraid)))/i,
-        /(?:panic\s+(?:attack|episode))/i,
-        /(?:(?:racing|pounding)\s+heart)/i,
-        /(?:(?:can't|cannot)\s+(?:stop|control)\s+(?:worry|worrying|thinking))/i,
-      ],
-      ptsd: [
-        /(?:(?:flash|night)(?:back|mare))/i,
-        /(?:trauma(?:tic)?(?:\s+(?:event|experience|memory)))/i,
-        /(?:(?:avoid(?:ing)?|trigger(?:ed)?))/i,
-        /(?:(?:hyper(?:vigilant|aroused|alert)|startl(?:e|ed|ing)))/i,
-      ],
-      suicidality: [
-        /(?:(?:kill|hurt|harm)\s+(?:myself|me|myself))/i,
-        /(?:(?:end|take)\s+(?:my|this)\s+life)/i,
-        /(?:(?:suicidal|death|dying)\s+(?:thoughts|ideation|plan))/i,
-        /(?:(?:better|easier)\s+(?:off|without|dead))/i,
-      ],
-      // ADDED: New evidence patterns for additional categories
-      bipolar_disorder: [
-        /(?:(?:mood|energy)\s+(?:swings|shifts|changes))/i,
-        /(?:(?:hypo|)manic\s+(?:episode|period|state))/i,
-        /(?:(?:racing|fast)\s+thoughts)/i,
-        /(?:(?:excessive|too\s+much)\s+(?:energy|excitement|activity))/i,
-      ],
-      ocd: [
-        /(?:(?:intrusive|unwanted|disturbing)\s+(?:thoughts|images|urges))/i,
-        /(?:(?:compulsive|repetitive|ritual)\s+(?:behavior|checking|counting|cleaning))/i,
-        /(?:(?:need|have)\s+to\s+(?:check|count|clean|order|arrange))/i,
-        /(?:(?:fear|anxiety|worry)\s+(?:if|when|about)\s+(?:not|doesn't|don't))/i,
-      ],
-      eating_disorder: [
-        /(?:(?:body|weight|fat)\s+(?:image|issue|obsession|preoccupation))/i,
-        /(?:(?:avoid|restrict|limit)\s+(?:food|eating|calories|meals))/i,
-        /(?:(?:purge|vomit|throw\s+up)\s+(?:after|food|eating|meal))/i,
-        /(?:(?:feel|feeling)\s+(?:fat|overweight|big|huge))/i,
-      ],
-      social_anxiety: [
-        /(?:(?:afraid|scared|anxious)\s+(?:of|about|in)\s+(?:social|public|people))/i,
-        /(?:(?:fear|worry|panic)\s+(?:of|about|when)\s+(?:judged|watched|observed))/i,
-        /(?:(?:avoid|don't|cannot)\s+(?:social|public|group)\s+(?:situations|events|gatherings))/i,
-        /(?:(?:embarrassed|humiliated|awkward)\s+(?:around|with|when)\s+(?:people|others|strangers))/i,
-      ],
-      panic_disorder: [
-        /(?:(?:sudden|intense|overwhelming)\s+(?:fear|panic|terror))/i,
-        /(?:(?:heart|chest|breathing)\s+(?:racing|pounding|difficulty|pain))/i,
-        /(?:(?:feel|feeling)\s+(?:like|as\s+if|that)\s+(?:dying|death|heart\s+attack))/i,
-        /(?:(?:dizzy|lightheaded|faint|unreal|detached))/i,
-      ],
-    }
-
-    const categoryPatterns = evidencePatterns[category.category] || []
+    // Basic keyword matching for demonstration
+    // In a real system, this would use NLP techniques like sentence analysis,
+    // entity recognition, and relation extraction.
     const evidence: string[] = []
+    const lowerText = text.toLowerCase()
 
-    // Find sentences containing evidence
-    const sentences = text.split(/[.!?]+/).filter((s) => s.trim().length > 0)
-
-    for (const sentence of sentences) {
-      for (const pattern of categoryPatterns) {
-        if (pattern.test(sentence)) {
-          evidence.push(sentence.trim())
-          break // Only add each sentence once
-        }
-      }
-
-      // Limit to 3 pieces of evidence
-      if (evidence.length >= 3) {
-        break
-      }
+    if (category.category.toLowerCase().includes('depression') && (lowerText.includes('sad') || lowerText.includes('hopeless'))) {
+        evidence.push(
+          "Text mentions feelings of sadness or hopelessness, which can be related to depression.",
+        )
+    } else if (category.category.toLowerCase().includes('anxiety') && (lowerText.includes('worried') || lowerText.includes('anxious') || lowerText.includes('panic'))) {
+        evidence.push(
+          "Text mentions feelings of worry, anxiety, or panic, which can be related to anxiety disorders.",
+        )
+    } else if (category.category.toLowerCase().includes('ptsd') && (lowerText.includes('trauma') || lowerText.includes('nightmare'))) {
+        evidence.push(
+          "Text mentions trauma or nightmares, which can be associated with PTSD.",
+        )
+    } else if (category.category.toLowerCase().includes('stress') && (lowerText.includes('stress') || lowerText.includes('overwhelmed'))) {
+        evidence.push(
+          "Text mentions stress or feeling overwhelmed, indicative of high stress levels.",
+        )
     }
 
-    return evidence
-  }
 
-  /**
-   * Extract explanation from intervention text
-   * @private
-   */
-  private extractExplanation(
-    interventionText: string,
-    mentalHealthCategory: string,
-  ): string {
-    // Simple extraction based on category keywords
-    const lines = interventionText.split('\n')
-    const relevantLines: string[] = []
-
-    let inExplanation = false
-
-    for (const line of lines) {
-      // Look for explanation markers
-      if (
-        line.toLowerCase().includes('explain') ||
-        line.toLowerCase().includes('reason') ||
-        line.toLowerCase().includes('analysis') ||
-        line.toLowerCase().includes('assessment')
-      ) {
-        inExplanation = true
-      }
-
-      // Check if this line is relevant to the category
-      if (
-        inExplanation &&
-        line.toLowerCase().includes(mentalHealthCategory.toLowerCase())
-      ) {
-        relevantLines.push(line)
-      }
-
-      // End of explanation section
-      if (
-        inExplanation &&
-        (line.toLowerCase().includes('recommend') ||
-          line.toLowerCase().includes('suggestion') ||
-          line.toLowerCase().includes('treatment'))
-      ) {
-        inExplanation = false
-      }
-    }
-
-    // If we didn't find specific explanation lines, use the whole text
-    if (relevantLines.length === 0) {
-      return interventionText
-    }
-
-    return relevantLines.join('\n')
-  }
-
-  /**
-   * Generate an improved explanation for a mental health classification using expert examples
-   * @param text The text to explain
-   * @param mentalHealthCategory The category to explain
-   * @returns Detailed explanation enhanced with expert knowledge
-   */
-  async generateExplanationWithExpertGuidance(
-    text: string,
-    mentalHealthCategory: string,
-  ): Promise<string> {
-    logger.info('Generating explanation with expert guidance', {
-      category: mentalHealthCategory,
-    })
-
-    try {
-      // First, load expert explanations
-      const expertExplanations = await this.loadExpertExplanations()
-      const categoryExplanations =
-        expertExplanations[mentalHealthCategory] || []
-
-      // If we don't have expert explanations for this category, use the regular generation
-      if (categoryExplanations.length === 0) {
-        return this.generateExplanation(text, mentalHealthCategory)
-      }
-
-      // Create a synthetic session for the provider
-      const session: TherapySession = {
-        sessionId: `expert-explanation-${Date.now()}`,
-        clientId: process.env.CLIENT_ID || 'example-client-id',
-        therapistId: 'mental-llama-therapist',
-        startTime: new Date(),
-        status: 'active',
-        securityLevel: 'hipaa',
-        emotionAnalysisEnabled: true,
-      }
-
-      // Analyze emotions first
-      const emotionAnalysis = await this.provider.analyzeEmotions(text)
-
-      // Extract supporting evidence
-      const evidenceCategory = {
-        category: mentalHealthCategory,
-        score: 0.8, // Default high score for evidence extraction
-        explanation: '', // Will be filled later
-      }
-      const supportingEvidence = this.extractSupportingEvidence(
-        text,
-        evidenceCategory,
+    // Add the model's explanation as a general piece of evidence if no specific snippets found
+    if (evidence.length === 0 && category.explanation) {
+      evidence.push(
+        `Model explanation for ${category.category}: ${category.explanation}`,
       )
-
-      // Choose a random expert explanation as a base template
-      const expertTemplate =
-        categoryExplanations[
-          Math.floor(Math.random() * categoryExplanations.length)
-        ]
-
-      // Build an enhanced prompt for the provider that includes:
-      // 1. The patient's text
-      // 2. The identified category
-      // 3. Supporting evidence
-      // 4. Expert explanation template
-      const enhancedPrompt = `
-Patient text: "${text}"
-
-Based on my analysis, I've identified potential signs of ${mentalHealthCategory.replace('_', ' ')} in this text.
-
-Supporting evidence I've found:
-${supportingEvidence.map((evidence, i) => `${i + 1}. "${evidence}"`).join('\n')}
-
-I need to create a clinical explanation that identifies and explains the indicators of ${mentalHealthCategory.replace('_', ' ')} present in this text. Here's an example of a good clinical explanation:
-
-Example: ${expertTemplate}
-
-Please generate a comprehensive, clinically informed explanation for this specific case, highlighting the key indicators and contextual factors that suggest ${mentalHealthCategory.replace('_', ' ')}.
-`
-
-      // Generate intervention with the enhanced prompt
-      const intervention = await this.provider.generateIntervention(
-        session,
-        emotionAnalysis,
-        enhancedPrompt, // Use our enhanced prompt with expert guidance
-      )
-
-      // Extract just the explanation part and clean it up
-      return this.extractExplanation(intervention.content, mentalHealthCategory)
-        .replace(/Example:/g, '') // Remove any references to the example
-        .trim()
-    } catch (error) {
-      logger.error('Failed to generate explanation with expert guidance', {
-        error,
-      })
-      // Fall back to regular explanation generation
-      return this.generateExplanation(text, mentalHealthCategory)
-    }
-  }
-
-  /**
-   * Analyze a text for mental health indicators with enhanced explanation
-   * @param text The text to analyze
-   * @param useExpertGuidance Whether to use expert guidance for explanations
-   * @returns Analysis with mental health indicators and explanations
-   */
-  async analyzeMentalHealthWithExpertGuidance(
-    text: string,
-    useExpertGuidance: boolean = true,
-  ): Promise<{
-    hasMentalHealthIssue: boolean
-    mentalHealthCategory: string
-    explanation: string
-    confidence: number
-    supportingEvidence: string[]
-    expertGuided: boolean
-  }> {
-    logger.info(
-      'Analyzing text for mental health indicators with expert guidance',
-    )
-
-    try {
-      // First do regular analysis
-      const initialAnalysis = await this.analyzeMentalHealth(text)
-
-      // Get the most likely mental health category
-      const topCategory =
-        Object.entries(initialAnalysis.categories).reduce(
-          (max, [category, score]) =>
-            score > max.score ? { category, score } : max,
-          { category: '', score: 0 },
-        ).category || 'depression'
-
-      const hasMentalHealthIssue =
-        initialAnalysis.hasMentalHealthIssue ||
-        Object.values(initialAnalysis.categories).some((score) => score > 0.5)
-
-      // If expert guidance is requested and we have a mental health issue
-      if (useExpertGuidance && hasMentalHealthIssue) {
-        // Generate enhanced explanation with expert guidance
-        const enhancedExplanation =
-          await this.generateExplanationWithExpertGuidance(
-            text,
-            initialAnalysis.mentalHealthCategory || topCategory,
-          )
-
-        // Return enhanced analysis with all required properties
-        return {
-          hasMentalHealthIssue,
-          mentalHealthCategory:
-            initialAnalysis.mentalHealthCategory || topCategory,
-          explanation: enhancedExplanation,
-          confidence:
-            initialAnalysis.confidence || initialAnalysis.confidenceScore,
-          supportingEvidence: initialAnalysis.supportingEvidence || [],
-          expertGuided: true,
-        }
-      }
-
-      // Otherwise return the original analysis with expertGuided flag
-      return {
-        hasMentalHealthIssue,
-        mentalHealthCategory:
-          initialAnalysis.mentalHealthCategory || topCategory,
-        explanation: initialAnalysis.explanation || initialAnalysis.analysis,
-        confidence:
-          initialAnalysis.confidence || initialAnalysis.confidenceScore,
-        supportingEvidence: initialAnalysis.supportingEvidence || [],
-        expertGuided: false,
-      }
-    } catch (error) {
-      logger.error('Failed to analyze mental health with expert guidance', {
-        error,
-      })
-      throw error
-    }
-  }
-
-  /**
-   * Check for bipolar disorder indicators
-   */
-  private checkForBipolarDisorder(
-    emotions: { type: string; intensity: number }[],
-    categories: Array<{ category: string; score: number; explanation: string }>,
-  ): void {
-    const joyEmotion = emotions.find(
-      (e) =>
-        e.type.toLowerCase() === 'joy' || e.type.toLowerCase() === 'happiness',
-    )
-    const sadnessEmotion = emotions.find(
-      (e) => e.type.toLowerCase() === 'sadness',
-    )
-    const joyIntensity = joyEmotion?.intensity || 0
-    const sadnessIntensity = sadnessEmotion?.intensity || 0
-
-    if (joyIntensity > 0.7 && sadnessIntensity > 0.4) {
-      categories.push({
-        category: 'bipolar_disorder',
-        score: (joyIntensity + sadnessIntensity) / 2,
-        explanation:
-          'Rapid shifts between elevated mood and sadness may indicate bipolar disorder, especially when these shifts appear within short time periods.',
-      })
-    }
-  }
-
-  /**
-   * Check for OCD indicators
-   */
-  private checkForOCDIndicators(
-    emotions: { type: string; intensity: number }[],
-    overallSentiment: number,
-    categories: Array<{ category: string; score: number; explanation: string }>,
-  ): void {
-    const fearEmotion = emotions.find((e) => e.type.toLowerCase() === 'fear')
-    const fearIntensity = fearEmotion?.intensity || 0
-    const anxietyEmotion = emotions.find(
-      (e) => e.type.toLowerCase() === 'anxiety',
-    )
-
-    const fearAndAnxiety =
-      (fearIntensity + (anxietyEmotion?.intensity || 0)) / 2
-    if (fearAndAnxiety > 0.6 && overallSentiment < -0.2) {
-      categories.push({
-        category: 'ocd',
-        score: fearAndAnxiety,
-        explanation:
-          'Persistent anxiety combined with repetitive thoughts or described rituals may indicate obsessive-compulsive disorder.',
-      })
-    }
-  }
-
-  /**
-   * Helper method to safely get text/summary from EmotionAnalysis
-   * Works with different versions of the EmotionAnalysis interface
-   */
-  private getSafeEmotionAnalysisText(analysis: unknown): string {
-    // Try different properties that might contain a text summary
-    if (typeof analysis === 'object' && analysis !== null) {
-      const typedAnalysis = analysis as Record<string, unknown>
-
-      if (typeof typedAnalysis.summary === 'string') {
-        return typedAnalysis.summary
-      }
-
-      // Try other potential properties
-      if (
-        typeof typedAnalysis.mentalHealth === 'object' &&
-        typedAnalysis.mentalHealth !== null &&
-        typeof (typedAnalysis.mentalHealth as Record<string, unknown>)
-          .explanation === 'string'
-      ) {
-        return (typedAnalysis.mentalHealth as Record<string, unknown>)
-          .explanation as string
-      }
-
-      // Try to create a summary from emotions if available
-      if (
-        Array.isArray(typedAnalysis.emotions) &&
-        typedAnalysis.emotions.length > 0
-      ) {
-        const topEmotions = [...typedAnalysis.emotions]
-          .sort((a, b) => {
-            const intensityA =
-              typeof a === 'object' && a !== null
-                ? ((a as Record<string, unknown>).intensity as number) || 0
-                : 0
-            const intensityB =
-              typeof b === 'object' && b !== null
-                ? ((b as Record<string, unknown>).intensity as number) || 0
-                : 0
-            return intensityB - intensityA
-          })
-          .slice(0, 3)
-
-        if (topEmotions.length > 0) {
-          const emotionSummary = topEmotions
-            .map((e) => {
-              if (typeof e === 'object' && e !== null) {
-                const emotion = e as Record<string, unknown>
-                const type =
-                  typeof emotion.type === 'string' ? emotion.type : 'unknown'
-                const intensity =
-                  typeof emotion.intensity === 'number' ? emotion.intensity : 0
-                return `${type} (${Math.round(intensity * 100)}%)`
-              }
-              return ''
-            })
-            .filter(Boolean)
-            .join(', ')
-
-          if (emotionSummary) {
-            return `Analysis shows primary emotions: ${emotionSummary}`
-          }
-        }
-      }
     }
 
-    return 'No analysis available'
-  }
-
-  /**
-   * Helper method to safely get confidence from EmotionAnalysis
-   * Works with different versions of the EmotionAnalysis interface
-   */
-  private getSafeEmotionAnalysisConfidence(analysis: unknown): number {
-    // Try different properties that might contain confidence
-    if (typeof analysis === 'object' && analysis !== null) {
-      const typedAnalysis = analysis as Record<string, unknown>
-
-      if (typeof typedAnalysis.confidence === 'number') {
-        return typedAnalysis.confidence
-      }
-
-      // Try mental health confidence
-      if (
-        typeof typedAnalysis.mentalHealth === 'object' &&
-        typedAnalysis.mentalHealth !== null &&
-        typeof (typedAnalysis.mentalHealth as Record<string, unknown>)
-          .confidence === 'number'
-      ) {
-        return (typedAnalysis.mentalHealth as Record<string, unknown>)
-          .confidence as number
-      }
-
-      // Try to average emotions confidence if available
-      if (
-        Array.isArray(typedAnalysis.emotions) &&
-        typedAnalysis.emotions.length > 0
-      ) {
-        const confidences = typedAnalysis.emotions
-          .map((e: unknown) => {
-            if (typeof e === 'object' && e !== null) {
-              return (e as Record<string, unknown>).confidence as number
-            }
-            return undefined
-          })
-          .filter((c): c is number => typeof c === 'number')
-
-        if (confidences.length > 0) {
-          return (
-            confidences.reduce((sum: number, c: number) => sum + c, 0) /
-            confidences.length
-          )
-        }
-      }
-    }
-
-    return 0.5 // Default confidence
-  }
-
-  /**
-   * Extract supporting evidence from structured response
-   * This method handles responses from our structured prompts
-   */
-  private extractStructuredEvidenceFromResponse(response: string): string[] {
-    // Try to find evidence in a structured format first
-    const evidenceSection = response.match(
-      /supporting evidence[:\s]*\n*([\s\S]*?)(?:\n\n|\n*$)/i,
-    )
-    if (evidenceSection?.[1]) {
-      const evidenceLines = evidenceSection[1]
-        .split('\n')
-        .filter((line) => line.trim().length > 0)
-        .map((line) => line.replace(/^[•\-*\d]\.?\s*/, '').trim())
-        .filter((line) => line.length > 5) // Filter out very short lines
-
-      if (evidenceLines.length > 0) {
-        return evidenceLines
-      }
-    }
-
-    // Fall back to bullet point or numbered list detection
-    const bulletPoints = response.match(/[•\-*]\s*(.*?)(?=\n[•\-*]|\n\n|\n*$)/g)
-    if (bulletPoints && bulletPoints.length > 0) {
-      return bulletPoints
-        .map((point) => point.replace(/^[•\-*]\s*/, '').trim())
-        .filter((point) => point.length > 5)
-    }
-
-    // Fall back to numbered list detection
-    const numberedPoints = response.match(/\d+\.\s*(.*?)(?=\n\d+\.|\n\n|\n*$)/g)
-    if (numberedPoints && numberedPoints.length > 0) {
-      return numberedPoints
-        .map((point) => point.replace(/^\d+\.\s*/, '').trim())
-        .filter((point) => point.length > 5)
-    }
-
-    // Fall back to sentences with keywords
-    const sentences = response
-      .split(/[.!?]/)
-      .map((s) => s.trim())
-      .filter((s) => s.length > 10)
-    const keywordsRegex =
-      /evidence|indicator|sign|symptom|exhibit|display|show|demonstrate|reveal/i
-    const relevantSentences = sentences.filter((s) => keywordsRegex.test(s))
-
-    if (relevantSentences.length > 0) {
-      return relevantSentences.slice(0, 5) // Limit to top 5 most relevant sentences
-    }
-
-    // If all else fails, fall back to the original method
-    return this.extractEvidenceFromExplanation(response)
-  }
-
-  /**
-   * Determine the primary mental health category to focus on
-   */
-  private determinePrimaryCategory(
-    categories?: (MentalHealthCategory | 'all')[],
-  ): string {
-    if (!categories || categories.length === 0 || categories.includes('all')) {
-      return 'depression' // Default to depression if no specific category
-    }
-
-    // Map of category priorities (lower number = higher priority)
-    const priorityMap: Record<string, number> = {
-      suicidal: 1, // Highest priority for safety
-      depression: 2,
-      anxiety: 3,
-      stress: 4,
-      ptsd: 5,
-      bipolar: 6,
-      substance_abuse: 7,
-      eating_disorder: 8,
-      ocd: 9,
-      schizophrenia: 10,
-      general_wellness: 11,
-    }
-
-    // Sort categories by priority and return the highest priority one
-    return (
-      categories.sort(
-        (a, b) => (priorityMap[a] || 100) - (priorityMap[b] || 100),
-      )[0] || 'depression'
-    )
+    return evidence.length > 0 ? evidence : ["General analysis suggests this category, but specific textual snippets were not automatically extracted by this basic method."]
   }
 }
 

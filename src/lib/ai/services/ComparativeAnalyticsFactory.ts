@@ -17,6 +17,7 @@ import {
   createDefaultBenchmarkRepository,
   BenchmarkRepositoryImpl,
 } from './ComparativeAnalyticsRepository'
+import { RedisService } from '../../services/redis/RedisService'
 
 // Get logger instance
 const logger = getLogger({ prefix: 'comparative-analytics-factory' })
@@ -102,7 +103,15 @@ export async function createComparativeAnalyticsService(
     let redis = redisInstance
     if (options.redisUrl) {
       try {
-        const Redis = require('ioredis')
+        // Instantiate RedisService instead of ioredis.Redis directly
+        redis = new RedisService({ url: options.redisUrl })
+        // The RedisService's own connect method will handle connection and logging
+        // We might need to explicitly call await redis.connect() if it's not called in the constructor
+        // or if the ComparativeAnalyticsService expects it to be connected.
+        // For now, let's assume connect is handled or not immediately required here.
+
+        // Remove the direct ioredis client setup
+        /*
         redis = new Redis(options.redisUrl, {
           retryStrategy: (times: number) => {
             const delay = Math.min(times * 50, 2000)
@@ -124,9 +133,10 @@ export async function createComparativeAnalyticsService(
         redis.on('error', (err: Error) => {
           logger.error(`Redis connection error: ${err.message}`, { error: err })
         })
+        */
 
         logger.info(
-          `Created custom Redis instance for ComparativeAnalyticsService at ${options.redisUrl}`,
+          `Created custom RedisService instance for ComparativeAnalyticsService at ${options.redisUrl}`,
         )
       } catch (err) {
         logger.error(`Failed to create Redis instance at ${options.redisUrl}`, {

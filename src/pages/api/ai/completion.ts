@@ -1,7 +1,6 @@
 import type { AIMessage } from '@/lib/ai/models/types'
-import type { AuditMetadata } from '@/lib/audit/log'
 import type { SessionData } from '../../../lib/auth/session'
-import { createAuditLog } from '@/lib/audit/log'
+import { createAuditLog, AuditEventType, AuditEventStatus } from '@/lib/audit'
 import { handleApiError } from '../../../lib/ai/error-handling'
 import { createTogetherAIService } from '../../../lib/ai/services/together'
 import { getSession } from '../../../lib/auth/session'
@@ -27,6 +26,63 @@ export type APIRoute = (
  * API route for AI chat completions
  * Secured by authentication and input validation
  */
+
+// GET handler - returns information about the completion endpoint
+export const GET: APIRoute = async ({ request }) => {
+  try {
+    // Verify session for security
+    const session = await getSession(request)
+    if (!session?.user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+    }
+
+    // Return endpoint information
+    return new Response(
+      JSON.stringify({
+        name: 'AI Completion API',
+        description: 'Endpoint for AI chat completions',
+        methods: ['POST'],
+        version: '1.0.0',
+        status: 'active',
+        authentication: 'required',
+        rateLimit: {
+          admin: '120 requests/minute',
+          therapist: '80 requests/minute',
+          user: '40 requests/minute',
+          anonymous: '10 requests/minute',
+        },
+        maxPayloadSize: '50KB',
+        supportedModels: ['gpt-4', 'claude-3'],
+        features: ['streaming', 'caching', 'rate-limiting'],
+      }),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    )
+  } catch (error) {
+    return new Response(
+      JSON.stringify({
+        error: 'Failed to get endpoint information',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      }),
+      {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    )
+  }
+}
+
 export const POST: APIRoute = async ({ request }) => {
   // Define session outside try block to make it accessible in catch block
   let session: SessionData | null = null
@@ -71,18 +127,18 @@ export const POST: APIRoute = async ({ request }) => {
 
     if (validationError) {
       // Create audit log for validation error
-      await createAuditLog({
-        id: crypto.randomUUID(),
-        timestamp: new Date(),
-        userId: session?.user?.id || 'anonymous',
-        action: 'ai.completion.validation_error',
-        resource: { id: 'ai-completion', type: 'ai' },
-        metadata: {
+      await createAuditLog(
+        AuditEventType.AI_OPERATION, // eventType
+        'ai.completion.validation_error', // action
+        session?.user?.id || 'anonymous', // userId
+        'ai-completion', // resource
+        {
+          // details
           error: validationError.error,
           details: JSON.stringify(validationError.details),
-          status: 'error',
-        } as AuditMetadata,
-      })
+        },
+        AuditEventStatus.FAILURE, // status
+      )
 
       return new Response(JSON.stringify(validationError), {
         status: validationError.status,
@@ -119,19 +175,19 @@ export const POST: APIRoute = async ({ request }) => {
     })
 
     // Create audit log for the request
-    await createAuditLog({
-      id: crypto.randomUUID(),
-      timestamp: new Date(),
-      userId: session?.user?.id || 'anonymous',
-      action: 'ai.completion.request',
-      resource: { id: 'ai-completion', type: 'ai' },
-      metadata: {
+    await createAuditLog(
+      AuditEventType.AI_OPERATION, // eventType
+      'ai.completion.request', // action
+      session?.user?.id || 'anonymous', // userId
+      'ai-completion', // resource
+      {
+        // details
         model: data?.model,
         messageCount: data?.messages?.length,
         inputSize: totalInputSize,
-        status: 'success',
       },
-    })
+      AuditEventStatus.SUCCESS, // status
+    )
 
     // Format messages to ensure they conform to AIMessage type
     const formattedMessages: AIMessage[] = (data?.messages || []).map(
@@ -178,37 +234,37 @@ export const POST: APIRoute = async ({ request }) => {
               controller.error(streamError)
 
               // Log streaming error
-              await createAuditLog({
-                id: crypto.randomUUID(),
-                timestamp: new Date(),
-                userId: session?.user?.id || 'anonymous',
-                action: 'ai.completion.stream_error',
-                resource: { id: 'ai-completion', type: 'ai' },
-                metadata: {
+              await createAuditLog(
+                AuditEventType.AI_OPERATION, // eventType
+                'ai.completion.stream_error', // action
+                session?.user?.id || 'anonymous', // userId
+                'ai-completion', // resource
+                {
+                  // details
                   error:
                     streamError instanceof Error
                       ? streamError.message
                       : String(streamError),
-                  status: 'error',
                 },
-              })
+                AuditEventStatus.FAILURE, // status
+              )
             }
           } catch (error) {
             console.error('Error creating streaming completion:', error)
             controller.error(error)
 
             // Create audit log for streaming error
-            await createAuditLog({
-              id: crypto.randomUUID(),
-              timestamp: new Date(),
-              userId: session?.user?.id || 'anonymous',
-              action: 'ai.completion.stream_error',
-              resource: { id: 'ai-completion', type: 'ai' },
-              metadata: {
+            await createAuditLog(
+              AuditEventType.AI_OPERATION, // eventType
+              'ai.completion.stream_error', // action
+              session?.user?.id || 'anonymous', // userId
+              'ai-completion', // resource
+              {
+                // details
                 error: error instanceof Error ? error.message : String(error),
-                status: 'error',
               },
-            })
+              AuditEventStatus.FAILURE, // status
+            )
           }
         },
 
@@ -236,18 +292,18 @@ export const POST: APIRoute = async ({ request }) => {
     })
 
     // Create audit log for the completion
-    await createAuditLog({
-      id: crypto.randomUUID(),
-      timestamp: new Date(),
-      userId: session?.user?.id || 'anonymous',
-      action: 'ai.completion.response',
-      resource: { id: 'ai-completion', type: 'ai' },
-      metadata: {
+    await createAuditLog(
+      AuditEventType.AI_OPERATION, // eventType
+      'ai.completion.response', // action
+      session?.user?.id || 'anonymous', // userId
+      'ai-completion', // resource
+      {
+        // details
         model: completion.model,
         contentLength: completion.content.length,
-        status: 'success',
       },
-    })
+      AuditEventStatus.SUCCESS, // status
+    )
 
     return new Response(JSON.stringify(completion), {
       status: 200,
@@ -267,18 +323,18 @@ export const POST: APIRoute = async ({ request }) => {
     console.error('Error in AI completion API:', error)
 
     // Create audit log for the error
-    await createAuditLog({
-      id: crypto.randomUUID(),
-      timestamp: new Date(),
-      userId: session?.user?.id || 'anonymous',
-      action: 'ai.completion.error',
-      resource: { id: 'ai-completion', type: 'ai' },
-      metadata: {
+    await createAuditLog(
+      AuditEventType.AI_OPERATION, // eventType
+      'ai.completion.error', // action
+      session?.user?.id || 'anonymous', // userId
+      'ai-completion', // resource
+      {
+        // details
         error: error instanceof Error ? error?.message : String(error),
         stack: error instanceof Error ? error?.stack : undefined,
-        status: 'error',
       },
-    })
+      AuditEventStatus.FAILURE, // status
+    )
 
     // Use the standardized error handling
     return handleApiError(error)

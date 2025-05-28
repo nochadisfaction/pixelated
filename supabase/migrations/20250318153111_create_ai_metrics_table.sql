@@ -1,6 +1,6 @@
 create table if not exists ai_metrics (
   id uuid primary key default gen_random_uuid(),
-  timestamp timestamptz not null default now(),
+  occurred_at timestamptz not null default now(),
   model text not null,
   latency int not null,
   input_tokens int,
@@ -16,7 +16,7 @@ create table if not exists ai_metrics (
 );
 
 -- Create indexes for common queries
-create index ai_metrics_timestamp_idx on ai_metrics(timestamp);
+create index ai_metrics_occurred_at_idx on ai_metrics(occurred_at);
 create index ai_metrics_model_idx on ai_metrics(model);
 create index ai_metrics_user_id_idx on ai_metrics(user_id);
 

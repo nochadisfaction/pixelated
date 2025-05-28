@@ -95,6 +95,7 @@ export default function SessionAnalysis({
             isLoading={isLoading}
             height={300}
           />
+
           <p className="mt-4 text-sm text-gray-500">
             This chart shows the client's emotional dimensions throughout the
             session, helping identify patterns and significant shifts.

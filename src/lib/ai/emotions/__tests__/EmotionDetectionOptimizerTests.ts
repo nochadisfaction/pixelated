@@ -3,6 +3,10 @@ import { EmotionDetectionEngine } from '../EmotionDetectionEngine'
 import { EmotionLlamaProvider } from '../../providers/EmotionLlamaProvider'
 import { PerformanceLogger } from '../../../logging/performance-logger'
 
+interface TestGlobalWithOptionalFetch extends NodeJS.Global {
+  fetch?: (input: RequestInfo | URL, init?: RequestInit | undefined) => Promise<Response>;
+}
+
 // Mock dependencies
 vi.mock('../../providers/EmotionLlamaProvider', () => ({
   EmotionLlamaProvider: vi.fn().mockImplementation(() => ({
@@ -36,6 +40,7 @@ describe('EmotionDetectionEngine Optimization', () => {
   let engine: EmotionDetectionEngine
   let mockProvider: EmotionLlamaProvider
   let mockPerformanceLogger: PerformanceLogger
+  let originalFetch: typeof global.fetch | undefined;
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -58,14 +63,24 @@ describe('EmotionDetectionEngine Optimization', () => {
     })
     // Insert mock performance logger
     mockPerformanceLogger = PerformanceLogger.getInstance()
+    originalFetch = global.fetch;
   })
 
   afterEach(() => {
-    vi.clearAllMocks()
-    if (typeof global.fetch?.mockRestore === 'function') {
-      global.fetch.mockRestore()
-    } else if (typeof global.fetch !== 'undefined') {
-      delete global.fetch
+    vi.clearAllMocks();
+
+    const currentFetch = global.fetch as any;
+    if (currentFetch && typeof currentFetch.mockRestore === 'function') {
+      currentFetch.mockRestore();
+    }
+
+    // Always try to restore originalFetch if it was captured.
+    if (typeof originalFetch !== 'undefined') {
+      global.fetch = originalFetch;
+    } else if (typeof global.fetch !== 'undefined' && !(currentFetch && typeof currentFetch.mockRestore === 'function')) {
+      // If originalFetch was undefined, and currentFetch is not a mock we could restore,
+      // delete global.fetch to clean up if a test set it directly.
+      delete (global as TestGlobalWithOptionalFetch).fetch;
     }
   })
 
@@ -293,7 +308,7 @@ describe('EmotionDetectionEngine Optimization', () => {
   describe('Adaptive Batch Sizing', () => {
     it('should adjust batch size based on processing times', async () => {
       // Override the processingTimes array with mock data to simulate slow processing
-      Object.defineProperty(engine as any, 'processingTimes', {
+      Object.defineProperty(engine, 'processingTimes', {
         get: vi.fn().mockReturnValue([150, 160, 170]), // Above target of 100ms
         set: vi.fn(),
         configurable: true,
@@ -305,63 +320,65 @@ describe('EmotionDetectionEngine Optimization', () => {
         writable: true,
       })
       const optimizeSpy = (engine as any).optimizeBatchSize
-      ;(engine as any).optimizeBatchSize()
+      ;
+      (engine as unknown as { optimizeBatchSize: () => void }).optimizeBatchSize();
 
       // Verify optimization was called
       expect(optimizeSpy).toHaveBeenCalled()
 
       // Check that batch size was decreased
-      expect((engine as any).currentBatchSize).toBeLessThan(3)
+      expect(Object.getOwnPropertyDescriptor(engine, 'currentBatchSize')?.value).toBeLessThan(3);
 
       // Now simulate fast processing
-      Object.defineProperty(engine as any, 'processingTimes', {
+      Object.defineProperty(engine, 'processingTimes', {
         get: vi.fn().mockReturnValue([50, 55, 60]), // Below target of 100ms
-        set: vi.fn(),
-        configurable: true,
       })
 
       // Reset batch size for testing
-      ;(engine as any).currentBatchSize = 3
+      Object.defineProperty(engine, 'currentBatchSize', { value: 3, writable: true, configurable: true });
 
       // Call optimize again
-      ;(engine as any).optimizeBatchSize()
+      (engine as unknown as { optimizeBatchSize: () => void }).optimizeBatchSize();
 
       // Check that batch size was increased
-      expect((engine as any).currentBatchSize).toBeGreaterThan(3)
+      expect(Object.getOwnPropertyDescriptor(engine, 'currentBatchSize')?.value).toBeGreaterThan(3);
     })
 
     it('should consider stability of processing times in optimization', async () => {
       // Simulate stable fast processing (low standard deviation)
-      Object.defineProperty(engine as any, 'processingTimes', {
+      Object.defineProperty(engine, 'processingTimes', {
         get: vi.fn().mockReturnValue([52, 50, 51, 53, 50]), // Very consistent
         set: vi.fn(),
         configurable: true,
       })
 
       // Capture initial batch size
-      const initialBatchSize = (engine as any).currentBatchSize
+      const initialBatchSize = Object.getOwnPropertyDescriptor(engine, 'currentBatchSize')?.value as number;
 
       // Call optimize
-      ;(engine as any).optimizeBatchSize()
+      ;
+      (engine as unknown as { optimizeBatchSize: () => void }).optimizeBatchSize();
 
       // Should increase more aggressively when stable
-      expect((engine as any).currentBatchSize).toBe(initialBatchSize + 1)
+      expect(Object.getOwnPropertyDescriptor(engine, 'currentBatchSize')?.value).toBe(initialBatchSize + 1);
 
       // Reset batch size for next test
-      ;(engine as any).currentBatchSize = initialBatchSize
+      ;
+      Object.defineProperty(engine, 'currentBatchSize', { value: initialBatchSize, writable: true, configurable: true });
 
       // Now simulate unstable processing (high standard deviation)
-      Object.defineProperty(engine as any, 'processingTimes', {
+      Object.defineProperty(engine, 'processingTimes', {
         get: vi.fn().mockReturnValue([20, 50, 90, 30, 70]), // Very inconsistent
         set: vi.fn(),
         configurable: true,
       })
 
       // Call optimize again
-      ;(engine as any).optimizeBatchSize()
+      ;
+      (engine as unknown as { optimizeBatchSize: () => void }).optimizeBatchSize();
 
       // Should be more conservative with unstable times
-      expect((engine as any).currentBatchSize).toBe(initialBatchSize)
+      expect(Object.getOwnPropertyDescriptor(engine, 'currentBatchSize')?.value).toBe(initialBatchSize);
     })
   })
 

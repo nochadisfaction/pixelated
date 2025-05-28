@@ -10,6 +10,8 @@ import {
   // RouterInitializationError, // Not used yet, but good to have defined
   // RoutingDecisionError, // Not used yet
 } from './errors'
+import { FallbackConfidenceThresholds } from '@/config/routingConfig';
+
 
 const logger = createLogger({ context: 'MentalHealthTaskRouter' })
 
@@ -69,7 +71,14 @@ export type LLMInvoker = (params: {
   messages: Array<{ role: string; content: string }>
   temperature?: number
   max_tokens?: number
-  // Add other relevant LLM call parameters if needed
+  top_p?: number
+  frequency_penalty?: number
+  presence_penalty?: number
+  stop?: string[]
+  use_self_consistency?: boolean
+  self_consistency_variants?: number
+  use_chain_of_thought?: boolean
+  use_emotional_context?: boolean
 }) => Promise<{ content: string | null; error?: unknown }> // Simplified: assuming it returns a string to be parsed as JSON
 
 // New: Configuration for mapping LLM categories to internal analyzers and flags
@@ -240,10 +249,14 @@ export class MentalHealthTaskRouter {
 
     // 2. Get decisions from keyword matching and LLM classification
     const keywordDecision = this.matchKeywords(text)
-    const classificationDecision = await this.performBroadClassification(
-      text,
-      context,
-    )
+    let classificationDecision: RoutingDecision | null = null
+    
+    try {
+      classificationDecision = await this.performBroadClassification(text, context)
+    } catch (error) {
+      logger.error('Error during classification, will rely on fallback mechanisms', { error })
+      // We'll continue with keywordDecision if available, or use fallback later
+    }
 
     let bestPreliminaryDecision: RoutingDecision
 
@@ -342,11 +355,7 @@ export class MentalHealthTaskRouter {
       logger.error(
         'No decision from keyword or classification, this indicates an issue.',
       )
-      bestPreliminaryDecision = {
-        targetAnalyzer: 'unknown',
-        confidence: 0.05, // Very low confidence
-        routingMethod: 'fallback',
-      }
+      bestPreliminaryDecision = this.getFallbackDecision(text)
     }
 
     // 4. Apply Contextual Rules to the chosen preliminary decision
@@ -357,18 +366,11 @@ export class MentalHealthTaskRouter {
     )
     const finalDecision = contextualOverride || bestPreliminaryDecision
 
-    logger.info('Final routing decision made.', { finalDecision })
-    return finalDecision
+    // 5. Apply confidence thresholds and fallback mechanisms
+    const finalDecisionWithFallback = this.applyFallbackMechanisms(text, finalDecision)
 
-    // Fallback logic (now part of the decision combination process above)
-    /*
-    logger.info('No specific route determined, using fallback.');
-    return {
-      targetAnalyzer: 'general_mental_health',
-      confidence: 0.3, // Low confidence for fallback
-      routingMethod: 'fallback',
-    };
-    */
+    logger.info('Final routing decision made.', { finalDecision: finalDecisionWithFallback })
+    return finalDecisionWithFallback
   }
 
   private matchKeywords(text: string): RoutingDecision | null {
@@ -419,233 +421,414 @@ export class MentalHealthTaskRouter {
 
   private async performBroadClassification(
     text: string,
-    _context?: RoutingContext, // context might be used by the LLM prompt in future or for pre-filtering
+    context?: RoutingContext, // Make sure context is an optional parameter
   ): Promise<RoutingDecision> {
-    const messages = buildRoutingPromptMessages(text)
-    let llmResponseContent: string | null = null
-    let llmError: unknown = null
+    logger.info('Performing broad classification using LLM...', { context })
+    const messages = buildRoutingPromptMessages(text, context)
 
     try {
-      logger.debug('Invoking LLM for broad classification...')
-      const llmResult = await this.llmInvoker({
+      const llmResponse = await this.llmInvoker({
         messages,
-        temperature: 0.1, // Low temperature for classification
-        max_tokens: 150, // Expecting a short JSON response
+        // Consider adding temperature, max_tokens if not defaults in llmInvoker
       })
-      llmResponseContent = llmResult.content
-      llmError = llmResult.error
 
-      if (llmError) {
-        logger.error('LLM invocation for routing returned an error object.', {
-          llmError,
+      if (llmResponse.error || !llmResponse.content) {
+        logger.error('LLM invocation failed or returned empty content.', {
+          error: llmResponse.error,
         })
         throw new LLMInvocationError(
-          'LLM invocation for routing failed.',
-          llmError instanceof Error ? llmError : new Error(String(llmError)),
+          'LLM invocation failed or returned empty content.',
+          { cause: llmResponse.error },
         )
       }
-      if (!llmResponseContent) {
-        logger.warn('LLM response for routing was empty or null.')
-        // This case could also throw an error or return a default 'unknown' decision directly
-        // For now, letting it proceed to JSON parsing which will fail and be caught
-        throw new LLMInvocationError(
-          'LLM response for routing was empty or null.',
+
+      // Basic sanitization for LLM JSON output: remove potential markdown backticks
+      let sanitizedContent = llmResponse.content.trim()
+      if (sanitizedContent.startsWith('```json')) {
+        sanitizedContent = sanitizedContent.substring(7)
+      }
+      if (sanitizedContent.endsWith('```')) {
+        sanitizedContent = sanitizedContent.substring(
+          0,
+          sanitizedContent.length - 3,
         )
       }
-    } catch (error) {
-      if (error instanceof LLMInvocationError) {
-        throw error
-      } // Re-throw if already our type
-      logger.error('Error during LLM invocation for routing.', { error })
-      throw new LLMInvocationError(
-        'Failed to invoke LLM for routing classification.',
-        error instanceof Error ? error : new Error(String(error)),
-      )
-    }
+      sanitizedContent = sanitizedContent.trim() // Trim again after removing backticks
 
-    let classificationResult: {
-      category: RoutingClassificationCategory
-      confidence: number
-      reasoning?: string
-    }
+      let parsedResponse: {
+        category: RoutingClassificationCategory
+        confidence?: number // Make confidence optional as LLM might not always provide it reliably
+        reasoning?: string // Optional reasoning from LLM
+      }
 
-    try {
-      // Attempt to sanitize before parsing
-      const sanitizedOutput = llmResponseContent
-        .replace(/```json/g, '')
-        .replace(/```/g, '')
-        .trim()
-      logger.debug('Attempting to parse LLM classification response:', {
-        sanitizedOutput,
-      })
-      classificationResult = JSON.parse(sanitizedOutput)
-    } catch (parseError) {
-      logger.error('Failed to parse LLM classification JSON response.', {
-        rawOutput: llmResponseContent,
-        parseError,
-      })
-      throw new ClassificationParseError(
-        'Failed to parse LLM classification response.',
-        llmResponseContent,
-      )
-    }
+      try {
+        parsedResponse = JSON.parse(sanitizedContent)
+      } catch (e: unknown) {
+        logger.error('Failed to parse LLM JSON response.', {
+          content: llmResponse.content,
+          sanitizedContent,
+          error: e,
+        })
+        throw new ClassificationParseError(
+          'Failed to parse LLM JSON response.',
+          { cause: e },
+        )
+      }
 
-    const { category, confidence, reasoning } = classificationResult
+      const llmCategory = parsedResponse.category
+      const mapping = LLM_CATEGORY_TO_ANALYZER_MAP[llmCategory]
 
-    if (!category || typeof confidence !== 'number') {
-      logger.warn('Invalid or incomplete classification result from LLM.', {
-        classificationResult,
-      })
-      throw new ClassificationParseError(
-        'LLM classification response is invalid or incomplete.',
-        llmResponseContent,
-      )
-    }
+      let targetAnalyzer: RoutingDecision['targetAnalyzer'] = 'unknown'
+      let confidence = parsedResponse.confidence ?? 0.5 // Default confidence if not provided
+      let isCritical = false
 
-    const mapped = LLM_CATEGORY_TO_ANALYZER_MAP[category]
-    if (!mapped) {
-      logger.warn(
-        `LLM returned unknown category: ${category}. Defaulting to 'unknown'.`,
-      )
-      return {
-        targetAnalyzer: 'unknown',
-        confidence: confidence * 0.5, // Reduce confidence for unknown category
+      if (mapping) {
+        targetAnalyzer = mapping.analyzer
+        isCritical = mapping.isCritical ?? false
+        if (isCritical) {
+          logger.warn(
+            `Critical category detected by LLM: ${llmCategory}, mapping to ${targetAnalyzer}`,
+          )
+          // Boost confidence for critical cases if not already high
+          confidence = Math.max(confidence, 0.85)
+        }
+        // Validate if the mapped analyzer is actually available, otherwise fallback
+        if (
+          targetAnalyzer !== 'crisis' && // crisis is always a valid target
+          targetAnalyzer !== 'unknown' && // unknown is always a valid target
+          !AVAILABLE_ANALYZERS.includes(
+            targetAnalyzer as MentalHealthCategory | 'general_mental_health',
+          )
+        ) {
+          logger.warn(
+            `LLM mapped to unavailable analyzer '${targetAnalyzer}'. Defaulting to 'general_mental_health'.`,
+            { llmCategory },
+          )
+          targetAnalyzer = 'general_mental_health'
+          // Adjust confidence as we are falling back due to unavailability
+          confidence = Math.max(0.4, confidence * 0.7) // Keep some original confidence, but reduce
+        }
+      } else {
+        logger.warn(
+          `Unmapped LLM category: ${llmCategory}. Defaulting to 'unknown'.`,
+        )
+        targetAnalyzer = 'unknown'
+        confidence = 0.3 // Low confidence for unmapped categories
+      }
+
+      // Ensure confidence is within bounds
+      confidence = Math.max(0, Math.min(1, confidence))
+
+      const decision: RoutingDecision = {
+        targetAnalyzer,
+        confidence,
         routingMethod: 'classification',
         preliminaryInsights: {
-          llm_raw_category: category,
-          llm_confidence: confidence,
-          llm_reasoning: reasoning,
-          parse_issue: 'Unknown category mapping',
+          llmCategory,
+          llmReasoning: parsedResponse.reasoning,
+          isCritical,
         },
       }
-    }
-
-    const targetAnalyzer =
-      AVAILABLE_ANALYZERS.some((a) => a === mapped.analyzer) ||
-      mapped.analyzer === 'crisis'
-        ? mapped.analyzer
-        : 'unknown'
-
-    let currentConfidence = confidence
-    if (targetAnalyzer === 'unknown' && mapped.analyzer !== 'unknown') {
-      logger.warn(
-        `Mapped analyzer '${mapped.analyzer}' not in AVAILABLE_ANALYZERS. Defaulting target to 'unknown'.`,
-      )
-      currentConfidence *= 0.7 // Penalize confidence if mapped analyzer is not available
-    }
-
-    if (mapped.isCritical && targetAnalyzer === 'crisis') {
-      logger.info(
-        `Critical category ${category} detected by LLM, mapped to ${targetAnalyzer}.`,
-      )
-      currentConfidence = Math.max(currentConfidence, 0.9) // Boost confidence for critical detections
-    }
-
-    logger.info('LLM classification successful.', {
-      category,
-      confidence: currentConfidence,
-      targetAnalyzer,
-    })
-
-    return {
-      targetAnalyzer,
-      confidence: currentConfidence,
-      routingMethod: 'classification',
-      preliminaryInsights: {
-        llm_raw_category: category,
-        llm_reported_confidence: confidence,
-        llm_reasoning: reasoning,
-        is_critical_flag: mapped.isCritical || false,
-      },
+      logger.info('Broad classification decision:', decision)
+      return decision
+    } catch (error: unknown) {
+      logger.error('Error during broad classification:', { error })
+      if (
+        error instanceof LLMInvocationError ||
+        error instanceof ClassificationParseError
+      ) {
+        // Rethrow known errors to be handled by the caller
+        throw error
+      }
+      // Fallback decision in case of unexpected errors
+      return {
+        targetAnalyzer: 'unknown',
+        confidence: 0.1,
+        routingMethod: 'fallback',
+        preliminaryInsights: {
+          error:
+            error instanceof Error
+              ? error.message
+              : 'Unknown classification error',
+        },
+      }
     }
   }
 
   private applyContextualRules(
     text: string,
-    context: RoutingContext | undefined, // Make context optional here
-    currentDecision: RoutingDecision, // The decision from keyword or LLM classification
+    context: RoutingContext | undefined,
+    currentDecision: RoutingDecision,
   ): RoutingDecision | null {
-    logger.debug('Applying contextual rules...', { context, currentDecision })
+    logger.debug('Applying contextual rules...', { context, currentDecision });
 
-    // Rule 1: Session Type influencing routing
-    if (context?.sessionType) {
-      // Add null check for context
-      // Example: If session is about stress management, and current decision is vague, bias towards stress if keywords exist
-      if (
-        context.sessionType === 'stress_management_session' &&
-        currentDecision.targetAnalyzer !== 'stress' &&
-        (text.toLowerCase().includes('stress') ||
-          text.toLowerCase().includes('overwhelmed'))
-      ) {
-        logger.info(
-          `Contextual rule: sessionType 'stress_management_session' is biasing towards 'stress'.`,
-        )
-        return {
-          targetAnalyzer: 'stress',
-          confidence: Math.max(currentDecision.confidence, 0.65), // Boost or set reasonable confidence
-          routingMethod: 'contextual',
-          preliminaryInsights: {
-            ...currentDecision.preliminaryInsights,
-            contextual_rule: 'stress_session_bias',
-          },
-        }
-      }
-
-      // Example: If session is a crisis follow-up and text still indicates distress
-      if (
-        context.sessionType === 'crisis_intervention_follow_up' &&
-        currentDecision.targetAnalyzer !== 'crisis'
-      ) {
-        // Check for lingering crisis indicators, even if not caught by primary crisis keywords
-        const crisisKeywords = [
-          /still\s+feel\s+terrible/i,
-          /not\s+getting\s+better/i,
-          /want\s+to\s+give\s+up/i,
-        ]
-        for (const keyword of crisisKeywords) {
-          if (keyword.test(text)) {
-            logger.warn(
-              `Contextual rule: 'crisis_intervention_follow_up' session with distress indicators. Elevating to crisis.`,
-            )
-            return {
-              targetAnalyzer: 'crisis',
-              confidence: 0.9, // High confidence due to context + keywords
-              routingMethod: 'contextual',
-              preliminaryInsights: {
-                ...currentDecision.preliminaryInsights,
-                contextual_rule: 'crisis_follow_up_distress',
-                matched_keyword: keyword.source,
-              },
-            }
-          }
-        }
-      }
-
-      // Example: If explicitTaskHint was 'general_wellness' but somehow missed, and sessionType supports it
-      if (
-        context.explicitTaskHint === 'general_wellness' &&
-        context.sessionType === 'wellness_coaching' &&
-        currentDecision.targetAnalyzer !== 'general_wellness'
-      ) {
-        logger.info(
-          `Contextual rule: Re-aligning to 'general_wellness' based on explicit hint and session type.`,
-        )
-        return {
-          targetAnalyzer: 'general_wellness',
-          confidence: 0.85,
-          routingMethod: 'contextual',
-          preliminaryInsights: {
-            ...currentDecision.preliminaryInsights,
-            contextual_rule: 'wellness_hint_session_realignment',
-          },
-        }
-      }
+    if (!context) {
+      logger.debug('No context provided for contextual rules.');
+      return null;
     }
 
-    // Add more contextual rules here based on other context fields like userId (user history), etc.
+    const sessionTypeDecision = this.applySessionTypeRules(text, context, currentDecision);
+    if (sessionTypeDecision) {
+      return sessionTypeDecision;
+    }
 
-    logger.debug('No overriding contextual rule applied.')
-    return null // No contextual rule applied that overrides the current decision
+    const crisisEscalationDecision = this.applyCrisisEscalationRules(text, currentDecision);
+    if (crisisEscalationDecision) {
+      return crisisEscalationDecision;
+    }
+
+    logger.debug('No overriding contextual rule applied.');
+    return null;
+  }
+
+  private applySessionTypeRules(
+    text: string,
+    context: RoutingContext,
+    currentDecision: RoutingDecision,
+  ): RoutingDecision | null {
+    if (!context.sessionType) {
+      return null;
+    }
+
+    const sessionTypeRules: Record<string, (text: string, decision: RoutingDecision) => RoutingDecision | null> = {
+      stress_management_session: this.biasTowardsStress,
+      crisis_intervention_follow_up: this.escalateToCrisis,
+      wellness_coaching: this.realignToWellness,
+      depression_therapy: this.biasTowardsDepression,
+      anxiety_management: this.biasTowardsAnxiety,
+    };
+
+    const rule = sessionTypeRules[context.sessionType];
+    return rule ? rule.call(this, text, currentDecision) : null;
+  }
+
+  private biasTowardsStress(text: string, decision: RoutingDecision): RoutingDecision | null {
+    if (decision.targetAnalyzer !== 'stress' && /stress|overwhelmed/i.test(text)) {
+      logger.info(`Biasing towards 'stress' based on session type.`);
+      return this.createContextualDecision('stress', 0.65, decision, 'stress_session_bias');
+    }
+    return null;
+  }
+
+  private escalateToCrisis(text: string, decision: RoutingDecision): RoutingDecision | null {
+    const crisisKeywords = [/still\s+feel\s+terrible/i, /not\s+getting\s+better/i, /want\s+to\s+give\s+up/i];
+    if (decision.targetAnalyzer !== 'crisis' && crisisKeywords.some((kw) => kw.test(text))) {
+      logger.warn(`Escalating to 'crisis' based on session type.`);
+      return this.createContextualDecision('crisis', 0.9, decision, 'crisis_follow_up_distress');
+    }
+    return null;
+  }
+
+  private realignToWellness(text: string, decision: RoutingDecision): RoutingDecision | null {
+    if (decision.targetAnalyzer !== 'general_wellness') {
+      logger.info(`Realigning to 'general_wellness' based on session type.`);
+      return this.createContextualDecision('general_wellness', 0.85, decision, 'wellness_hint_session_realignment');
+    }
+    return null;
+  }
+
+  private biasTowardsDepression(text: string, decision: RoutingDecision): RoutingDecision | null {
+    if (
+      decision.targetAnalyzer !== 'depression' &&
+      decision.confidence < 0.8 &&
+      /sad|down|tired|hopeless/i.test(text)
+    ) {
+      logger.info(`Biasing towards 'depression' based on session type.`);
+      return this.createContextualDecision('depression', 0.7, decision, 'depression_session_bias');
+    }
+    return null;
+  }
+
+  private biasTowardsAnxiety(text: string, decision: RoutingDecision): RoutingDecision | null {
+    if (
+      decision.targetAnalyzer !== 'anxiety' &&
+      decision.confidence < 0.8 &&
+      /worry|anxious|nervous|fear/i.test(text)
+    ) {
+      logger.info(`Biasing towards 'anxiety' based on session type.`);
+      return this.createContextualDecision('anxiety', 0.7, decision, 'anxiety_session_bias');
+    }
+    return null;
+  }
+
+  private applyCrisisEscalationRules(text: string, decision: RoutingDecision): RoutingDecision | null {
+    if (
+      decision.targetAnalyzer !== 'crisis' &&
+      /feel (terrible|awful|horrible|like dying)/i.test(text) &&
+      /(help|emergency|urgent)/i.test(text)
+    ) {
+      logger.warn(`Escalating to 'crisis' due to potential indicators.`);
+      return this.createContextualDecision('crisis', 0.85, decision, 'crisis_escalation_safety_first');
+    }
+    return null;
+  }
+
+  private createContextualDecision(
+    targetAnalyzer: MentalHealthCategory | 'general_mental_health' | 'unknown' | 'crisis',
+    confidence: number,
+    currentDecision: RoutingDecision,
+    contextualRule: string,
+  ): RoutingDecision {
+    return {
+      targetAnalyzer,
+      confidence: Math.max(currentDecision.confidence, confidence),
+      routingMethod: 'contextual',
+      preliminaryInsights: {
+        ...currentDecision.preliminaryInsights,
+        contextual_rule: contextualRule,
+      },
+    };
+  }
+
+  /**
+   * Applies fallback mechanisms for uncertain cases.
+   * This ensures we have reasonable defaults when confidence is low.
+   * 
+   * @param text The input text being analyzed
+   * @param decision The current routing decision
+   * @returns A potentially modified routing decision with fallback applied
+   */
+  private applyFallbackMechanisms(
+    text: string,
+    decision: RoutingDecision
+  ): RoutingDecision {
+    // Define confidence thresholds
+    
+    const { LOW_CONFIDENCE_THRESHOLD, VERY_LOW_CONFIDENCE_THRESHOLD } = FallbackConfidenceThresholds;
+    
+    // If confidence is very low, use a more general analyzer
+    if (decision.confidence < VERY_LOW_CONFIDENCE_THRESHOLD) {
+      logger.info(`Very low confidence (${decision.confidence}). Using general_mental_health fallback.`)
+      return this.getFallbackDecision(text)
+    }
+    
+    // If confidence is low but not very low, consider text length
+    if (decision.confidence < LOW_CONFIDENCE_THRESHOLD) {
+      // For very short texts, fall back to general
+      if (text.length < 20) {
+        logger.info(`Low confidence (${decision.confidence}) with short text. Using general_mental_health fallback.`)
+        return this.getFallbackDecision(text)
+      }
+      
+      // For longer texts with low confidence, reduce confidence further to signal uncertainty
+      logger.info(`Low confidence (${decision.confidence}). Reducing confidence further to signal uncertainty.`)
+      return {
+        ...decision,
+        confidence: decision.confidence * 0.9,
+        preliminaryInsights: {
+          ...decision.preliminaryInsights,
+          fallback_applied: 'confidence_reduction',
+        },
+      }
+    }
+    
+    // Special case: If the decision is 'unknown' but with high confidence,
+    // that's contradictory - use general_mental_health instead
+    if (decision.targetAnalyzer === 'unknown' && decision.confidence > 0.7) {
+      logger.info(`High confidence 'unknown' decision is contradictory. Using general_mental_health.`)
+      return {
+        targetAnalyzer: 'general_mental_health',
+        confidence: 0.5, // Medium confidence for this fallback
+        routingMethod: 'fallback',
+        preliminaryInsights: {
+          ...decision.preliminaryInsights,
+          fallback_applied: 'unknown_with_high_confidence',
+          original_analyzer: decision.targetAnalyzer,
+          original_confidence: decision.confidence,
+        },
+      }
+    }
+    
+    // For crisis cases, we might want to be more cautious
+    if (decision.targetAnalyzer === 'crisis' && decision.confidence < 0.6) {
+      // If confidence in crisis is borderline, we still err on the side of caution
+      // but flag it as a potential false positive
+      logger.warn(`Borderline crisis confidence (${decision.confidence}). Maintaining crisis classification but flagging as potential false positive.`)
+      return {
+        ...decision,
+        preliminaryInsights: {
+          ...decision.preliminaryInsights,
+          fallback_applied: 'borderline_crisis_caution',
+          potential_false_positive: true,
+        },
+      }
+    }
+    
+    // No fallback needed
+    return decision
+  }
+  
+  /**
+   * Gets a fallback decision when no reliable classification is available.
+   * 
+   * @param text The input text being analyzed
+   * @returns A general fallback routing decision
+   */
+  private getFallbackDecision(text: string): RoutingDecision {
+    // Check if the text is very short (likely not enough context)
+    const isVeryShort = text.length < 10
+    
+    // Check if the text seems completely unrelated to mental health
+    const seemsUnrelatedToMentalHealth = !this.containsAnyMentalHealthTerms(text)
+    
+    if (isVeryShort) {
+      logger.info('Text is too short for reliable classification. Using fallback.')
+      return {
+        targetAnalyzer: 'unknown',
+        confidence: 0.3,
+        routingMethod: 'fallback',
+        preliminaryInsights: {
+          fallback_reason: 'text_too_short',
+          text_length: text.length,
+        },
+      }
+    }
+    
+    if (seemsUnrelatedToMentalHealth) {
+      logger.info('Text appears unrelated to mental health. Using fallback.')
+      return {
+        targetAnalyzer: 'unknown',
+        confidence: 0.4,
+        routingMethod: 'fallback',
+        preliminaryInsights: {
+          fallback_reason: 'unrelated_to_mental_health',
+        },
+      }
+    }
+    
+    // Default general fallback
+    logger.info('Using general mental health fallback.')
+    return {
+      targetAnalyzer: 'general_mental_health',
+      confidence: 0.3, // Low confidence for fallback
+      routingMethod: 'fallback',
+      preliminaryInsights: {
+        fallback_reason: 'no_specific_classification',
+      },
+    }
+  }
+  
+  /**
+   * Checks if the text contains any mental health related terms.
+   * This is a simple heuristic to determine if the text is likely
+   * related to mental health at all.
+   * 
+   * @param text The input text to check
+   * @returns boolean indicating if mental health terms were found
+   */
+  private containsAnyMentalHealthTerms(text: string): boolean {
+    const lowerText = text.toLowerCase()
+    
+    const mentalHealthTerms = [
+      'depress', 'anxiety', 'stress', 'mental', 'health',
+      'therapy', 'feel', 'emotion', 'mood', 'sad',
+      'happy', 'anger', 'worry', 'fear', 'panic',
+      'trauma', 'cope', 'crisis', 'suicid', 'help',
+      'mind', 'think', 'thought', 'psych', 'counseling',
+      'wellness', 'wellbeing', 'self-care', 'selfcare',
+    ]
+    
+    return mentalHealthTerms.some(term => lowerText.includes(term))
   }
 }
 

@@ -47,7 +47,7 @@ async function main() {
 
     // 2. Check application health
     console.log('\n[2/5] Checking application health...')
-    const healthResponse = await fetch('https://api.gradiant.health/health')
+    const healthResponse = await fetch('https://api.pixelated.health/health')
     if (!healthResponse.ok) {
       throw new Error(`Health check failed: ${healthResponse.statusText}`)
     }
@@ -119,7 +119,7 @@ async function main() {
     ]
 
     for (const endpoint of endpoints) {
-      const response = await fetch(`https://api.gradiant.health${endpoint}`)
+      const response = await fetch(`https://api.pixelated.health${endpoint}`)
       if (!response.ok) {
         throw new Error(
           `Endpoint check failed for ${endpoint}: ${response.statusText}`,

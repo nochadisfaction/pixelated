@@ -1,4 +1,6 @@
 ---
+/// <reference types="astro/client" />
+export const prerender = false;
 import AdminLayout from '../../../../../../layouts/AdminLayout.astro'
 import { BusinessAssociateService } from '../../../../../../lib/security/baa/BusinessAssociateService'
 import { ComplianceVerificationService } from '../../../../../../lib/security/baa/ComplianceVerificationService'
@@ -8,10 +10,7 @@ import {
 } from '../../../../../../lib/security/baa/types'
 
 // Get vendor ID from URL params
-const { id } = Astro.params
-
-// Initialize services
-const businessAssociateService = new BusinessAssociateService()
+const id = Astro.url.searchParams.get('id') as string // Initialize servicesconst businessAssociateService = new BusinessAssociateService()
 const verificationService = new ComplianceVerificationService()
 
 // Initialize with default requirements if necessary
@@ -20,11 +19,11 @@ if (verificationService.getAllRequirements().length === 0) {
 }
 
 // Get the business associate
+const businessAssociateService = new BusinessAssociateService()
 const vendor = businessAssociateService.getBusinessAssociate(id || '')
-
 // Redirect if vendor not found
 if (!vendor) {
-  return Astro.redirect('/admin/security/baa/vendors')
+  return { redirect: '/admin/security/baa/vendors' }
 }
 
 // Get applicable requirements for this vendor

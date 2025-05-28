@@ -31,7 +31,7 @@ import type { PatternRecognitionService } from './PatternRecognitionService'
 interface Pattern {
   id: string
   name: string
-  [key: string]: any
+  [key: string]: unknown
 }
 
 // Define custom evidence types to avoid imported enum errors
@@ -293,7 +293,9 @@ export class EnhancedRecommendationService extends RecommendationService {
     options: RecommendationOptions = {},
   ): Promise<TreatmentRecommendation[]> {
     // Use any to safely access potentially non-existent properties
-    const factorsAny = personalizationFactors as any
+    const factorsAny = personalizationFactors as
+      | (Partial<PersonalizationFactors> & { detectedPatterns?: Pattern[] })
+      | undefined
     const detectedPatterns = factorsAny?.detectedPatterns || []
 
     this.logger.info('Generating enhanced recommendations', {

@@ -24,6 +24,7 @@ export function ScenarioSelector({
       >
         <span className="flex items-center">
           <IconUserCircle className="h-5 w-5 mr-2 text-purple-500" />
+
           <span>
             Scenario: <strong>{selectedScenario.name}</strong>
           </span>

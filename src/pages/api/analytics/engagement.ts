@@ -1,6 +1,9 @@
 import type { APIRoute } from 'astro'
 import { requirePageAuth } from '@/lib/auth/serverAuth'
 
+// Disable prerendering since this API route uses request.headers
+export const prerender = false
+
 // Type definitions for engagement metrics
 interface EngagementMetrics {
   totalSessions: number
@@ -32,7 +35,7 @@ interface EngagementMetrics {
   }[]
 }
 
-export const get: APIRoute = async ({ request, cookies }) => {
+export const GET: APIRoute = async ({ request, cookies }) => {
   try {
     // Enforce authentication (throws if not authenticated)
     await requirePageAuth({ request, cookies })

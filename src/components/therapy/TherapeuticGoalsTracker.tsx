@@ -264,6 +264,7 @@ export function TherapeuticGoalsTracker({
           }
           size="md"
         />
+
         <div className="mt-2 text-xs text-gray-500">
           <span
             className={`font-medium ${overallProgress >= 50 ? 'text-green-600' : 'text-amber-600'}`}
@@ -333,6 +334,7 @@ export function TherapeuticGoalsTracker({
               required
               maxLength={128}
             />
+
             <Textarea
               name="description"
               value={form.description || ''}
@@ -340,6 +342,7 @@ export function TherapeuticGoalsTracker({
               placeholder="Description"
               maxLength={1024}
             />
+
             <select
               name="category"
               value={form.category || GoalCategory.EMOTIONAL}
@@ -421,6 +424,7 @@ export function TherapeuticGoalsTracker({
                   size="sm"
                   className="flex-1 mr-2"
                 />
+
                 <span className="text-xs font-medium">{goal.progress}%</span>
               </div>
               <div className="text-xs text-gray-500 mt-1">
@@ -686,6 +690,7 @@ function generateGoalsFromPatientModel(
           completedAt: now - 604800000,
         },
       ],
+
       progressHistory: [
         {
           timestamp: now - 6048000000,
@@ -708,11 +713,13 @@ function generateGoalsFromPatientModel(
           notes: 'Goal successfully completed',
         },
       ],
+
       relatedInterventions: [
         'Emotion Naming Exercise',
         'Mindfulness Training',
         'Emotion Regulation Skills',
       ],
+
       notes:
         'Patient has made excellent progress and can now reliably identify and name emotions as they arise.',
     })

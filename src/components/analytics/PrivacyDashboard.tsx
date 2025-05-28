@@ -125,6 +125,7 @@ export function PrivacyDashboard() {
                 handleSettingChange('privacyBudget', values[0])
               }
             />
+
             <div className="flex justify-between text-sm text-gray-500">
               <span>More Private</span>
               <span>More Accurate</span>

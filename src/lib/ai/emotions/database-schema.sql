@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS emotion_analyses (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   session_id UUID,
-  timestamp TIMESTAMPTZ NOT NULL DEFAULT now(),
+  recorded_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   content_type TEXT NOT NULL, -- 'text', 'speech', 'multimodal'
   content_reference TEXT, -- Reference to the analyzed content (e.g., message ID)
 
@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS emotion_analyses (
 
 -- Index for efficient user-based queries
 CREATE INDEX IF NOT EXISTS emotion_analyses_user_id_idx ON emotion_analyses(user_id);
-CREATE INDEX IF NOT EXISTS emotion_analyses_timestamp_idx ON emotion_analyses(timestamp);
+CREATE INDEX IF NOT EXISTS emotion_analyses_recorded_at_idx ON emotion_analyses(recorded_at);
 CREATE INDEX IF NOT EXISTS emotion_analyses_requires_attention_idx ON emotion_analyses(requires_attention) WHERE requires_attention = TRUE;
 
 -- Dimensional Emotion Mappings Table
@@ -188,7 +188,7 @@ CREATE OR REPLACE FUNCTION get_recent_emotions(
 )
 RETURNS TABLE (
   id UUID,
-  timestamp TIMESTAMPTZ,
+  recorded_at TIMESTAMPTZ,
   emotions JSONB,
   overall_sentiment REAL,
   requires_attention BOOLEAN
@@ -197,7 +197,7 @@ BEGIN
   RETURN QUERY
   SELECT
     ea.id,
-    ea.timestamp,
+    ea.recorded_at,
     ea.emotions,
     ea.overall_sentiment,
     ea.requires_attention
@@ -206,7 +206,7 @@ BEGIN
   WHERE
     ea.user_id = p_user_id
   ORDER BY
-    ea.timestamp DESC
+    ea.recorded_at DESC
   LIMIT
     p_limit;
 END;
@@ -226,7 +226,7 @@ BEGIN
     jsonb_build_object(
       'emotionTrend', jsonb_agg(
         jsonb_build_object(
-          'timestamp', ea.timestamp,
+          'timestamp', ea.recorded_at,
           'sentiment', ea.overall_sentiment,
           'dominantEmotion', (
             SELECT e->>'type'
@@ -235,7 +235,7 @@ BEGIN
             LIMIT 1
           )
         )
-        ORDER BY ea.timestamp
+        ORDER BY ea.recorded_at
       ),
       'overallSentiment', AVG(ea.overall_sentiment),
       'emotionDistribution', (
@@ -251,7 +251,7 @@ BEGIN
             jsonb_array_elements(ea2.emotions) e
           WHERE
             ea2.user_id = p_user_id
-            AND ea2.timestamp BETWEEN p_start_date AND p_end_date
+            AND ea2.recorded_at BETWEEN p_start_date AND p_end_date
           GROUP BY
             e->>'type'
         ) AS emotion_counts
@@ -262,7 +262,7 @@ BEGIN
     emotion_analyses ea
   WHERE
     ea.user_id = p_user_id
-    AND ea.timestamp BETWEEN p_start_date AND p_end_date;
+    AND ea.recorded_at BETWEEN p_start_date AND p_end_date;
 
   RETURN result;
 END;

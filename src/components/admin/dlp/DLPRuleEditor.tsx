@@ -277,6 +277,7 @@ export default function DLPRuleEditor() {
                   handleChange('isActive', checked)
                 }
               />
+
               <Label htmlFor="rule-active">Active</Label>
             </div>
           </div>

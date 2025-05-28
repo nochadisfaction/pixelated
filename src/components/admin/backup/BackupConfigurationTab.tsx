@@ -33,12 +33,10 @@ interface StorageLocationConfig {
 }
 
 interface BackupConfig {
-  backupTypes: {
-    [key in BackupType]?: BackupTypeConfig
-  }
-  storageLocations: {
-    [key in StorageLocation]?: StorageLocationConfig
-  }
+  backupTypes: { [key in BackupType]?: BackupTypeConfig }
+
+  storageLocations: { [key in StorageLocation]?: StorageLocationConfig }
+
   encryption: {
     algorithm: string
     keyRotationDays: number
@@ -483,6 +481,7 @@ const BackupConfigurationTab: React.FC<BackupConfigurationTabProps> = ({
                 disabled={!isEditing}
                 min="1"
               />
+
               <p className="text-xs text-gray-500 mt-1">Recommended: 90 days</p>
             </div>
           </div>

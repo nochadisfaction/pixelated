@@ -10,6 +10,7 @@ import { getLogger } from '../logging'
 import { SealService } from './seal-service'
 import { EncryptionMode } from './types'
 import type { KMS } from 'aws-sdk'
+import AWS from 'aws-sdk';
 
 // Get logger
 const logger = getLogger({ prefix: 'fhe-key-rotation' })
@@ -52,7 +53,7 @@ export class KeyRotationService {
     // Initialize AWS clients if in server environment
     if (this.isServer) {
       try {
-        const AWS = require('aws-sdk')
+        
         this.kmsClient = new AWS.KMS({ apiVersion: '2014-11-01' })
         this.secretsManager = new AWS.SecretsManager({
           apiVersion: '2017-10-17',

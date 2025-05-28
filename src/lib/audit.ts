@@ -13,6 +13,18 @@ import { getLogger } from './logging'
 // Initialize logger
 const logger = getLogger()
 
+// Environment detection
+const isServer = typeof window === 'undefined'
+
+// Helper function to get environment variables safely
+function getEnvVar(key: string): string | undefined {
+  if (isServer) {
+    return process.env[key]
+  }
+  // In browser, environment variables should be accessed through import.meta.env
+  return (import.meta.env as Record<string, string | undefined>)[key]
+}
+
 // Audit log event types
 export enum AuditEventType {
   ACCESS = 'access', // Accessing PHI
@@ -31,6 +43,12 @@ export enum AuditEventType {
   DLP_ALLOWED = 'dlp_allowed', // DLP allowed transmission of content (possibly after redaction)
   DLP_BLOCKED = 'dlp_blocked', // DLP blocked transmission of content containing PHI/PII
   SECURITY_ALERT = 'security_alert', // High-priority security alert requiring attention
+  SERVER_AUTH_DENIED = 'server_auth_denied',
+  SUSPICIOUS_IP_CHANGE = 'suspicious_ip_change',
+  SUSPICIOUS_USER_AGENT_CHANGE = 'suspicious_user_agent_change',
+  SERVER_AUTH_SUCCESS = 'server_auth_success',
+  RATE_LIMIT_TRIGGERED = 'rate_limit_triggered',
+  SUSPICIOUS_ACTIVITY = 'suspicious_activity',
 }
 
 // Audit log status
@@ -95,12 +113,12 @@ interface AuditServiceConfig {
 const DEFAULT_CONFIG: AuditServiceConfig = {
   enabled: true,
   localStorageEnabled: true,
-  remoteStorageEnabled: process.env.NODE_ENV === 'production',
-  remoteEndpoint: process.env.AUDIT_LOG_ENDPOINT,
-  encryptLogs: process.env.NODE_ENV === 'production',
+  remoteStorageEnabled: getEnvVar('NODE_ENV') === 'production',
+  remoteEndpoint: getEnvVar('AUDIT_LOG_ENDPOINT'),
+  encryptLogs: getEnvVar('NODE_ENV') === 'production',
   retentionDays: 90, // HIPAA requires 6 years, but for this app we'll use 90 days
   batchSize: 100,
-  debugMode: process.env.NODE_ENV === 'development',
+  debugMode: getEnvVar('NODE_ENV') === 'development',
 }
 // Queue of pending log entries for batch processing
 let logQueue: AuditLogEntry[] = []
@@ -181,7 +199,7 @@ async function sendLogsToRemoteEndpoint(logs: AuditLogEntry[]): Promise<void> {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-API-Key': process.env.AUDIT_API_KEY || '',
+        'X-API-Key': getEnvVar('AUDIT_API_KEY') || '',
       },
       body: JSON.stringify({
         logs,
@@ -260,7 +278,7 @@ function getSessionId(): string {
  * Store an audit log entry locally
  */
 function storeLocalAuditLog(entry: AuditLogEntry): void {
-  if (!config.localStorageEnabled) {
+  if (!config.localStorageEnabled || typeof localStorage === 'undefined') {
     return
   }
 
@@ -467,6 +485,45 @@ export function configureAuditService(
   }
 
   logger.info('Audit service configuration updated')
+}
+
+/**
+ * Placeholder for createResourceAuditLog
+ * TODO: Implement this function based on its intended usage.
+ */
+export async function createResourceAuditLog(
+  eventType: AuditEventType, // Assuming similar params to other log functions
+  userId: string,
+  resource: { id: string; type: string }, // Based on usage in performance-tracker.ts
+  details?: AuditDetails,
+  status: AuditEventStatus = AuditEventStatus.SUCCESS,
+): Promise<AuditLogEntry | void> {
+  // Return void or a log entry
+  logger.warn(
+    'createResourceAuditLog is a placeholder and needs full implementation.',
+    {
+      eventType,
+      userId,
+      resource,
+      details,
+      status,
+    },
+  )
+  // For now, let's make it behave somewhat like createAuditLog if needed
+  // Or simply return nothing / a generic response
+  // This is a STUB - replace with actual logic
+  if (config.enabled) {
+    return createHIPAACompliantAuditLog({
+      userId,
+      action: `resource_action_placeholder:${resource.type}:${resource.id}`,
+      resource: resource.id,
+      eventType,
+      status,
+      details,
+      notes: 'Placeholder log from createResourceAuditLog stub',
+    })
+  }
+  return Promise.resolve() // Or a more specific void return if that's the intent
 }
 
 // Auto-initialize the service

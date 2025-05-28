@@ -202,7 +202,7 @@ jobs:
               -H "Authorization: Bearer $EMAIL_API_KEY" \
               -H "Content-Type: application/json" \
               -d "{
-                \"from\": \"ci@gradiant.health\",
+                \"from\": \"ci@pixelated.health\",
                 \"to\": \"$TEAM_EMAIL\",
                 \"subject\": \"🚨 Browser Compatibility Issues Detected\",
                 \"text\": \"$(cat notification.txt)\"

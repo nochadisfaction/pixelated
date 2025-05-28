@@ -711,6 +711,7 @@ export default function AnalyticsDashboard({
       {showPrivacyWarning && (
         <div className="bg-yellow-900 bg-opacity-30 text-yellow-300 px-3 py-2 text-sm flex items-start">
           <IconAlertTriangle className="h-4 w-4 mr-2 flex-shrink-0 mt-0.5" />
+
           <div>
             <strong>Privacy Notice:</strong> Analytics are not fully encrypted.
             Consider enabling maximum security level for complete privacy

@@ -10,6 +10,17 @@
 import { getLogger } from '../../logging'
 import { InterventionAnalysisService } from '../services/intervention-analysis'
 
+// Minimal interfaces for services with 'unknown' types
+interface MinimalFheService {
+  encrypt(data: { factors: ContextualFactors; request: ContextualInterventionRequest }): Promise<unknown>;
+  decrypt(encryptedResponse: unknown): Promise<ContextualInterventionResponse>;
+  performOperation(config: { operation: string; data: unknown; parameters: unknown }): Promise<unknown>;
+}
+
+interface MinimalClientStateService {
+  getCurrentState(clientId: string, sessionId: string): Promise<ClientState>;
+}
+
 // Define types for contextual factors
 export interface ContextualFactors {
   clientState: ClientState
@@ -82,13 +93,13 @@ export interface ContextualInterventionResponse {
 export class ContextualEnhancementService {
   private logger = getLogger({ prefix: 'contextual-enhancement' })
   private interventionAnalysisService: InterventionAnalysisService
-  private fheService: any // TODO: Replace 'any' with actual FHE service type when available
-  private clientStateService: any // TODO: Replace 'any' with actual ClientStateService type when available
+  private fheService: unknown // TODO: Replace 'any' with actual FHE service type when available
+  private clientStateService: unknown // TODO: Replace 'any' with actual ClientStateService type when available
   
   constructor(
     interventionAnalysisService: InterventionAnalysisService,
-    fheService?: any,
-    clientStateService?: any
+    fheService?: unknown,
+    clientStateService?: unknown
   ) {
     this.interventionAnalysisService = interventionAnalysisService
     this.fheService = fheService
@@ -138,7 +149,7 @@ export class ContextualEnhancementService {
       const contextualFactors = await this.gatherContextualFactors(clientId, sessionId)
       
       // Encrypt sensitive data using FHE for secure processing
-      const encryptedContext = await this.fheService.encrypt({
+      const encryptedContext = await (this.fheService as MinimalFheService).encrypt({
         factors: contextualFactors,
         request
       })
@@ -147,7 +158,7 @@ export class ContextualEnhancementService {
       const encryptedResponse = await this.processEncryptedInterventionRequest(encryptedContext)
       
       // Decrypt the response
-      const decryptedResponse = await this.fheService.decrypt(encryptedResponse)
+      const decryptedResponse = await (this.fheService as MinimalFheService).decrypt(encryptedResponse)
       
       // Validate the response
       this.validateInterventionResponse(decryptedResponse)
@@ -171,10 +182,10 @@ export class ContextualEnhancementService {
    * @param encryptedData The encrypted context and request data
    * @returns Encrypted intervention response
    */
-  private async processEncryptedInterventionRequest(encryptedData: any): Promise<any> {
+  private async processEncryptedInterventionRequest(encryptedData: unknown): Promise<unknown> {
     try {
       // Apply FHE operations to generate intervention without decrypting sensitive data
-      return await this.fheService.performOperation({
+      return await (this.fheService as MinimalFheService).performOperation({
               operation: 'GENERATE_INTERVENTION',
               data: encryptedData,
               parameters: {
@@ -235,7 +246,7 @@ export class ContextualEnhancementService {
       this.logger.info('Adapting intervention to client state', { clientId, sessionId })
       
       // Get the current full client state
-      const currentState = await this.clientStateService.getCurrentState(clientId, sessionId)
+      const currentState = await (this.clientStateService as MinimalClientStateService).getCurrentState(clientId, sessionId)
       
       // Analyze the significance of the state change
       const changeSignificance = this.analyzeStateChangeSignificance(currentState, stateChange)
@@ -358,9 +369,9 @@ export class ContextualEnhancementService {
     clientId: string,
     sessionId: string,
     currentIntervention: string,
-    currentState: ClientState,
-    stateChange: Partial<ClientState>,
-    changeSignificance: number
+    _currentState: ClientState,
+    _stateChange: Partial<ClientState>,
+    _changeSignificance: number
   ): Promise<string> {
     // TODO: Implement actual adaptation logic
     return `${currentIntervention} (adapted)`

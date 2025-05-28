@@ -17,7 +17,7 @@ async function simulateDatabaseQuery(): Promise<Record<string, any>> {
   return { id: 1, name: 'Example Record', value: Math.random() * 100 }
 }
 
-export const get: APIRoute = async (_) => {
+export const GET: APIRoute = async (_) => {
   try {
     // Directly call the computation function
     const computationResult = await performHeavyComputation()

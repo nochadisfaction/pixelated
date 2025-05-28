@@ -48,9 +48,28 @@ export interface ISearchClient {
   importDocuments(documents: SearchDocument[]): void
 }
 
+// Define post structure for content collections
+export interface BlogPost {
+  slug: string
+  data: {
+    title: string
+    tags?: string[]
+    category?: string
+  }
+}
+
 // Define blogSearch interface for content collections
+export interface PostInput {
+  slug: string;
+  data: {
+    title: string;
+    tags?: string[];
+    category?: string;
+  };
+}
+
 export interface BlogSearchInterface {
-  addPost: (post: any, content: string) => void
+  addPost: (post: PostInput, content: string) => void
   search: (query: string) => SearchResult[]
   _posts: SearchDocument[]
 }
@@ -77,7 +96,7 @@ class ServerSearchClient implements ISearchClient {
 export const blogSearch: BlogSearchInterface = {
   _posts: [] as SearchDocument[],
 
-  addPost(post: any, content: string) {
+  addPost(post: PostInput, content: string) {
     // Extract a summary for search results (first 200 chars)
     const summary = content.slice(0, 200).replace(/<[^>]*>?/gm, '')
 
@@ -205,9 +224,7 @@ if (typeof window !== 'undefined') {
 export const searchClient = searchClientInstance
 
 // Add CommonJS compatibility for server contexts that may use require()
-// @ts-expect-error
 if (typeof module !== 'undefined' && module.exports) {
-  // @ts-expect-error
   module.exports = {
     // Use the already-exported blogSearch
     get blogSearch() {

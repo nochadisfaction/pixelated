@@ -13,7 +13,7 @@ interface UpdateDeletionRequestBody {
   processingNotes?: string
 }
 
-export const post: APIRoute = async ({ request, cookies }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
   try {
     // Protect the route - only authenticated admin users can access
     const authResult = await protectRoute(request, cookies, {

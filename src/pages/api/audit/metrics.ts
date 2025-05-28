@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro'
 import { getAuditLogs } from '../../../lib/audit/log'
 import { detectUnusualPatterns } from '../../../lib/audit/analysis'
 
-export const get: APIRoute = async () => {
+export const GET: APIRoute = async () => {
   try {
     // Get all audit logs and filter by date in memory
     // since getAuditLogs doesn't support date filtering directly

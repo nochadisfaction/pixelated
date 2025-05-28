@@ -39,7 +39,7 @@ export const goalSchema = z.object({
   notes: z.string().optional(),
 })
 
-export const get: APIRoute = async () => {
+export const GET: APIRoute = async () => {
   // Return all goals (in a real app, filter by user/session)
   return new Response(JSON.stringify(goals), {
     status: 200,
@@ -47,7 +47,7 @@ export const get: APIRoute = async () => {
   })
 }
 
-export const post: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request }) => {
   try {
     const data = await request.json()
     const parsed = goalSchema.safeParse(data)

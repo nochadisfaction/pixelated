@@ -45,6 +45,7 @@ export function Callout({ children, type = 'info', title }: CalloutProps) {
         />
       </svg>
     ),
+
     warning: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -59,6 +60,7 @@ export function Callout({ children, type = 'info', title }: CalloutProps) {
         />
       </svg>
     ),
+
     success: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -73,6 +75,7 @@ export function Callout({ children, type = 'info', title }: CalloutProps) {
         />
       </svg>
     ),
+
     error: (
       <svg
         xmlns="http://www.w3.org/2000/svg"

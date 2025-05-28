@@ -3,12 +3,15 @@
  * CLI tool for merging mental health datasets
  */
 
+import { createInterface } from 'readline'
 import {
   mergeAllDatasets,
   mergedDatasetExists,
   getMergedDatasetPath,
 } from './merge-datasets'
-import { logger } from '../../logging'
+import { getLogger } from '../../logging'
+
+const logger = getLogger({ prefix: 'Dataset CLI' })
 
 async function main() {
   console.log('=== Mental Health Dataset Merger ===')
@@ -57,7 +60,7 @@ async function main() {
 }
 
 function askQuestion(question: string): Promise<string> {
-  const readline = require('readline').createInterface({
+  const readline = createInterface({
     input: process.stdin,
     output: process.stdout,
   })

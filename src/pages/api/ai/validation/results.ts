@@ -13,7 +13,7 @@ const rateLimitMap = new Map()
 const RATE_LIMIT = 10 // requests
 const RATE_LIMIT_WINDOW_MS = 60 * 1000 // 1 minute
 
-export const get: APIRoute = async ({ request }) => {
+export const GET: APIRoute = async ({ request }) => {
   const logger = getLogger({ prefix: 'validation-api' })
 
   try {

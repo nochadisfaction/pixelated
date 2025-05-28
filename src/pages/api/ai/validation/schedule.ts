@@ -8,7 +8,7 @@ import {
   AuditEventStatus,
 } from '../../../../lib/audit'
 
-export const post: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request }) => {
   const logger = getLogger({ prefix: 'validation-schedule' })
 
   try {

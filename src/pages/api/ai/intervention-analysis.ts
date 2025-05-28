@@ -4,7 +4,7 @@ import type { AIMessage } from '../../../lib/ai/models/ai-types.js'
 import type { AIService } from '../../../lib/ai/models/types.js'
 import { InterventionAnalysisService } from '../../../lib/ai/services/intervention-analysis.js'
 import { createTogetherAIService } from '../../../lib/ai/services/together.js'
-import { createAuditLog } from '../../../lib/audit/log.js'
+import { createAuditLog } from '../../../lib/audit'
 import { getSession } from '../../../lib/auth/session.js'
 import { aiRepository } from '../../../lib/db/ai/index.js'
 

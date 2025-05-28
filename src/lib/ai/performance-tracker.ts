@@ -1,5 +1,5 @@
 import { AuditEventType } from '../audit'
-import { createResourceAuditLog } from '../audit/log'
+import { createResourceAuditLog } from '../audit'
 import { supabase } from '../db/supabase'
 
 export interface PerformanceMetric {
@@ -15,6 +15,23 @@ export interface PerformanceMetric {
   user_id?: string
   session_id?: string
   request_id: string
+}
+
+// Define a type for the database row
+interface MetricRow {
+  model: string
+  latency: number
+  input_tokens: number
+  output_tokens: number
+  total_tokens: number
+  success: boolean
+  error_code: string | null
+  cached: boolean
+  optimized: boolean
+  user_id: string | null
+  session_id: string | null
+  request_id: string
+  created_at?: string
 }
 
 /**
@@ -65,7 +82,22 @@ export async function trackPerformance(
 export async function getModelPerformance(
   model: string,
   days = 30,
-): Promise<any> {
+): Promise<
+  | {
+      avg_latency: number
+      avg_tokens: number
+      request_count: number
+      success_count: number
+      cached_count: number
+      optimized_count: number
+    }
+  | {
+      model: string
+      avg_latency: number
+      success_rate: number
+      usage_count: number
+    }
+> {
   try {
     const { data, error } = await supabase
       .from('ai_performance_metrics')
@@ -82,13 +114,17 @@ export async function getModelPerformance(
 
     // Calculate aggregated metrics
     const avgLatency =
-      data?.reduce((sum, row) => sum + row.latency, 0) / data?.length
+      data?.reduce((sum: number, row: MetricRow) => sum + row.latency, 0) /
+      (data?.length || 1)
     const avgTokens =
-      data?.reduce((sum, row) => sum + row.total_tokens, 0) / data?.length
-    const requestCount = data?.length
-    const successCount = data?.filter((row) => row.success).length
-    const cachedCount = data?.filter((row) => row.cached).length
-    const optimizedCount = data?.filter((row) => row.optimized).length
+      data?.reduce((sum: number, row: MetricRow) => sum + row.total_tokens, 0) /
+      (data?.length || 1)
+    const requestCount = data?.length || 0
+    const successCount =
+      data?.filter((row: MetricRow) => row.success).length || 0
+    const cachedCount = data?.filter((row: MetricRow) => row.cached).length || 0
+    const optimizedCount =
+      data?.filter((row: MetricRow) => row.optimized).length || 0
 
     return {
       avg_latency: avgLatency,
@@ -108,11 +144,26 @@ export async function getModelPerformance(
     }
   }
 }
-
 /**
  * Get overall AI performance metrics
  */
-export async function getOverallPerformance(days = 30): Promise<any> {
+export async function getOverallPerformance(days = 30): Promise<
+  | {
+      avg_latency: number
+      avg_tokens: number
+      request_count: number
+      success_count: number
+      cached_count: number
+      optimized_count: number
+      model_count: number
+    }
+  | {
+      avg_latency: number
+      success_rate: number
+      total_requests: number
+      token_usage: number
+    }
+> {
   try {
     const { data, error } = await supabase
       .from('ai_performance_metrics')
@@ -128,14 +179,19 @@ export async function getOverallPerformance(days = 30): Promise<any> {
 
     // Calculate aggregated metrics
     const avgLatency =
-      data?.reduce((sum, row) => sum + row.latency, 0) / data?.length
+      data?.reduce((sum: number, row: MetricRow) => sum + row.latency, 0) /
+      (data?.length || 1)
     const avgTokens =
-      data?.reduce((sum, row) => sum + row.total_tokens, 0) / data?.length
-    const requestCount = data?.length
-    const successCount = data?.filter((row) => row.success).length
-    const cachedCount = data?.filter((row) => row.cached).length
-    const optimizedCount = data?.filter((row) => row.optimized).length
-    const uniqueModels = new Set(data?.map((row) => row.model)).size
+      data?.reduce((sum: number, row: MetricRow) => sum + row.total_tokens, 0) /
+      (data?.length || 1)
+    const requestCount = data?.length || 0
+    const successCount =
+      data?.filter((row: MetricRow) => row.success).length || 0
+    const cachedCount = data?.filter((row: MetricRow) => row.cached).length || 0
+    const optimizedCount =
+      data?.filter((row: MetricRow) => row.optimized).length || 0
+    const uniqueModels =
+      new Set(data?.map((row: MetricRow) => row.model)).size || 0
 
     return {
       avg_latency: avgLatency,

@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro'
-import { createAuditLog } from '../../../lib/audit/log.js'
+import { createAuditLog } from '../../../lib/audit'
 import { supabase } from '../../../lib/supabase'
 
 export const GET: APIRoute = async ({ url, cookies, redirect }) => {

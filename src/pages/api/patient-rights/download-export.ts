@@ -12,7 +12,7 @@ const downloadRequestSchema = z.object({
   token: z.string().min(1, 'Security token is required'),
 })
 
-export const get: APIRoute = async ({ request }) => {
+export const GET: APIRoute = async ({ request }) => {
   try {
     // Extract query parameters from the URL
     const url = new URL(request.url)

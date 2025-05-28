@@ -1,3 +1,4 @@
+/// <reference types="vitest/globals" />
 import { ComplianceMetrics } from '@/lib/analytics/compliance'
 import { MachineLearning } from '@/lib/analytics/ml'
 import { NotificationEffectiveness } from '@/lib/analytics/notifications'
@@ -291,7 +292,7 @@ describe('breachAnalytics', () => {
     })
 
     it('should include compliance insights when below threshold', async () => {
-      ;(ComplianceMetrics.calculateScore as any).mockResolvedValue(0.97)
+      ;(ComplianceMetrics.calculateScore as unknown as vi.Mocked<typeof ComplianceMetrics.calculateScore>).mockResolvedValue(0.97)
 
       const insights = await BreachAnalytics.generateInsights()
 
@@ -341,7 +342,7 @@ describe('breachAnalytics', () => {
     })
 
     it('should handle errors during report generation', async () => {
-      ;(BreachNotificationSystem.listRecentBreaches as any).mockRejectedValue(
+      ;(BreachNotificationSystem.listRecentBreaches as unknown as vi.Mocked<typeof BreachNotificationSystem.listRecentBreaches>).mockRejectedValue(
         new Error('Failed to fetch breaches'),
       )
 

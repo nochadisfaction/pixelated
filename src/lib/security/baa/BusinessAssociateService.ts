@@ -1,9 +1,9 @@
 import type {
   BusinessAssociate,
   BusinessAssociateType,
-  ComplianceLevel,
   ServiceCategory,
 } from './types'
+import { ComplianceLevel } from './types'
 import { generateId } from '../../utils/ids'
 
 /**

@@ -4,7 +4,7 @@
  * This implementation can detect PHI/PII in clinical text with high accuracy and
  * configurable redaction strategies for HIPAA compliance.
  */
-
+// TODO: 'Not be a bitch'
 // Mock implementations since Presidio is a Python package, not JavaScript
 // In production, you would need to call a Python service
 class Analyzer {
@@ -22,13 +22,15 @@ class Analyzer {
 }
 
 class Anonymizer {
-  async anonymize(payload: any) {
+  async anonymize(payload: { text: string }) {
     return { text: payload.text }
   }
 }
 
 // Mock implementation of memoize since the original is not accessible
-function memoize<T extends (...args: any[]) => any>(fn: T): T {
+function memoize<T extends (...args: Parameters<T>) => ReturnType<T>>(
+  fn: T,
+): (...args: Parameters<T>) => ReturnType<T> {
   const cache = new Map<string, ReturnType<T>>()
 
   return ((...args: Parameters<T>): ReturnType<T> => {
@@ -48,9 +50,9 @@ function memoize<T extends (...args: any[]) => any>(fn: T): T {
 function createLogger(name: string) {
   return {
     info: (message: string) => console.log(`[INFO] ${name}: ${message}`),
-    warn: (message: string, meta?: any) =>
+    warn: (message: string, meta?: unknown) =>
       console.warn(`[WARN] ${name}: ${message}`, meta),
-    error: (message: string, meta?: any) =>
+    error: (message: string, meta?: unknown) =>
       console.error(`[ERROR] ${name}: ${message}`, meta),
   }
 }
@@ -414,6 +416,7 @@ export class PresidioPHIDetector {
 export const phiDetector = PresidioPHIDetector.getInstance()
 
 // --- Simple usage example (to be replaced with real tests) ---
+/*
 if (require.main === module) {
   const sample =
     'Patient John Doe (john.doe@email.com, 555-123-4567, SSN: 123-45-6789) visited the clinic.'
@@ -424,6 +427,7 @@ if (require.main === module) {
     console.log('Redacted:', result.redactedText)
   })
 }
+*/
 
 /**
  * Simplified utility function to detect and redact PHI in text

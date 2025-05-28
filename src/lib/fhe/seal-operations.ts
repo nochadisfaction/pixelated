@@ -5,7 +5,7 @@
  */
 
 import { getLogger } from '../logging'
-import { SealService } from './seal-service'
+import { SealService, SealCipherText, SealPlainText } from './seal-service'
 import { SealResourceScope } from './seal-memory'
 import { FHEOperation, OperationError } from './types'
 import { SealSchemeType, SEAL_SUPPORTED_OPERATIONS } from './seal-types'
@@ -41,41 +41,60 @@ export class SealOperations {
    * @param b Second ciphertext or plaintext number array
    * @returns Result of the addition
    */
-  public async add(a: any, b: any | number[]): Promise<SealOperationResult> {
+  public async add(a: SealCipherText, b: SealCipherText | number[]): Promise<SealOperationResult> {
     try {
+      const { getSchemeType, getCKKSEncoder, getBatchEncoder, getEvaluator, getSeal } = this.service;
       if (!this.isOperationSupported(FHEOperation.Addition)) {
         throw new OperationError(
-          `Addition not supported in scheme ${this.service.getSchemeType()}`,
+          `Addition not supported in scheme ${getSchemeType()}`,
         )
       }
 
       const scope = new SealResourceScope()
-      const seal = this.service.getSeal()
-      const evaluator = this.service.getEvaluator()
+      const seal = getSeal()
+      const evaluator = getEvaluator()
 
       // If b is a number array, encrypt it first
-      let bCiphertext = b
+      let bOpCiphertext: SealCipherText
       if (Array.isArray(b)) {
-        bCiphertext = await this.service.encrypt(b)
-        scope.track(bCiphertext, 'bCiphertext')
+        const bPlaintext = scope.track(seal.PlainText())
+        const currentSchemeType = getSchemeType()
+        const bNumArray: number[] = Array.from(b); // b is number[] in this scope, using Array.from
+        if (currentSchemeType === SealSchemeType.CKKS) {
+          const scale = BigInt(1) << BigInt(40) // Default CKKS scale
+          const ckksEncoder = getCKKSEncoder()
+          // Using number array
+          ckksEncoder.encode(bNumArray, Number(scale), bPlaintext)
+        } else {
+          // BFV/BGV
+          const batchEncoder = getBatchEncoder()
+          // The batchEncoder.encode expects number[] and SealPlainText
+          // The TypeScript error is due to a mismatch in the type definition
+          // but the implementation accepts this combination
+          batchEncoder.encode(bNumArray, bPlaintext as unknown as SealPlainText)
+        }
+        // Use the encryptor directly instead of the encrypt function
+        const encryptor = this.service.getEncryptor()
+        const tempCiphertext = scope.track(seal.CipherText())
+        encryptor.encrypt(bPlaintext, tempCiphertext)
+        bOpCiphertext = tempCiphertext
+      } else {
+        bOpCiphertext = scope.track(b)
       }
 
-      // Create result ciphertext
-      const result = scope.track(seal.CipherText(), 'result')
-
-      // Perform addition
-      evaluator.add(a, bCiphertext, result)
+      const resultCiphertext = scope.track(seal.CipherText())
+      evaluator.add(a, bOpCiphertext, resultCiphertext)
 
       // Create a new ciphertext to return (outside the scope)
       const finalResult = seal.CipherText()
-      finalResult.copy(result)
+      finalResult.copy(resultCiphertext)
 
       return {
         result: finalResult,
         success: true,
         operation: FHEOperation.Addition,
       }
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Homomorphic addition failed', { error })
       return {
         success: false,
@@ -92,44 +111,60 @@ export class SealOperations {
    * @param b Second ciphertext or plaintext number array
    * @returns Result of the subtraction
    */
-  public async subtract(
-    a: any,
-    b: any | number[],
-  ): Promise<SealOperationResult> {
+  public async subtract(a: SealCipherText, b: SealCipherText | number[]): Promise<SealOperationResult> {
     try {
+      const { getSchemeType, getCKKSEncoder, getBatchEncoder, getEvaluator, getSeal } = this.service;
       if (!this.isOperationSupported(FHEOperation.Subtraction)) {
         throw new OperationError(
-          `Subtraction not supported in scheme ${this.service.getSchemeType()}`,
+          `Subtraction not supported in scheme ${getSchemeType()}`,
         )
       }
 
       const scope = new SealResourceScope()
-      const seal = this.service.getSeal()
-      const evaluator = this.service.getEvaluator()
+      const seal = getSeal()
+      const evaluator = getEvaluator()
 
       // If b is a number array, encrypt it first
-      let bCiphertext = b
+      let bOpCiphertext: SealCipherText
       if (Array.isArray(b)) {
-        bCiphertext = await this.service.encrypt(b)
-        scope.track(bCiphertext, 'bCiphertext')
+        const bPlaintext = scope.track(seal.PlainText())
+        const currentSchemeType = getSchemeType()
+        const bNumArray: number[] = Array.from(b); // b is number[] in this scope, using Array.from
+        if (currentSchemeType === SealSchemeType.CKKS) {
+          const scale = BigInt(1) << BigInt(40) // Default CKKS scale
+          const ckksEncoder = getCKKSEncoder()
+          // Using number array
+          ckksEncoder.encode(bNumArray, Number(scale), bPlaintext)
+        } else {
+          // BFV/BGV
+          const batchEncoder = getBatchEncoder()
+          // The batchEncoder.encode expects number[] and SealPlainText
+          // The TypeScript error is due to a mismatch in the type definition
+          // but the implementation accepts this combination
+          batchEncoder.encode(bNumArray, bPlaintext as unknown as SealPlainText)
+        }
+        // Use the encryptor directly instead of the encrypt function
+        const encryptor = this.service.getEncryptor()
+        const tempCiphertext = scope.track(seal.CipherText())
+        encryptor.encrypt(bPlaintext, tempCiphertext)
+        bOpCiphertext = tempCiphertext
+      } else {
+        bOpCiphertext = scope.track(b)
       }
 
-      // Create result ciphertext
-      const result = scope.track(seal.CipherText(), 'result')
-
-      // Perform subtraction
-      evaluator.sub(a, bCiphertext, result)
+      const resultCiphertext = scope.track(seal.CipherText())
+      evaluator.sub(a, bOpCiphertext, resultCiphertext)
 
       // Create a new ciphertext to return (outside the scope)
       const finalResult = seal.CipherText()
-      finalResult.copy(result)
+      finalResult.copy(resultCiphertext)
 
       return {
         result: finalResult,
         success: true,
         operation: FHEOperation.Subtraction,
       }
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Homomorphic subtraction failed', { error })
       return {
         success: false,
@@ -146,23 +181,21 @@ export class SealOperations {
    * @param b Second ciphertext or plaintext number array
    * @returns Result of the multiplication
    */
-  public async multiply(
-    a: any,
-    b: any | number[],
-  ): Promise<SealOperationResult> {
+  public async multiply(a: SealCipherText, b: SealCipherText | number[]): Promise<SealOperationResult> {
     try {
+      const { getSchemeType, getCKKSEncoder, getBatchEncoder, getEvaluator, getSeal, getRelinKeys } = this.service;
       if (!this.isOperationSupported(FHEOperation.Multiplication)) {
         throw new OperationError(
-          `Multiplication not supported in scheme ${this.service.getSchemeType()}`,
+          `Multiplication not supported in scheme ${getSchemeType()}`,
         )
       }
 
       const scope = new SealResourceScope()
-      const seal = this.service.getSeal()
-      const evaluator = this.service.getEvaluator()
+      const seal = getSeal()
+      const evaluator = getEvaluator()
 
       // Get relinearization keys (required for multiplication)
-      const relinKeys = this.service.getRelinKeys()
+      const relinKeys = getRelinKeys()
       if (!relinKeys) {
         throw new Error(
           'Relinearization keys required for multiplication are not available',
@@ -171,16 +204,31 @@ export class SealOperations {
 
       // If b is a number array, we can use plain multiplication which is more efficient
       if (Array.isArray(b)) {
+        const bAsNumberArray = b as number[]; // Explicit cast
         // Create a plaintext
         const plaintext = scope.track(seal.PlainText(), 'plaintext')
 
         // Encode the plaintext based on scheme
-        if (this.service.getSchemeType() === SealSchemeType.CKKS) {
+        if (getSchemeType() === SealSchemeType.CKKS) {
           // Default scale for CKKS
           const scale = BigInt(1) << BigInt(40)
-          this.service.getCKKSEncoder().encode(b, scale, plaintext)
+          const ckksEncoder = getCKKSEncoder()
+          ckksEncoder.encode(bAsNumberArray, Number(scale), plaintext)
         } else {
-          this.service.getBatchEncoder().encode(b, plaintext)
+          const batchEncoder = getBatchEncoder()
+
+          const { slotCount } = batchEncoder
+          // Ensure the array has enough elements or pad with zeros
+          const coefArray: number[] = new Array<number>(slotCount).fill(0);
+          for (let i = 0; i < Math.min(bAsNumberArray.length, slotCount); i++) {
+            if (typeof bAsNumberArray[i] !== 'number') {
+              throw new TypeError(
+                'Plaintext array for BFV/BGV multiplication must contain numbers. Received: ' + String(bAsNumberArray[i]) + ' of type ' + typeof bAsNumberArray[i]
+              );
+            }
+            coefArray[i] = bAsNumberArray[i];
+          }
+          batchEncoder.encode(coefArray, plaintext as unknown as SealPlainText);
         }
 
         // Create result ciphertext
@@ -226,7 +274,7 @@ export class SealOperations {
           operation: FHEOperation.Multiplication,
         }
       }
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Homomorphic multiplication failed', { error })
       return {
         success: false,
@@ -242,7 +290,7 @@ export class SealOperations {
    * @param a Ciphertext to negate
    * @returns Negated ciphertext
    */
-  public async negate(a: any): Promise<SealOperationResult> {
+  public async negate(a: SealCipherText): Promise<SealOperationResult> {
     try {
       if (!this.isOperationSupported(FHEOperation.Negation)) {
         throw new OperationError(
@@ -269,7 +317,7 @@ export class SealOperations {
         success: true,
         operation: FHEOperation.Negation,
       }
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Homomorphic negation failed', { error })
       return {
         success: false,
@@ -286,7 +334,7 @@ export class SealOperations {
    * @param steps Number of steps to rotate
    * @returns Rotated ciphertext
    */
-  public async rotate(a: any, steps: number): Promise<SealOperationResult> {
+  public async rotate(a: SealCipherText, steps: number): Promise<SealOperationResult> {
     try {
       if (!this.isOperationSupported(FHEOperation.Rotation)) {
         throw new OperationError(
@@ -325,7 +373,7 @@ export class SealOperations {
         success: true,
         operation: FHEOperation.Rotation,
       }
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Homomorphic rotation failed', { error })
       return {
         success: false,
@@ -341,7 +389,7 @@ export class SealOperations {
    * @param a Ciphertext to square
    * @returns Squared ciphertext
    */
-  public async square(a: any): Promise<SealOperationResult> {
+  public async square(a: SealCipherText): Promise<SealOperationResult> {
     try {
       if (!this.isOperationSupported(FHEOperation.Square)) {
         throw new OperationError(
@@ -381,7 +429,7 @@ export class SealOperations {
         success: true,
         operation: FHEOperation.Square,
       }
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Homomorphic squaring failed', { error })
       return {
         success: false,
@@ -398,10 +446,7 @@ export class SealOperations {
    * @param coefficients Coefficients of the polynomial (index i is for x^i)
    * @returns Result of the polynomial evaluation
    */
-  public async polynomial(
-    a: any,
-    coefficients: number[],
-  ): Promise<SealOperationResult> {
+  public async polynomial(a: SealCipherText, coefficients: number[]): Promise<SealOperationResult> {
     try {
       // Polynomial evaluation requires addition and multiplication
       if (
@@ -418,9 +463,9 @@ export class SealOperations {
       }
 
       const scope = new SealResourceScope()
-      const seal = this.service.getSeal()
-      const evaluator = this.service.getEvaluator()
-      const relinKeys = this.service.getRelinKeys()
+      const { getSchemeType, getCKKSEncoder, getBatchEncoder, getEvaluator, getSeal, getRelinKeys } = this.service;
+      const evaluator = getEvaluator()
+      const relinKeys = getRelinKeys()
 
       if (!relinKeys) {
         throw new Error(
@@ -428,31 +473,28 @@ export class SealOperations {
         )
       }
 
-      // Compute the polynomial using Horner's method (more efficient)
-      // For polynomial a0 + a1*x + a2*x^2 + ... + an*x^n
-      // We compute it as a0 + x * (a1 + x * (a2 + x * (...)))
-
       // If only a0 is provided, return the constant
       if (coefficients.length === 1) {
+        const seal = getSeal()
         // Create a plaintext for the constant
         const plaintext = scope.track(seal.PlainText(), 'plaintext')
-
+        const currentSchemeType = getSchemeType()
         // Encode the constant based on scheme
-        if (this.service.getSchemeType() === SealSchemeType.CKKS) {
-          const scale = BigInt(1) << BigInt(40)
-          this.service
-            .getCKKSEncoder()
-            .encode([coefficients[0]], scale, plaintext)
+        if (currentSchemeType === SealSchemeType.CKKS) {
+          const scale = Number(BigInt(1) << BigInt(40))
+          const ckksEncoder = getCKKSEncoder()
+          const currentCoeff: number[] = [coefficients[0]];
+          // Using array with single coefficient
+          ckksEncoder.encode(currentCoeff, scale, plaintext)
         } else {
           // For BFV/BGV, we need to create an array of the same size as the batch
-          const slotCount = this.service.getBatchEncoder().slotCount()
-          const constArray = Array.from({ length: slotCount }).fill(
+          const batchEncoder = getBatchEncoder()
+          const {slotCount} = batchEncoder
+          const constArray: number[] = new Array<number>(slotCount).fill(
             coefficients[0],
           )
-          this.service.getBatchEncoder().encode(constArray, plaintext)
+          batchEncoder.encode(constArray, plaintext as unknown as SealPlainText)
         }
-
-        // Create a new ciphertext to return
         const result = seal.CipherText()
         this.service.getEncryptor().encrypt(plaintext, result)
 
@@ -466,20 +508,24 @@ export class SealOperations {
       // Start with the highest degree coefficient
       let n = coefficients.length - 1
 
+      // Get SEAL instance once and reuse it
+      const seal = getSeal()
       // Encode the highest coefficient
       const highestCoef = scope.track(seal.PlainText(), 'highestCoef')
+      const currentSchemeType = getSchemeType()
 
-      if (this.service.getSchemeType() === SealSchemeType.CKKS) {
+      if (currentSchemeType === SealSchemeType.CKKS) {
         const scale = BigInt(1) << BigInt(40)
-        this.service
-          .getCKKSEncoder()
-          .encode([coefficients[n]], scale, highestCoef)
+        const ckksEncoder = getCKKSEncoder() // Already destructured
+        // Using array with single coefficient
+        ckksEncoder.encode([coefficients[n]], Number(scale), highestCoef)
       } else {
-        const slotCount = this.service.getBatchEncoder().slotCount()
-        const coefArray = Array.from({ length: slotCount }).fill(
+        const batchEncoder = getBatchEncoder() // Already destructured
+        const {slotCount} = batchEncoder
+        const coefArray: number[] = new Array<number>(slotCount).fill(
           coefficients[n],
         )
-        this.service.getBatchEncoder().encode(coefArray, highestCoef)
+        batchEncoder.encode(coefArray, highestCoef as unknown as SealPlainText)
       }
 
       // Initialize result with the highest coefficient
@@ -502,17 +548,17 @@ export class SealOperations {
         // Add the next coefficient
         const nextCoef = scope.track(seal.PlainText(), 'nextCoef')
 
-        if (this.service.getSchemeType() === SealSchemeType.CKKS) {
+        if (currentSchemeType === SealSchemeType.CKKS) {
           const scale = BigInt(1) << BigInt(40)
-          this.service
-            .getCKKSEncoder()
-            .encode([coefficients[i]], scale, nextCoef)
+          const ckksEncoder = getCKKSEncoder() // Already destructured
+          ckksEncoder.encode([coefficients[i]], Number(scale), nextCoef)
         } else {
-          const slotCount = this.service.getBatchEncoder().slotCount()
-          const coefArray = Array.from({ length: slotCount }).fill(
+          const batchEncoder = getBatchEncoder()
+          const {slotCount} = batchEncoder
+          const coefArray: number[] = new Array<number>(slotCount).fill(
             coefficients[i],
           )
-          this.service.getBatchEncoder().encode(coefArray, nextCoef)
+          batchEncoder.encode(coefArray, nextCoef as unknown as SealPlainText)
         }
 
         const afterAdd = scope.track(seal.CipherText(), 'afterAdd')
@@ -532,7 +578,7 @@ export class SealOperations {
         success: true,
         operation: FHEOperation.Polynomial,
       }
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error('Homomorphic polynomial evaluation failed', { error })
       return {
         success: false,

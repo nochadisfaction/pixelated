@@ -103,6 +103,7 @@ export const toast = {
           </button>
         </div>
       ),
+
       {
         ...defaultOptions,
         ...options,

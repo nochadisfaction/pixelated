@@ -176,6 +176,7 @@ export default function EmotionTrackingChart({
               })
             }
           />
+
           <YAxis domain={[0, 10]} />
           <Tooltip
             formatter={(value, name) => {
@@ -188,6 +189,7 @@ export default function EmotionTrackingChart({
             }}
             labelFormatter={(label) => new Date(label).toLocaleTimeString()}
           />
+
           <Legend />
 
           {dimensions.includes('valence') && (

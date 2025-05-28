@@ -16,47 +16,57 @@ import { AuditEventType, logAuditEvent } from '../../audit'
 import type { RecoveryTestConfig, RecoveryTestResult } from './types'
 import { RecoveryTestStatus } from './backup-types'
 
-// Use a safe way to detect if we're in a browser environment
+// Environment detection
 const isBrowser =
   typeof window !== 'undefined' && typeof document !== 'undefined'
 
-// Conditionally import Node.js modules only in Node environment
-let crypto: any
-let path: any
-let fs: any
+// Node.js module references - initialized lazily
+let nodeModulesLoaded = false
+let nodeRandomUUIDFunction: (() => string) | undefined
+let nodeCryptoCreateHash: typeof import('node:crypto').createHash | undefined
+let pathModule: typeof import('node:path') | undefined
+let fsPromisesModule: typeof import('node:fs/promises') | undefined
 
-// Only try to import Node.js modules on the server
-if (!isBrowser) {
-  // Dynamic imports to prevent browser errors
-  import('crypto').then((module) => {
-    crypto = module.default || module
-  })
-  import('path').then((module) => {
-    path = module.default || module
-  })
-  import('fs/promises').then((module) => {
-    fs = module.default || module
-  })
+async function loadNodeModules() {
+  if (isBrowser || nodeModulesLoaded) {
+    return
+  }
+
+  try {
+    // Dynamically import Node.js modules only on server
+    const cryptoMod = await import('node:crypto')
+    const pathMod = await import('node:path')
+    const fsPromisesMod = await import('node:fs/promises')
+
+    nodeRandomUUIDFunction = cryptoMod.randomUUID
+    nodeCryptoCreateHash = cryptoMod.createHash
+    pathModule = pathMod
+    fsPromisesModule = fsPromisesMod
+    nodeModulesLoaded = true
+  } catch (_error) {
+    // Modules not available, will use fallbacks
+    console.warn('Node.js modules not available, using fallbacks')
+  }
 }
 
-// Browser-compatible UUID generation
 function generateUUID(): string {
-  if (isBrowser) {
-    // Use the browser's crypto API if available
-    if (window.crypto && window.crypto.randomUUID) {
-      return window.crypto.randomUUID()
-    }
-
-    // Fallback implementation for older browsers
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-      const r = (Math.random() * 16) | 0
-      const v = c === 'x' ? r : (r & 0x3) | 0x8
-      return v.toString(16)
-    })
-  } else {
-    // Server-side UUID generation using Node.js crypto
-    return crypto.randomUUID()
+  if (!isBrowser && nodeRandomUUIDFunction) {
+    return nodeRandomUUIDFunction()
   }
+  // Browser or fallback for Node.js if crypto failed to load
+  if (
+    isBrowser &&
+    typeof window.crypto !== 'undefined' &&
+    typeof window.crypto.randomUUID === 'function'
+  ) {
+    return window.crypto.randomUUID()
+  }
+  // Fallback for older browsers or if Node.js crypto is unavailable
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0
+    const v = c === 'x' ? r : (r & 0x3) | 0x8
+    return v.toString(16)
+  })
 }
 
 const logger = getLogger({ prefix: 'recovery-testing' })
@@ -115,15 +125,29 @@ export class RecoveryTestingManager {
 
   constructor(config: RecoveryTestConfig) {
     this.config = config
+    this.initialize()
+  }
 
-    // Initialize with default test cases if none provided
+  /**
+   * Static factory method for async initialization
+   */
+  static async create(
+    config: RecoveryTestConfig,
+  ): Promise<RecoveryTestingManager> {
+    await loadNodeModules()
+    return new RecoveryTestingManager(config)
+  }
+
+  /**
+   * Internal initialization method
+   */
+  private initialize(): void {
     if (!this.config.testCases || this.config.testCases.length === 0) {
       this.loadDefaultTestCases()
     } else {
-      // Load provided test cases
       this.config.testCases.forEach((tc) => {
         const testCase: TestCase = {
-          id: generateUUID(),
+          id: generateUUID(), // generateUUID will now work reliably server-side
           name: tc.name,
           description: tc.description,
           backupType: tc.backupType,
@@ -138,7 +162,6 @@ export class RecoveryTestingManager {
       })
     }
 
-    // Schedule automated tests if enabled
     if (this.config.enabled) {
       this.scheduleAutomatedTests().catch((error) => {
         logger.error(
@@ -146,7 +169,6 @@ export class RecoveryTestingManager {
         )
       })
     }
-
     logger.info('Recovery testing manager initialized successfully')
   }
 
@@ -310,8 +332,8 @@ export class RecoveryTestingManager {
         'system',
         testId,
         {
-          backupId: backupId,
-          environmentType: environmentType,
+          backupId,
+          environmentType,
         },
       )
 
@@ -533,23 +555,31 @@ export class RecoveryTestingManager {
   private async generateTestReport(
     result: RecoveryTestResult,
   ): Promise<string> {
-    // This would generate an HTML or PDF report with test details
-    // For now, we'll create a simple JSON report
-
-    const reportDir = path.join(process.cwd(), 'reports', 'recovery-tests')
-    const reportPath = path.join(reportDir, `${result.id}.json`)
-
+    logger.info(`Generating test report for recovery test ID: ${result.id}`)
+    if (!pathModule || !fsPromisesModule) {
+      logger.error('Path or fs module not loaded, cannot generate test report.')
+      return `Error: Path or fs module not loaded. Report for ${result.id} not generated.`
+    }
+    const reportDir = pathModule.join(
+      process.cwd(),
+      'reports',
+      'recovery-tests',
+    )
+    const reportPath = pathModule.join(reportDir, `${result.id}.json`)
     try {
-      // Ensure directory exists
-      await fs.mkdir(reportDir, { recursive: true })
-
-      // Write report file
-      await fs.writeFile(reportPath, JSON.stringify(result, null, 2), 'utf8')
-
+      await fsPromisesModule.mkdir(reportDir, { recursive: true })
+      await fsPromisesModule.writeFile(
+        reportPath,
+        JSON.stringify(result, null, 2),
+        'utf8',
+      )
+      logger.info(`Test report generated: ${reportPath}`)
       return reportPath
     } catch (error) {
-      logger.error('Failed to generate test report', { error })
-      return ''
+      logger.error(
+        `Failed to generate test report: ${error instanceof Error ? error.message : String(error)}`,
+      )
+      return `Error generating report: ${error instanceof Error ? error.message : String(error)}`
     }
   }
 
@@ -562,6 +592,79 @@ export class RecoveryTestingManager {
     // This would integrate with notification systems
     // Such as email, SMS, or internal alerting
   }
+
+  private async verifyDataIntegrity(
+    environment: TestEnvironment,
+    testCase: TestCase,
+  ): Promise<
+    { step: string; passed: boolean; details: Record<string, unknown> }[]
+  > {
+    const results = []
+    for (const step of testCase.verificationSteps) {
+      const verificationResult = await environment.verifyStep(step)
+      if (step.type === VerificationMethod.HASH) {
+        if (!isBrowser && nodeCryptoCreateHash) {
+          if (
+            verificationResult.passed &&
+            (typeof verificationResult.actual === 'string' ||
+              verificationResult.actual instanceof Uint8Array)
+          ) {
+            const hash = nodeCryptoCreateHash('sha256')
+              .update(verificationResult.actual)
+              .digest('hex')
+            results.push({
+              step: step.id,
+              passed: hash === step.expected,
+              details: {
+                actualHash: hash,
+                expectedHash: step.expected,
+                ...verificationResult.details,
+              },
+            })
+          } else if (verificationResult.passed) {
+            results.push({
+              step: step.id,
+              passed: false,
+              details: {
+                error:
+                  'Actual data for HASH verification is not a string or Uint8Array.',
+                ...verificationResult.details,
+              },
+            })
+          } else {
+            results.push({
+              step: step.id,
+              passed: false,
+              details: {
+                error: 'Hash verification skipped: data retrieval failed.',
+                ...verificationResult.details,
+              },
+            })
+          }
+        } else {
+          results.push({
+            step: step.id,
+            passed: false,
+            details: {
+              error:
+                'HASH verification skipped: crypto.createHash not available on server or in browser.',
+            },
+          })
+        }
+      } else {
+        results.push({
+          step: step.id,
+          passed: verificationResult.passed,
+          details: {
+            actual: verificationResult.actual,
+            expected: verificationResult.expected,
+            ...verificationResult.details,
+          },
+        })
+      }
+    }
+    return results
+  }
 }
 
 /**
@@ -573,7 +676,7 @@ interface TestEnvironment {
   verifyStep(step: VerificationStep): Promise<{
     step: string
     passed: boolean
-    actual?: string | number | boolean
+    actual?: string | number | boolean | Buffer | Uint8Array
     expected?: string | number | boolean
     details?: Record<string, unknown>
   }>
@@ -603,7 +706,7 @@ class DockerTestEnvironment implements TestEnvironment {
   async verifyStep(step: VerificationStep): Promise<{
     step: string
     passed: boolean
-    actual?: string | number | boolean
+    actual?: string | number | boolean | Buffer | Uint8Array
     expected?: string | number | boolean
     details?: Record<string, unknown>
   }> {
@@ -649,7 +752,7 @@ class KubernetesTestEnvironment implements TestEnvironment {
   async verifyStep(step: VerificationStep): Promise<{
     step: string
     passed: boolean
-    actual?: string | number | boolean
+    actual?: string | number | boolean | Buffer | Uint8Array
     expected?: string | number | boolean
     details?: Record<string, unknown>
   }> {
@@ -695,7 +798,7 @@ class VMTestEnvironment implements TestEnvironment {
   async verifyStep(step: VerificationStep): Promise<{
     step: string
     passed: boolean
-    actual?: string | number | boolean
+    actual?: string | number | boolean | Buffer | Uint8Array
     expected?: string | number | boolean
     details?: Record<string, unknown>
   }> {
@@ -756,7 +859,7 @@ class SandboxTestEnvironment implements TestEnvironment {
   async verifyStep(step: VerificationStep): Promise<{
     step: string
     passed: boolean
-    actual?: string | number | boolean
+    actual?: string | number | boolean | Buffer | Uint8Array
     expected?: string | number | boolean
     details?: Record<string, unknown>
   }> {
@@ -777,11 +880,11 @@ class SandboxTestEnvironment implements TestEnvironment {
           }
         }
 
-        const hash = crypto.createHash('sha256').update(data).digest('hex')
+        // Return raw data for hashing by the manager
         return {
           step: step.id,
-          passed: !step.expected || hash === step.expected,
-          actual: hash,
+          passed: true, // Indicates data was found
+          actual: data, // Return the actual Uint8Array data
           expected: step.expected as string,
           details: { target: step.target },
         }

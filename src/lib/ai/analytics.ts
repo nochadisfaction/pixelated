@@ -1,4 +1,4 @@
-import { createAuditLog } from '~/lib/audit/log'
+import { createAuditLog } from '~/lib/audit'
 import { supabase } from '~/lib/db/supabase'
 import { getDateKey } from '~/lib/utils'
 

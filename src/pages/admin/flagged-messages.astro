@@ -1,4 +1,5 @@
 ---
+export const prerender = false;
 import { requirePermission } from '../../lib/access-control'
 import { adminGetFlaggedMessages } from '../../lib/db/messages'
 import BaseLayout from '../../layouts/BaseLayout.astro'
@@ -7,7 +8,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
 const checkPermission = requirePermission('read:admin')
 const permissionResponse = await checkPermission({
   cookies: Astro.cookies,
-  redirect: Astro.redirec,
+  redirect: Astro.redirect,
 })
 
 // If permission check returned a response, return i

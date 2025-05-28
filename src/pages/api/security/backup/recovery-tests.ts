@@ -9,6 +9,8 @@ import { getLogger } from '../../../../lib/logging'
 import type { AuthRole } from '../../../../config/auth.config'
 import type { AuthAPIContext } from '../../../../lib/auth/apiRouteTypes'
 
+export const prerender = false
+
 const logger = getLogger({ prefix: 'recovery-test-api' })
 
 // Reuse the singleton instance from the backup API

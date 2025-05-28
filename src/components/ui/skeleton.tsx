@@ -83,14 +83,12 @@ export function SkeletonText({
   className,
   ...props
 }: SkeletonProps & {
-  /** Number of lines to render */
-  lines?: number
-  /** Height of each line */
-  lineHeight?: number
-  /** Width of the last line (string percentage or pixel value) */
-  lastLineWidth?: string | number
-  /** Spacing between lines */
-  spacing?: number
+  /** Number of lines to render */ lines?: number
+  /** Height of each line */ lineHeight?: number
+  /** Width of the last line (string percentage or pixel value) */ lastLineWidth?:
+    | string
+    | number
+  /** Spacing between lines */ spacing?: number
 }) {
   // Convert spacing to proper CSS value
   const spacingPx = typeof spacing === 'number' ? `${spacing}px` : spacing
@@ -122,10 +120,7 @@ export function SkeletonAvatar({
   size = 40,
   className,
   ...props
-}: SkeletonProps & {
-  /** Size of the avatar */
-  size?: number
-}) {
+}: SkeletonProps & { /** Size of the avatar */ size?: number }) {
   return (
     <Skeleton
       width={size}
@@ -233,6 +228,7 @@ export function SkeletonChartBar({ className }: SkeletonProps) {
               width="100%"
               className="rounded-t-md"
             />
+
             <Skeleton height={4} width={8} />
           </div>
         )
@@ -313,6 +309,7 @@ export function SkeletonProfile({ className }: SkeletonProps) {
 
       <div className="pt-6 mt-6 space-y-4">
         <Skeleton height={6} width={40} className="mx-auto" />
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="space-y-1">

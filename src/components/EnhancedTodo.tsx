@@ -258,6 +258,7 @@ export function EnhancedTodo({
                 onChange={(e) => setCategory(e.target.value)}
                 list="existing-categories"
               />
+
               {categories.length > 0 && (
                 <datalist id="existing-categories">
                   {categories.map((cat) => (
@@ -329,6 +330,7 @@ export function EnhancedTodo({
                     onChange={() => toggleTodoComplete(todo.id)}
                     aria-label={`Mark "${todo.text}" as ${todo.completed ? 'incomplete' : 'complete'}`}
                   />
+
                   <label
                     htmlFor={`todo-${todo.id}`}
                     className={todo.completed ? 'completed' : ''}

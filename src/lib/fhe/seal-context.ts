@@ -27,11 +27,13 @@ export class SealContext {
   private securityLevel: SealSecurityLevel
   private initialized = false
   private loadPromise: Promise<void> | null = null
+  private contextOptions: SealContextOptions // To store the options
 
   /**
    * Create a new SealContext with the specified options
    */
   constructor(options: SealContextOptions) {
+    this.contextOptions = options; // Store the full options object
     this.parameters = options.params
     this.scheme = options.scheme
     this.securityLevel = options.params.securityLevel || 'tc128'
@@ -197,6 +199,24 @@ export class SealContext {
   /**
    * Log the encryption parameters for debugging
    */
+  /**
+   * Get the raw SEAL library instance.
+   * Throws an error if SEAL is not initialized.
+   */
+  public getSealModule(): any { // Ideally, replace 'any' with a more specific SealModule type if available
+    if (!this.seal) {
+      throw new Error('SEAL library instance is not available. Ensure initialize() has been called and completed.');
+    }
+    return this.seal;
+  }
+
+  /**
+   * Get the options used to configure this SEAL context.
+   */
+  public getOptions(): SealContextOptions {
+    return this.contextOptions;
+  }
+
   private logEncryptionParameters(): void {
     logger.info('SEAL encryption parameters:', {
       scheme: this.scheme,
@@ -246,7 +266,7 @@ export class SealContext {
   /**
    * Get the encryption parameters
    */
-  public getEncryptionParameters(): any {
+  public getEncryptionParameters(): unknown {
     this.checkInitialized()
     return this.encryptionParameters
   }

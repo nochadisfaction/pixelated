@@ -22,6 +22,7 @@ import {
   type RecoveryTestConfig,
 } from './types'
 import { isBrowser } from '../../browser/is-browser'
+import * as NodeCrypto from 'crypto'
 
 // Import crypto polyfill statically to avoid issues during build
 
@@ -105,7 +106,7 @@ const getCrypto = async () => {
         key: Uint8Array,
         iv: Uint8Array,
       ): Promise<{ encryptedData: Uint8Array; authTag: Uint8Array }> => {
-        const cipher = nodeCrypto.createCipheriv('aes-256-gcm', key, iv)
+        const cipher: import('crypto').CipherGCM = nodeCrypto.createCipheriv('aes-256-gcm', key, iv)
 
         // Manual concatenation of Uint8Arrays without Buffer
         const part1 = new Uint8Array(cipher.update(data))
@@ -116,7 +117,9 @@ const getCrypto = async () => {
         encryptedData.set(part2, part1.length)
 
         // Get authentication tag
-        const authTag = new Uint8Array((cipher as any).getAuthTag())
+        const authTag = new Uint8Array(
+          (cipher as import('crypto').CipherGCM).getAuthTag(),
+        )
 
         return { encryptedData, authTag }
       },
@@ -126,8 +129,9 @@ const getCrypto = async () => {
         iv: Uint8Array,
         authTag: Uint8Array,
       ): Promise<Uint8Array> => {
-        const decipher = nodeCrypto.createDecipheriv('aes-256-gcm', key, iv)
-        ;(decipher as any).setAuthTag(authTag)
+
+        const decipher: import('crypto').DecipherGCM = nodeCrypto.createDecipheriv('aes-256-gcm', key, iv)
+        decipher.setAuthTag(authTag)
 
         // Manual concatenation of Uint8Arrays without Buffer
         const part1 = new Uint8Array(decipher.update(data))
@@ -198,7 +202,7 @@ export class BackupSecurityManager {
   private static instance: BackupSecurityManager
 
   private config: BackupConfig
-  private encryptionKey: Uint8Array
+  private encryptionKey!: Uint8Array // MODIFIED: Definite assignment assertion
   private isInitialized = false
   private recoveryTestingManager?: RecoveryTestingManager
   private storageProviders: Map<StorageLocation, StorageProvider> = new Map()
@@ -270,6 +274,7 @@ export class BackupSecurityManager {
     // Initialize encryption key if provided
     if (this.config.encryptionKey) {
       this.encryptionKey = hexStringToUint8Array(this.config.encryptionKey)
+
     } else {
       // Generate a new encryption key
       const randomBytes = new Uint8Array(32)
@@ -277,11 +282,12 @@ export class BackupSecurityManager {
         window.crypto.getRandomValues(randomBytes)
       } else {
         // Use Node's crypto for server-side
-        const nodeCrypto = require('crypto')
-        randomBytes.set(nodeCrypto.randomBytes(32))
+        randomBytes.set(NodeCrypto.randomBytes(32))
       }
       this.encryptionKey = randomBytes
     }
+    // If not provided via config, this.encryptionKey will be initialized in the async initialize() method.
+    // The '!' in 'encryptionKey!: Uint8Array' handles the definite assignment concern for TypeScript.
 
     // Initialize storage providers
     this.storageProviders = new Map()
@@ -379,6 +385,12 @@ export class BackupSecurityManager {
   async initialize(): Promise<void> {
     if (this.isInitialized) {
       return
+    }
+
+    // Ensure encryption key is set if not provided by config
+    if (!this.encryptionKey) {
+      const crypto = await getCrypto() // getCrypto handles browser/node async import
+      this.encryptionKey = crypto.randomBytes(32)
     }
 
     try {
@@ -794,6 +806,7 @@ export class BackupSecurityManager {
   private async getDataForBackup(type: BackupType): Promise<Uint8Array> {
     // Implementation would collect app data based on backup type
     // For now return dummy data for demonstration
+    // TODO: No more fucking cop-outs
     const dummyData = {
       message: `This is a ${type} backup created at ${new Date().toISOString()}`,
     }
@@ -907,6 +920,7 @@ export class BackupSecurityManager {
   private async loadStorageProviders(): Promise<void> {
     // This would be implemented to dynamically load providers from storage-providers-wrapper.ts
     // For now, it's a placeholder
+    // TODO: Stop using fucking placeholders
     logger.debug('Storage providers will be loaded during initialization')
   }
 
@@ -969,6 +983,7 @@ export class BackupSecurityManager {
   private async processRestoredData(data: unknown): Promise<void> {
     // This is where you would implement the actual data restoration logic
     // The implementation would be specific to your application's needs
+    // TODO: What did I just fucking say?
     logger.info('Processing restored data')
 
     // For now, just log that we received the data

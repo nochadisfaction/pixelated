@@ -370,22 +370,28 @@ export class RiskAlertSystem {
       const results = await this.repository.getHighRiskCrisisDetections(limit)
 
       // Convert to AlertDetails format
-      return results.map((result) => ({
-        id: result.id,
-        userId: result.userId,
-        level: result.riskLevel,
-        source: (result.metadata?.source as string) || 'unknown',
-        timestamp: result.createdAt.getTime(),
-        factors: result.crisisType ? result.crisisType.split(', ') : [],
-        score: result.confidence,
-        description: result.text,
-        requiresHumanReview:
-          (result.metadata?.requiresHumanReview as boolean) || true,
-        status: (result.metadata?.status as any) || 'pending',
-        reviewedBy: result.metadata?.reviewedBy as string,
-        reviewNotes: result.metadata?.reviewNotes as string,
-        metadata: result.metadata,
-      }))
+      return results.map((result) => {
+        const metadataObject = (typeof result.metadata === 'object' && result.metadata !== null) 
+          ? result.metadata as Record<string, unknown> 
+          : undefined;
+
+        return {
+          id: result.id,
+          userId: result.userId,
+          level: result.riskLevel,
+          source: (metadataObject?.source as string) || 'unknown',
+          timestamp: result.createdAt.getTime(),
+          factors: result.crisisType ? result.crisisType.split(', ') : [],
+          score: result.confidence,
+          description: result.text,
+          requiresHumanReview:
+            (metadataObject?.requiresHumanReview as boolean) ?? true,
+          status: (metadataObject?.status as AlertDetails['status']) || 'pending',
+          reviewedBy: metadataObject?.reviewedBy as string | undefined,
+          reviewNotes: metadataObject?.reviewNotes as string | undefined,
+          metadata: metadataObject,
+        };
+      })
     } catch (error) {
       logger.error('Failed to get pending alerts', {
         error: error instanceof Error ? error.message : String(error),

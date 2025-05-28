@@ -1,4 +1,4 @@
-import { createAuditLog } from '../../audit/log'
+import { createAuditLog } from '../../audit'
 import { initializeAITables } from './schema'
 
 /**

@@ -53,7 +53,7 @@ async function getInitializedMentalLLaMA() {
  *   }
  * }
  */
-export const post: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request }) => {
   const overallStartTime = Date.now()
   let timing = {
     requestParsingMs: -1,

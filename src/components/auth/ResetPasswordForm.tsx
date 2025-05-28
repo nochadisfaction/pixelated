@@ -88,6 +88,7 @@ export function ResetPasswordForm({ token, email }: ResetPasswordFormProps) {
             placeholder="••••••••"
             autoComplete="new-password"
           />
+
           <small className="text-xs text-gray-500 mt-1">
             Password must be at least 8 characters
           </small>

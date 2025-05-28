@@ -364,6 +364,7 @@ export function LoginForm({
                 disabled={isLoading}
                 className="remember-checkbox"
               />
+
               <span className="checkbox-label">Remember me</span>
             </label>
           </div>

@@ -33,6 +33,7 @@ export default function RecommendationDisplayDemo() {
               checked={showEfficacy}
               onChange={() => setShowEfficacy(!showEfficacy)}
             />
+
             <span>Show Efficacy Stats</span>
           </label>
 
@@ -42,6 +43,7 @@ export default function RecommendationDisplayDemo() {
               checked={showPersonalization}
               onChange={() => setShowPersonalization(!showPersonalization)}
             />
+
             <span>Show Personalization</span>
           </label>
 
@@ -51,6 +53,7 @@ export default function RecommendationDisplayDemo() {
               checked={showAlternatives}
               onChange={() => setShowAlternatives(!showAlternatives)}
             />
+
             <span>Show Alternatives</span>
           </label>
         </div>
@@ -212,6 +215,7 @@ const mockRecommendations: EnhancedRecommendation[] = [
       'Limited time availability in evenings',
       'Preference for structured programs',
     ],
+
     steps: [
       'Attend weekly 2.5-hour group sessions',
       'Practice daily 45-minute guided meditations using provided audio',
@@ -219,11 +223,13 @@ const mockRecommendations: EnhancedRecommendation[] = [
       'Keep a journal of experiences and observations',
       'Attend one full-day silent retreat in week 6',
     ],
+
     cautions: [
       'May initially increase awareness of stress or anxiety',
       'Requires consistent daily practice for best results',
       'Not a substitute for medical treatment for clinical anxiety or depression',
     ],
+
     efficacyDetails: {
       averageTimeToImprovement: '3-4 weeks',
       sampleSize: 1500,
@@ -234,6 +240,7 @@ const mockRecommendations: EnhancedRecommendation[] = [
         'Recurring depression',
         'Pain management',
       ],
+
       references: [
         'Kabat-Zinn, J. (2013). Full Catastrophe Living: Using the Wisdom of Your Body and Mind to Face Stress, Pain, and Illness.',
         'Khoury, B., et al. (2013). Mindfulness-based therapy: A comprehensive meta-analysis.',
@@ -272,6 +279,7 @@ const mockRecommendations: EnhancedRecommendation[] = [
           'Research findings on how mindfulness meditation affects brain structure and function.',
       },
     ],
+
     alternatives: [
       {
         id: 'alt-001',
@@ -318,6 +326,7 @@ const mockRecommendations: EnhancedRecommendation[] = [
       'Works in tech industry',
       'Experiences eye strain and headaches',
     ],
+
     steps: [
       'Conduct baseline assessment of current device usage',
       'Set up screen time monitoring apps on all devices',
@@ -327,11 +336,13 @@ const mockRecommendations: EnhancedRecommendation[] = [
       'Use grayscale mode on devices to reduce dopamine triggers',
       'Gradually extend device-free periods each day',
     ],
+
     cautions: [
       'May initially cause anxiety or FOMO (fear of missing out)',
       'Work obligations may require modifications to the program',
       'Should be implemented gradually to increase adherence',
     ],
+
     efficacyDetails: {
       averageTimeToImprovement: '5-7 days for initial benefits',
       sampleSize: 450,
@@ -342,6 +353,7 @@ const mockRecommendations: EnhancedRecommendation[] = [
         'Digital addiction',
         'Anxiety reduction',
       ],
+
       references: [
         'Hefner, D., et al. (2019). Digital stress: Perceptions of demands from information communication technologies.',
         'Wilmer, H.H., et al. (2017). Smartphones and cognition: A review of research exploring the links between mobile technology habits and cognitive functioning.',
@@ -370,6 +382,7 @@ const mockRecommendations: EnhancedRecommendation[] = [
           'Recommended tools to help monitor and manage screen time and digital habits.',
       },
     ],
+
     alternatives: [
       {
         id: 'alt-003',
@@ -416,6 +429,7 @@ const mockRecommendations: EnhancedRecommendation[] = [
       'Enjoys outdoor activities but rarely engages',
       'Strongest mood in mornings',
     ],
+
     steps: [
       'Track daily mood and activity levels for one week',
       'Identify activities that previously brought enjoyment or satisfaction',
@@ -425,11 +439,13 @@ const mockRecommendations: EnhancedRecommendation[] = [
       'Gradually increase activity difficulty and duration',
       'Incorporate social activities by week 3',
     ],
+
     cautions: [
       'Initial motivation may be difficult - start very small if needed',
       'Not a replacement for clinical treatment for major depression',
       'May need adjustment during periods of very low energy',
     ],
+
     efficacyDetails: {
       averageTimeToImprovement: '2-3 weeks',
       sampleSize: 830,
@@ -440,6 +456,7 @@ const mockRecommendations: EnhancedRecommendation[] = [
         'Reduced interest or pleasure',
         'Social withdrawal',
       ],
+
       references: [
         'Ekers, D., et al. (2014). Behavioural activation for depression: An update of meta-analysis of effectiveness and sub group analysis.',
         'Mazzucchelli, T.G., et al. (2009). Behavioral activation treatments for depression in adults: A meta-analysis and review.',
@@ -466,6 +483,7 @@ const mockRecommendations: EnhancedRecommendation[] = [
           'Downloadable worksheet for scheduling and tracking behavioral activation activities.',
       },
     ],
+
     alternatives: [
       {
         id: 'alt-005',

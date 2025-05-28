@@ -1,7 +1,8 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { MentalArenaAdapter } from '../MentalArenaAdapter'
-import { MentalArenaFactory } from '../MentalArenaFactory'
-import { MentalArenaPythonBridge } from '../PythonBridge'
+import type { TherapyAIProvider } from '../../interfaces/therapy';
+import type { FHEService } from '../../../fhe';
+import { MentalArenaAdapter } from '../MentalArenaAdapter';
+import { MentalArenaFactory } from '../MentalArenaFactory';
+import { MentalArenaPythonBridge } from '../PythonBridge'; // Assuming this is the class for `as unknown as MentalArenaPythonBridge`
 
 // Mock dependencies
 vi.mock('../../../logging', () => ({
@@ -37,7 +38,7 @@ describe('MentalArenaAdapter', () => {
   // Mock Python bridge
   const mockPythonBridge = {
     initialize: vi.fn().mockResolvedValue(true),
-    createJsonInputFile: vi.fn().mockImplementation((data, filename) => {
+    createJsonInputFile: vi.fn().mockImplementation((data: unknown, filename: string) => {
       return Promise.resolve(`/tmp/${filename}`)
     }),
     fineTuneModel: vi.fn().mockResolvedValue(
@@ -57,30 +58,30 @@ describe('MentalArenaAdapter', () => {
 
     // Setup adapter with Python bridge enabled
     adapter = new MentalArenaAdapter(
-      mockProvider as any,
-      mockFHEService as any,
+      mockProvider as unknown as TherapyAIProvider,
+      mockFHEService as unknown as FHEService,
       'http://localhost:8000',
       'test-api-key',
       true, // Enable Python bridge
     )
 
     // Mock isPythonBridgeAvailable to return true
-    vi.spyOn(adapter as any, 'isPythonBridgeAvailable').mockReturnValue(true)
+    ;(vi as any).spyOn(adapter, 'isPythonBridgeAvailable' as any).mockReturnValue(true)
 
     // Setup Python bridge mock
-    vi.mocked(MentalArenaFactory.getPythonBridge).mockResolvedValue(
+    ;(vi as any).mocked(MentalArenaFactory.getPythonBridge).mockResolvedValue(
       mockPythonBridge as unknown as MentalArenaPythonBridge,
     )
   })
 
   afterEach(() => {
-    vi.resetAllMocks()
+    (vi as any).resetAllMocks()
   })
 
   describe('fineTuneModelWithPythonBridge', () => {
     it('should throw an error if Python bridge is not available', async () => {
       // Mock isPythonBridgeAvailable to return false for this test
-      vi.spyOn(adapter as any, 'isPythonBridgeAvailable').mockReturnValueOnce(
+      (vi as any).spyOn(adapter, 'isPythonBridgeAvailable' as any).mockReturnValueOnce(
         false,
       )
 
@@ -179,7 +180,7 @@ describe('MentalArenaAdapter', () => {
 
     it('should handle fine-tuning errors properly', async () => {
       // Mock Python bridge to throw an error
-      vi.mocked(mockPythonBridge.fineTuneModel).mockRejectedValueOnce(
+      (vi as any).mocked(mockPythonBridge.fineTuneModel).mockRejectedValueOnce(
         new Error('CUDA out of memory'),
       )
 
@@ -204,7 +205,7 @@ describe('MentalArenaAdapter', () => {
 
     it('should handle non-JSON results from Python bridge', async () => {
       // Mock Python bridge to return a non-JSON string
-      vi.mocked(mockPythonBridge.fineTuneModel).mockResolvedValueOnce(
+      (vi as any).mocked(mockPythonBridge.fineTuneModel).mockResolvedValueOnce(
         'Training progress: 100%. Model saved to /tmp/models/test-model',
       )
 

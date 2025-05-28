@@ -69,7 +69,9 @@ export function DashboardWidget({
         {isLoading ? (
           <div className="space-y-3">
             <Skeleton className="h-[20px] w-[80%] rounded-md" />
+
             <Skeleton className="h-[20px] w-[60%] rounded-md" />
+
             <Skeleton className="h-[20px] w-[70%] rounded-md" />
           </div>
         ) : (

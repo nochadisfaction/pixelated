@@ -296,6 +296,7 @@ export function MentalHealthChatDemo() {
                 }}
                 disabled={processing}
               />
+
               <Button onClick={handleSendMessage} disabled={processing}>
                 Send
               </Button>

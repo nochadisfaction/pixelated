@@ -30,6 +30,24 @@ status: 'in-progress'
 
 ## 🚀 Active Implementation Tasks
 
+### NEW: 0. Implement Production-Grade Crisis Protocol [🔴 CRITICAL PRIORITY]
+- [x] Define `NotificationService` interface for crisis alerts. (Renamed to `ICrisisNotificationHandler`, implemented 2025-05-17)
+- [x] Modify `MentalLLaMAAdapter` to accept and use an optional `NotificationService`. (Used `ICrisisNotificationHandler`, implemented 2025-05-17)
+- [x] In `analyzeMentalHealth` crisis path: (Implemented 2025-05-17)
+  - [x] Call `notificationService.sendCrisisAlert()` with relevant details.
+  - [x] Implement enhanced, structured logging for crisis events (e.g., to a dedicated crisis log or audit trail). (Enhanced existing logs, further external audit trail is infrastructure dependent)
+  - [x] Ensure `analyzeMentalHealth` return value clearly and unambiguously flags the crisis state and provides necessary details. (Verified, `mentalHealthCategory: 'crisis'`)
+- [ ] Consider mechanisms for session/user flagging for immediate review (e.g., update user status via an API if available). (Marked with TODO; requires external service integration)
+- [x] Document the crisis protocol flow and requirements for upstream service integration. (Added JSDoc to `analyzeMentalHealth`, 2025-05-17)
+- [x] Implement `SlackNotificationService` as an `ICrisisNotificationHandler`:
+  - [x] Create `src/lib/services/notification/SlackNotificationService.ts`.
+  - [x] Constructor to accept Slack webhook URL (from config, e.g., `config.notifications.slackWebhookUrl()`).
+  - [x] `sendCrisisAlert` method to format `CrisisAlertContext` into a Slack message payload.
+  - [x] Use `fetch` or a lightweight HTTP client to send POST request to Slack webhook.
+  - [x] Implement robust error handling for Slack API requests.
+- [x] Refine user/session flagging: Update `MentalLLaMAAdapter` crisis path to use `ICrisisNotificationHandler` (e.g., `SlackNotificationService`) to send a specific message to a designated channel for immediate review, including user/session identifiers. (Old TODO removed, crisisNotifier handles this, 2025-05-17).
+- [ ] Update instantiation of `MentalLLaMAAdapter` (in application setup, outside current direct edit scope - documentation/guidance step) to use `SlackNotificationService` when available.
+
 ### 1. Model Integration [HIGH PRIORITY]
 
 #### API Integration (100% Complete)
@@ -133,15 +151,15 @@ status: 'in-progress'
 
 ### 5. Task-Specific Optimization [MEDIUM PRIORITY]
 
-#### Specialized Analyzers (80% Complete)
+#### Specialized Analyzers (100% Complete)
 
 - [x] Implement depression detection analyzer
 - [x] Create anxiety analysis component
 - [x] Develop stress cause detection system
 - [x] Build wellness dimension detector
-- [ ] Implement interpersonal risk factor analyzer
+- [x] Implement interpersonal risk factor analyzer
 
-#### Task Router (0% Complete)
+#### Task Router (100% Complete)
 
 - [x] Design task routing system
   - [x] Decided on core purpose: Intelligently direct input text to specialized analyzers.
@@ -152,57 +170,57 @@ status: 'in-progress'
   - [x] Planned for fallback mechanisms within the router.
   - [x] Proposed location: `src/lib/ai/mental-llama/routing/MentalHealthTaskRouter.ts`.
   - [x] Created initial file structure for `MentalHealthTaskRouter.ts` with interfaces and method placeholders.
-- [ ] Implemented initial `performBroadClassification` method in `MentalHealthTaskRouter.ts` to:
+- [x] Implemented initial `performBroadClassification` method in `MentalHealthTaskRouter.ts` to:
   - Use `buildRoutingPromptMessages` to prepare input for an LLM.
   - Call the LLM invoker with the routing prompt.
   - Include placeholder logic for parsing the LLM's JSON response (category and confidence).
   - Include placeholder logic for mapping LLM category to `targetAnalyzer`.
-- [ ] Refined `performBroadClassification` in `MentalHealthTaskRouter.ts` to:
-  - Add 'crisis' as a possible `targetAnalyzer` in `RoutingDecision`.
-  - Implement `LLM_CATEGORY_TO_ANALYZER_MAP` for structured mapping of LLM categories to internal analyzers and critical flags.
-  - Utilize the map for more robust category conversion and critical case handling (logging and confidence boosting).
-  - Add basic sanitization for LLM JSON output.
-  - Improve logic for defaulting to 'general_mental_health' or 'unknown' if a mapped analyzer is not available.
-- [ ] Implemented `matchKeywords` method in `MentalHealthTaskRouter.ts`:
-  - Defined `KeywordRule` interface and `KEYWORD_ROUTING_RULES` array with initial sets for crisis, depression, anxiety, stress, and wellness.
-  - Crisis keywords are prioritized in the rule order.
-  - Method iterates rules, checking for string (case-insensitive) and RegExp matches.
-  - Returns a `RoutingDecision` with method 'keyword' upon first match, including matched keyword and critical flag in insights.
-- [ ] Create context-aware task selection
-  - [ ] Implemented initial `applyContextualRules` method in `MentalHealthTaskRouter.ts`:
-    - Takes current text, `RoutingContext`, and the current `RoutingDecision` as input.
-    - Includes example logic based on `context.sessionType` to:
-      - Bias towards 'stress' if `sessionType` is 'stress_management_session' and stress keywords are present.
-      - Elevate to 'crisis' if `sessionType` is 'crisis_intervention_follow_up' with distress keywords.
-      - Re-align to 'wellness' if `explicitTaskHint` and `sessionType` both indicate wellness.
-    - Returns a new `RoutingDecision` if a rule applies, otherwise `null`.
-- [ ] Develop confidence scoring for routing decisions
-  - [ ] Refactored `determineRoute` method in `MentalHealthTaskRouter.ts` to manage and combine confidences:
-    - Explicit hints are prioritized; contextual rules are applied to the hint-based decision.
-    - If no explicit hint, decisions are fetched from both keyword matching and LLM classification.
-    - Logic added to select the `bestPreliminaryDecision` by:
-      - Prioritizing decisions flagged as critical (e.g., indicating 'crisis').
-      - Favoring a strategy that detects 'crisis' if the other doesn't.
-      - Combining confidence if both strategies agree on the target analyzer.
-      - Choosing based on higher confidence if strategies disagree (and no crisis is involved).
-      - Handling cases where only one strategy yields a result.
-    - Contextual rules are then applied to this `bestPreliminaryDecision` to produce the `finalDecision`.
-- [ ] Set up fallback mechanisms for uncertain cases
-- [ ] Integrate `MentalHealthTaskRouter` into `MentalLLaMAAdapter`
-  - [ ] Imported `MentalHealthTaskRouter` and related types into `MentalLLaMAAdapter.ts`.
-  - [ ] Added `taskRouter` private member to `MentalLLaMAAdapter`.
-  - [ ] Modified `MentalLLaMAAdapter` constructor:
-    - Simplified constructor signature (modelProvider and pythonBridge passed directly).
-    - If `modelProvider` exists, it now instantiates `MentalHealthTaskRouter`.
-    - An `llmInvokerForRouter` is created, wrapping `this.modelProvider.chat()` to match the `LLMInvoker` signature expected by the router.
-  - [ ] Updated `analyzeMentalHealth` method in `MentalLLaMAAdapter`:
-    - Accepts new `'auto_route'` option in `categories` parameter and new `routingContextParams`.
-    - If router is to be used: calls `taskRouter.determineRoute()`.
-    - Sets `effectiveCategories`, `analysisMentalHealthCategory`, and `analysisConfidence` based on `RoutingDecision`.
-    - Includes placeholder for crisis protocol and defaults for 'unknown'/low confidence router outputs.
-    - Main analysis flow now uses `effectiveCategories`.
-    - Return value now incorporates router's decision for category and confidence and includes `_routingDecision` for logging.
-  - [ ] Added `ROUTER_LOW_CONFIDENCE_THRESHOLD` constant.
+- [x] Refined `performBroadClassification` in `MentalHealthTaskRouter.ts` to:
+  - [x] Add 'crisis' as a possible `targetAnalyzer` in `RoutingDecision`.
+  - [x] Implement `LLM_CATEGORY_TO_ANALYZER_MAP` for structured mapping of LLM categories to internal analyzers and critical flags.
+  - [x] Utilize the map for more robust category conversion and critical case handling (logging and confidence boosting).
+  - [x] Add basic sanitization for LLM JSON output.
+  - [x] Improve logic for defaulting to 'general_mental_health' or 'unknown' if a mapped analyzer is not available.
+- [x] Implemented `matchKeywords` method in `MentalHealthTaskRouter.ts`: (Completed 2025-05-17)
+  - [x] Defined `KeywordRule` interface and `KEYWORD_ROUTING_RULES` array with initial sets for crisis, depression, anxiety, stress, and wellness. (Completed 2025-05-17)
+  - [x] Crisis keywords are prioritized in the rule order. (Completed 2025-05-17)
+  - [x] Method iterates rules, checking for string (case-insensitive) and RegExp matches. (Completed 2025-05-17)
+  - [x] Returns a `RoutingDecision` with method 'keyword' upon first match, including matched keyword and critical flag in insights. (Completed 2025-05-17)
+- [x] Create context-aware task selection (Completed 2025-05-17)
+  - [x] Implemented initial `applyContextualRules` method in `MentalHealthTaskRouter.ts`: (Completed 2025-05-17)
+    - [x] Takes current text, `RoutingContext`, and the current `RoutingDecision` as input. (Completed 2025-05-17)
+    - [x] Includes example logic based on `context.sessionType` to: (Completed 2025-05-17)
+      - [x] Bias towards 'stress' if `sessionType` is 'stress_management_session' and stress keywords are present. (Completed 2025-05-17)
+      - [x] Elevate to 'crisis' if `sessionType` is 'crisis_intervention_follow_up' with distress keywords. (Completed 2025-05-17)
+      - [x] Re-align to 'wellness' if `explicitTaskHint` and `sessionType` both indicate wellness. (Completed 2025-05-17)
+    - [x] Returns a new `RoutingDecision` if a rule applies, otherwise `null`. (Completed 2025-05-17)
+- [x] Develop confidence scoring for routing decisions (Completed 2025-05-17)
+  - [x] Refactored `determineRoute` method in `MentalHealthTaskRouter.ts` to manage and combine confidences: (Completed 2025-05-17)
+    - [x] Explicit hints are prioritized; contextual rules are applied to the hint-based decision. (Completed 2025-05-17)
+    - [x] If no explicit hint, decisions are fetched from both keyword matching and LLM classification. (Completed 2025-05-17)
+    - [x] Logic added to select the `bestPreliminaryDecision` by: (Completed 2025-05-17)
+      - [x] Prioritizing decisions flagged as critical (e.g., indicating 'crisis'). (Completed 2025-05-17)
+      - [x] Favoring a strategy that detects 'crisis' if the other doesn't. (Completed 2025-05-17)
+      - [x] Combining confidence if both strategies agree on the target analyzer. (Completed 2025-05-17)
+      - [x] Choosing based on higher confidence if strategies disagree (and no crisis is involved). (Completed 2025-05-17)
+      - [x] Handling cases where only one strategy yields a result. (Completed 2025-05-17)
+    - [x] Contextual rules are then applied to this `bestPreliminaryDecision` to produce the `finalDecision`. (Completed 2025-05-17)
+- [x] Set up fallback mechanisms for uncertain cases (Completed as part of router + adapter logic 2025-05-17)
+- [x] Integrate `MentalHealthTaskRouter` into `MentalLLaMAAdapter` (Verified complete 2025-05-17)
+  - [x] Imported `MentalHealthTaskRouter` and related types into `MentalLLaMAAdapter.ts`. (Verified 2025-05-17)
+  - [x] Added `taskRouter` private member to `MentalLLaMAAdapter`. (Verified 2025-05-17)
+  - [x] Modified `MentalLLaMAAdapter` constructor: (Verified 2025-05-17)
+    - [x] Simplified constructor signature (modelProvider and pythonBridge passed directly).
+    - [x] If `modelProvider` exists, it now instantiates `MentalHealthTaskRouter`.
+    - [x] An `llmInvokerForRouter` is created, wrapping `this.modelProvider.chat()` to match the `LLMInvoker` signature expected by the router.
+  - [x] Updated `analyzeMentalHealth` method in `MentalLLaMAAdapter`: (Verified 2025-05-17)
+    - [x] Accepts new `'auto_route'` option in `categories` parameter and new `routingContextParams`.
+    - [x] If router is to be used: calls `taskRouter.determineRoute()`.
+    - [x] Sets `effectiveCategories`, `analysisMentalHealthCategory`, and `analysisConfidence` based on `RoutingDecision`.
+    - [x] Includes placeholder for crisis protocol and defaults for 'unknown'/low confidence router outputs.
+    - [x] Main analysis flow now uses `effectiveCategories`.
+    - [x] Return value now incorporates router's decision for category and confidence and includes `_routingDecision` for logging.
+  - [x] Added `ROUTER_LOW_CONFIDENCE_THRESHOLD` constant. (Verified 2025-05-17)
 
 ### 6. Performance Optimization [MEDIUM PRIORITY]
 

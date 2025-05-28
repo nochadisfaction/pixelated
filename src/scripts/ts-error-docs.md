@@ -64,7 +64,7 @@ The `fix-ts-errors.ts` script automates the process of fixing these common error
 1. Make sure you're in the correct conda environment:
 
    ```bash
-   conda activate gradiant
+   conda activate pixelated
    ```
 
 2. Run the script from the project root directory.

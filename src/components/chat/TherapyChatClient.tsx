@@ -73,6 +73,7 @@ export function TherapyChatClient() {
         name: 'System',
       },
     ],
+
     api: '/api/ai/therapy-chat',
     body: {
       scenario: selectedScenario.name.toLowerCase().replace(' ', '-'),
@@ -170,6 +171,7 @@ export function TherapyChatClient() {
             encryptionEnabled={encryptionEnabled}
             fheInitialized={fheInitialized}
           />
+
           {isConnected && (
             <span className="px-2 py-1 text-xs bg-green-800 text-green-200 rounded">
               Live

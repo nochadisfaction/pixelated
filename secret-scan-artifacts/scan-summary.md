@@ -2,7 +2,7 @@
 
 ## Scan Status
 
-- Repository: gradiant
+- Repository: pixelated
 - Workflow Run: security-scanning
 - Date: 2025-05-09
 

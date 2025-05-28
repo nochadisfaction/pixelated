@@ -9,6 +9,7 @@ import { PatternRecognitionService } from './PatternRecognitionService'
 import { createPatternRecognitionFHEService } from '../../fhe/pattern-recognition-factory'
 import { RedisService, redis as redisInstance } from '../../services/redis'
 import { getLogger } from '../../logging'
+import type { AIRepository } from '../../db/ai/repository'
 
 // Get logger instance
 const logger = getLogger({ prefix: 'pattern-recognition-factory' })
@@ -44,8 +45,8 @@ export interface PatternRecognitionOptions {
   redisUrl?: string
 
   // Repositories
-  sessionRepository?: any
-  analysisRepository?: any
+  sessionRepository?: AIRepository
+  analysisRepository?: AIRepository
 }
 
 /**
@@ -93,12 +94,11 @@ export async function createPatternRecognitionService(
     // Create and return the service
     const service = new PatternRecognitionService(
       fheService,
-      redisService,
       config,
       options.sessionRepository,
       options.analysisRepository,
+      redisService,
     )
-
     logger.info('PatternRecognitionService created successfully')
     return service
   } catch (error) {
@@ -160,7 +160,37 @@ export class PatternRecognitionFactory {
   static createTestService(): PatternRecognitionService {
     logger.info('Creating test PatternRecognitionService')
 
-    // For tests, we create a basic service without external dependencies
-    return new PatternRecognitionService()
+    // Minimal mock PatternRecognitionOps
+    const mockFHEService = {
+      processPatterns: async (): Promise<
+        import('../../fhe/pattern-recognition').EncryptedPattern[]
+      > => [],
+      decryptPatterns: async (): Promise<
+        import('../../fhe/pattern-recognition').TrendPattern[]
+      > => [],
+      analyzeCrossSessions: async (): Promise<
+        import('../../fhe/pattern-recognition').EncryptedAnalysis
+      > => ({
+        id: 'mock',
+        encryptedData: '',
+        metadata: { timestamp: Date.now(), analysisType: 'cross-session' },
+      }),
+      decryptCrossSessionAnalysis: async (): Promise<
+        import('../../fhe/pattern-recognition').CrossSessionPattern[]
+      > => [],
+      processRiskCorrelations: async (): Promise<
+        import('../../fhe/pattern-recognition').EncryptedCorrelation[]
+      > => [],
+      decryptRiskCorrelations: async (): Promise<
+        import('../../fhe/pattern-recognition').RiskCorrelation[]
+      > => [],
+    } as import('../../fhe/pattern-recognition').PatternRecognitionOps
+    const config = {
+      timeWindow: 7,
+      minDataPoints: 3,
+      confidenceThreshold: 0.7,
+      riskFactorWeights: {},
+    }
+    return new PatternRecognitionService(mockFHEService, config)
   }
 }

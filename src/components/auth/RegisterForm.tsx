@@ -34,14 +34,17 @@ export function RegisterForm({
       ValidationRules.required('Full name is required'),
       ValidationRules.minLength(2, 'Name must be at least 2 characters'),
     ],
+
     email: [
       ValidationRules.required('Email is required'),
       ValidationRules.email('Please enter a valid email address'),
     ],
+
     password: [
       ValidationRules.required('Password is required'),
       ValidationRules.minLength(8, 'Password must be at least 8 characters'),
     ],
+
     terms: [
       {
         test: (value: string) => value === 'true',
@@ -234,6 +237,7 @@ export function RegisterForm({
                 aria-required="true"
                 value={acceptTerms.toString()}
               />
+
               <label htmlFor="terms">
                 I agree to the{' '}
                 <a

@@ -4,7 +4,7 @@ import type { AuthRole } from '../../config/auth.config'
 import type { AuthUser } from '../auth'
 import type { ProtectRouteOptions, AuthAPIContext } from './apiRouteTypes'
 import { getLogger } from '../logging'
-import { createResourceAuditLog } from '../audit/log'
+import { createResourceAuditLog, AuditEventType } from '../audit'
 import { getCurrentUser, isAuthenticated } from '../auth'
 import { RedisService } from '../services/redis/RedisService'
 import { hasRolePrivilege } from '../../config/auth.config'
@@ -70,7 +70,7 @@ export async function verifyServerAuth({
     // If we require a specific role, check it
     if (requiredRole && !hasRolePrivilege(user.role, requiredRole)) {
       await createResourceAuditLog(
-        'server_auth_denied',
+        AuditEventType.SERVER_AUTH_DENIED,
         user.id,
         { id: new URL(request.url).pathname, type: 'route' },
         {
@@ -96,7 +96,7 @@ export async function verifyServerAuth({
 
         // Log suspicious activity but don't block yet - this could be legitimate (VPN, network change)
         await createResourceAuditLog(
-          'suspicious_ip_change',
+          AuditEventType.SUSPICIOUS_IP_CHANGE,
           user.id,
           { id: user.id, type: 'user' },
           {
@@ -126,7 +126,7 @@ export async function verifyServerAuth({
 
         // Log suspicious activity but don't block
         await createResourceAuditLog(
-          'suspicious_user_agent_change',
+          AuditEventType.SUSPICIOUS_USER_AGENT_CHANGE,
           user.id,
           { id: user.id, type: 'user' },
           {
@@ -150,7 +150,7 @@ export async function verifyServerAuth({
 
     // Log successful authentication for auditing
     await createResourceAuditLog(
-      'server_auth_success',
+      AuditEventType.SERVER_AUTH_SUCCESS,
       user.id,
       { id: new URL(request.url).pathname, type: 'route' },
       {
@@ -191,7 +191,7 @@ async function checkRateLimit(ip: string): Promise<boolean> {
 
       // Log the rate limit event
       await createResourceAuditLog(
-        'rate_limit_triggered',
+        AuditEventType.RATE_LIMIT_TRIGGERED,
         'system',
         { id: ip, type: 'ip_address' },
         {
@@ -221,7 +221,7 @@ export async function requirePageAuth(
     request: Request
     cookies: AstroCookies
     redirect: (path: string) => Response
-    locals?: Record<string, any>
+    locals?: Record<string, unknown>
   },
   requiredRole?: AuthRole,
 ): Promise<Response | void> {
@@ -270,7 +270,7 @@ export async function requirePageAuth(
  * This is the new implementation that matches how it's used in most of the codebase
  */
 export function protectRoute<
-  Props extends Record<string, any> = Record<string, any>,
+  Props extends Record<string, unknown> = Record<string, unknown>,
   Params extends Record<string, string | undefined> = Record<
     string,
     string | undefined
@@ -341,7 +341,7 @@ export function protectRoute<
           !hasRolePrivilege(user.role, options.requiredRole)
         ) {
           await createResourceAuditLog(
-            'server_auth_denied',
+            AuditEventType.SERVER_AUTH_DENIED,
             user.id,
             { id: new URL(request.url).pathname, type: 'route' },
             {
@@ -373,7 +373,7 @@ export function protectRoute<
 
             // Log suspicious activity but don't block yet - this could be legitimate (VPN, network change)
             await createResourceAuditLog(
-              'suspicious_ip_change',
+              AuditEventType.SUSPICIOUS_IP_CHANGE,
               user.id,
               { id: user.id, type: 'user' },
               {
@@ -407,7 +407,7 @@ export function protectRoute<
 
             // Log suspicious activity but don't block
             await createResourceAuditLog(
-              'suspicious_user_agent_change',
+              AuditEventType.SUSPICIOUS_USER_AGENT_CHANGE,
               user.id,
               { id: user.id, type: 'user' },
               {
@@ -431,7 +431,7 @@ export function protectRoute<
 
         // Log successful authentication for auditing
         await createResourceAuditLog(
-          'server_auth_success',
+          AuditEventType.SERVER_AUTH_SUCCESS,
           user.id,
           { id: new URL(request.url).pathname, type: 'route' },
           {
@@ -484,7 +484,7 @@ export async function trackSuspiciousActivity(
     'unknown'
 
   await createResourceAuditLog(
-    'suspicious_activity',
+    AuditEventType.SUSPICIOUS_ACTIVITY,
     user.id,
     { id: user.id, type: 'user' },
     {

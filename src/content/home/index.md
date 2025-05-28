@@ -1,5 +1,5 @@
 ---
-title: Welcome to Gradiant
+title: Welcome to Pixelated
 description: A modern, secure, and feature-rich web application
 date: 2024-03-20
 draft: false

@@ -94,6 +94,7 @@ const RecommendationDemo = (): React.ReactNode => {
         'Previous positive experience with guided relaxation',
         'Available 15 minutes in morning routine',
       ],
+
       steps: [
         "Find a quiet place where you won't be disturbed for 10-15 minutes",
         'Sit in a comfortable position with your back straight',
@@ -101,11 +102,13 @@ const RecommendationDemo = (): React.ReactNode => {
         'When your mind wanders (which is natural), gently bring your attention back to your breath',
         'Start with 5 minutes daily, gradually increasing to 15-20 minutes',
       ],
+
       cautions: [
         'Some people may experience increased anxiety initially when becoming aware of thoughts',
         'Not recommended as a replacement for medication without consulting your healthcare provider',
         'May bring up difficult emotions that should be discussed with your therapist',
       ],
+
       timeCommitment: '10-15 minutes daily',
       difficulty: 'Easy',
       practiceFrequency: 'Daily, ideally at the same time each day',
@@ -120,6 +123,7 @@ const RecommendationDemo = (): React.ReactNode => {
             'somatic anxiety symptoms',
             'sleep difficulties',
           ],
+
           efficacyRate: 0.72,
         },
         {
@@ -132,9 +136,11 @@ const RecommendationDemo = (): React.ReactNode => {
             'creativity-oriented individuals',
             'panic attacks',
           ],
+
           efficacyRate: 0.68,
         },
       ],
+
       mediaResources: [
         {
           id: 'med1',

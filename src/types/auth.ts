@@ -12,9 +12,6 @@ export type UserRole = 'admin' | 'therapist' | 'client' | 'guest'
  * Authenticated user data structure
  */
 export interface AuthUser {
-  user_metadata: any
-  [x: string]: any
-  user_metadata: any
   id: string | unknown
   email: string | unknown
   name: string | unknown
