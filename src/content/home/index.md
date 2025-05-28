@@ -1,5 +1,5 @@
 ---
-title: Welcome to Pixelated
+title: Welcome to Pixelated Empathy
 description: A modern, secure, and feature-rich web application
 date: 2024-03-20
 draft: false

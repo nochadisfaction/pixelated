@@ -1,7 +1,7 @@
 # Test info
 
 - Name: Cross-browser compatibility >> animations and transitions work correctly across browsers
-- Location: /home/runner/work/gradiant/gradiant/src/tests/cross-browser-compatibility.test.ts:166:3
+- Location: /home/runner/work/pixelated/pixelated/src/tests/cross-browser-compatibility.test.ts:166:3
 
 # Error details
 
@@ -10,7 +10,7 @@ Error: page.goto: Test timeout of 120000ms exceeded.
 Call log:
   - navigating to "http://localhost:3000/", waiting until "load"
 
-    at /home/runner/work/gradiant/gradiant/src/tests/cross-browser-compatibility.test.ts:171:16
+    at /home/runner/work/pixelated/pixelated/src/tests/cross-browser-compatibility.test.ts:171:16
 ```
 
 # Test source

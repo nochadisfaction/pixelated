@@ -1,21 +1,21 @@
 # Test info
 
 - Name: Cross-browser compatibility >> home page should work in all browsers
-- Location: /home/runner/work/gradiant/gradiant/src/tests/cross-browser-compatibility.test.ts:46:5
+- Location: /home/runner/work/pixelated/pixelated/src/tests/cross-browser-compatibility.test.ts:46:5
 
 # Error details
 
 ```
 Error: expect.toBeVisible: Error: strict mode violation: locator('header') resolved to 2 elements:
-    1) <header data-astro-source-loc="20:2" class="flex items-center justify-between p-6 w-full absolute top-0 left-0 right-0 z-10" data-astro-source-file="/home/runner/work/gradiant/gradiant/src/components/base/MainNav.astro">…</header> aka getByRole('banner')
-    2) <header data-astro-source-loc="24:2" class="prose mx-auto mb-4 text-center astro-vgdbh7zs" data-astro-source-file="/home/runner/work/gradiant/gradiant/src/layouts/StandardLayout.astro">    </header> aka locator('#main header')
+    1) <header data-astro-source-loc="20:2" class="flex items-center justify-between p-6 w-full absolute top-0 left-0 right-0 z-10" data-astro-source-file="/home/runner/work/pixelated/pixelated/src/components/base/MainNav.astro">…</header> aka getByRole('banner')
+    2) <header data-astro-source-loc="24:2" class="prose mx-auto mb-4 text-center astro-vgdbh7zs" data-astro-source-file="/home/runner/work/pixelated/pixelated/src/layouts/StandardLayout.astro">    </header> aka locator('#main header')
 
 Call log:
   - expect.toBeVisible with timeout 15000ms
   - waiting for locator('header')
 
-    at testCoreFunctionality (/home/runner/work/gradiant/gradiant/src/tests/cross-browser-compatibility.test.ts:27:40)
-    at /home/runner/work/gradiant/gradiant/src/tests/cross-browser-compatibility.test.ts:51:22
+    at testCoreFunctionality (/home/runner/work/pixelated/pixelated/src/tests/cross-browser-compatibility.test.ts:27:40)
+    at /home/runner/work/pixelated/pixelated/src/tests/cross-browser-compatibility.test.ts:51:22
 ```
 
 # Page snapshot

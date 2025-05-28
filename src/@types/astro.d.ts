@@ -37,5 +37,7 @@ declare namespace App {
       session?: string
       organization?: string
     }
+    // CSP nonce for Content Security Policy
+    cspNonce?: string
   }
 }

@@ -11,10 +11,7 @@
     "Stress Management",
     "Cancer-related distress"
   ],
-  "contraindications": [
-    "Active psychosis",
-    "Severe dissociation"
-  ],
+  "contraindications": ["Active psychosis", "Severe dissociation"],
   "steps": [
     "Orientation and introduction to mindfulness",
     "Body scan meditation",
@@ -27,5 +24,5 @@
     "Kabat-Zinn, J. (1990). Full Catastrophe Living: Using the Wisdom of Your Body and Mind to Face Stress, Pain, and Illness. Delta.",
     "Grossman, P., Niemann, L., Schmidt, S., & Walach, H. (2004). Mindfulness-based stress reduction and health benefits: A meta-analysis. Journal of Psychosomatic Research, 57(1), 35-43."
   ],
-  "created": "2025-05-17T00:00:00.000Z"
-} 
+  "created": "2025-01-17"
+}

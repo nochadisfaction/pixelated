@@ -1,4 +1,6 @@
 ---
+export const prerender = false; // Enable SSR for this page
+
 import Layout from '@/layouts/AuthLayout.astro'
 import { AuthService } from '@/services/auth.service'
 
@@ -17,45 +19,54 @@ if (token && type) {
       // We'll handle the token verification there
       const resetUrl = new URL('/reset-password-confirm', Astro.url.origin)
 
-      // Set a cookie with the token that will be used by the reset-password-confirm page
-      // This keeps the token out of the URL
-      Astro.cookies.set('auth_recovery_token', token, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'lax',
-        maxAge: 60 * 10, // 10 minutes
-      })
-
-      // Set a cookie for the email as well
+      // Create response with cookies
+      const headers = new Headers()
+      
+      // Set cookie with the token that will be used by the reset-password-confirm page
+      headers.append('Set-Cookie', `auth_recovery_token=${token}; HttpOnly; Secure; SameSite=Lax; Max-Age=600; Path=/`)
+      
+      // Set cookie for the email as well
       if (email) {
-        Astro.cookies.set('auth_recovery_email', email, {
-          httpOnly: true,
-          secure: true,
-          sameSite: 'lax',
-          maxAge: 60 * 10, // 10 minutes
-        })
+        headers.append('Set-Cookie', `auth_recovery_email=${email}; HttpOnly; Secure; SameSite=Lax; Max-Age=600; Path=/`)
       }
 
-      return Astro.redirect(resetUrl.toString())
+      headers.append('Location', resetUrl.toString())
+
+      return new Response(null, {
+        status: 302,
+        headers
+      })
     } catch (err) {
       console.error('Error handling recovery token:', err)
-      return Astro.redirect('/reset-password?error=invalid_token')
+      return new Response(null, {
+        status: 302,
+        headers: { Location: '/reset-password?error=invalid_token' }
+      })
     }
   } else {
     // Handle other auth types like signup confirmation, email change, etc.
     try {
       // For other auth types, we can verify the token here
       // and redirect accordingly
-      return Astro.redirect('/dashboard')
+      return new Response(null, {
+        status: 302,
+        headers: { Location: '/dashboard' }
+      })
     } catch (err) {
       console.error('Error handling auth token:', err)
-      return Astro.redirect('/?error=auth_error')
+      return new Response(null, {
+        status: 302,
+        headers: { Location: '/?error=auth_error' }
+      })
     }
   }
 }
 
 // Default redirect if no valid parameters are found
-return Astro.redirect('/')
+return new Response(null, {
+  status: 302,
+  headers: { Location: '/' }
+})
 ---
 
 <Layout

@@ -1,7 +1,7 @@
 # Test info
 
 - Name: Cross-browser compatibility >> dashboard page should work in all browsers
-- Location: /home/runner/work/gradiant/gradiant/src/tests/cross-browser-compatibility.test.ts:46:5
+- Location: /home/runner/work/pixelated/pixelated/src/tests/cross-browser-compatibility.test.ts:46:5
 
 # Error details
 
@@ -15,8 +15,8 @@ Call log:
   - expect.toBeVisible with timeout 15000ms
   - waiting for locator('header')
 
-    at testCoreFunctionality (/home/runner/work/gradiant/gradiant/src/tests/cross-browser-compatibility.test.ts:27:40)
-    at /home/runner/work/gradiant/gradiant/src/tests/cross-browser-compatibility.test.ts:51:22
+    at testCoreFunctionality (/home/runner/work/pixelated/pixelated/src/tests/cross-browser-compatibility.test.ts:27:40)
+    at /home/runner/work/pixelated/pixelated/src/tests/cross-browser-compatibility.test.ts:51:22
 ```
 
 # Page snapshot

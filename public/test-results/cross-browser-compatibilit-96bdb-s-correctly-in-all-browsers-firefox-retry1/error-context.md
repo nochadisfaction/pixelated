@@ -1,7 +1,7 @@
 # Test info
 
 - Name: Cross-browser compatibility >> responsive navigation works correctly in all browsers
-- Location: /home/runner/work/gradiant/gradiant/src/tests/cross-browser-compatibility.test.ts:98:3
+- Location: /home/runner/work/pixelated/pixelated/src/tests/cross-browser-compatibility.test.ts:98:3
 
 # Error details
 
@@ -17,7 +17,7 @@ Call log:
     19 × locator resolved to <ul class="flex items-center gap-6">…</ul>
        - unexpected value "visible"
 
-    at /home/runner/work/gradiant/gradiant/src/tests/cross-browser-compatibility.test.ts:118:46
+    at /home/runner/work/pixelated/pixelated/src/tests/cross-browser-compatibility.test.ts:118:46
 ```
 
 # Page snapshot

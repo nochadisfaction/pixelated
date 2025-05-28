@@ -1,21 +1,21 @@
 # Test info
 
 - Name: Cross-browser compatibility >> blog page should work in all browsers
-- Location: /home/runner/work/gradiant/gradiant/src/tests/cross-browser-compatibility.test.ts:46:5
+- Location: /home/runner/work/pixelated/pixelated/src/tests/cross-browser-compatibility.test.ts:46:5
 
 # Error details
 
 ```
 Error: expect.toBeVisible: Error: strict mode violation: locator('footer') resolved to 2 elements:
-    1) <footer data-astro-source-loc="233:97" class="slide-enter animate-delay-1000! prose mx-auto mt-8 print:hidden astro-37fxchfa" data-astro-source-file="/home/runner/work/gradiant/gradiant/src/layouts/BaseLayout.astro">  </footer> aka locator('#main footer')
-    2) <footer data-astro-source-loc="9:29" class="site-footer astro-oegwczy5" data-astro-source-file="/home/runner/work/gradiant/gradiant/src/components/base/Footer.astro">…</footer> aka getByRole('contentinfo')
+    1) <footer data-astro-source-loc="233:97" class="slide-enter animate-delay-1000! prose mx-auto mt-8 print:hidden astro-37fxchfa" data-astro-source-file="/home/runner/work/pixelated/pixelated/src/layouts/BaseLayout.astro">  </footer> aka locator('#main footer')
+    2) <footer data-astro-source-loc="9:29" class="site-footer astro-oegwczy5" data-astro-source-file="/home/runner/work/pixelated/pixelated/src/components/base/Footer.astro">…</footer> aka getByRole('contentinfo')
 
 Call log:
   - expect.toBeVisible with timeout 15000ms
   - waiting for locator('footer')
 
-    at testCoreFunctionality (/home/runner/work/gradiant/gradiant/src/tests/cross-browser-compatibility.test.ts:28:40)
-    at /home/runner/work/gradiant/gradiant/src/tests/cross-browser-compatibility.test.ts:51:22
+    at testCoreFunctionality (/home/runner/work/pixelated/pixelated/src/tests/cross-browser-compatibility.test.ts:28:40)
+    at /home/runner/work/pixelated/pixelated/src/tests/cross-browser-compatibility.test.ts:51:22
 ```
 
 # Page snapshot

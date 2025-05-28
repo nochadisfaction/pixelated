@@ -16,7 +16,9 @@ const {
 } = Astro.props
 ---
 
-<header
+<div
+  role="banner"
+  aria-label="Page header"
   class:list={{
     'prose mx-auto mb-4': true,
     'text-center': isCentered,
@@ -36,7 +38,7 @@ const {
   }
   {subtitle && <p class="mt--4! op-50 italic">{subtitle}</p>}
   <slot name="head" />
-</header>
+</div>
 
 {
   Astro.slots.has('article') && (

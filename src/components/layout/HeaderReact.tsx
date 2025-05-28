@@ -54,11 +54,11 @@ export function Header({
                 <img
                   src="/favicon.svg"
                   className="h-8 mr-3"
-                  alt="Gradiant Logo"
+                  alt="Pixelated Empathy Logo"
                 />
 
                 <span className="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap">
-                  Gradiant
+                  Pixelated Empathy
                 </span>
               </a>
             </div>
@@ -104,11 +104,11 @@ export function Header({
               <img
                 src="/favicon.svg"
                 className="h-8 mr-3"
-                alt="Gradiant Logo"
+                alt="Pixelated Empathy Logo"
               />
 
               <span className="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap">
-                Gradiant
+                Pixelated Empathy
               </span>
             </a>
           </div>

@@ -31,5 +31,6 @@ declare namespace App {
       isAuthPage: boolean
       userAgent: string
     }
+    cspNonce: string
   }
 }

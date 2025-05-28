@@ -1,5 +1,5 @@
 /**
- * MentalHealthChat implementation for Gradiant
+ * MentalHealthChat implementation for Pixelated Empathy
  */
 
 export interface MentalHealthAnalysis {

@@ -47,7 +47,7 @@ export default function flexsearchIntegration(
           // We need to initialize the search client with proper browser-only loads
           if (typeof window !== 'undefined') {
             // Import the search client
-            import('../lib/search-browser.ts')
+            import('../lib/search.js')
               .then(module => {
                 // Make it available globally
                 window.searchClient = module.searchClient;

@@ -1,31 +1,31 @@
 # Test info
 
 - Name: Cross-browser compatibility >> documentation page should work in all browsers
-- Location: /home/runner/work/gradiant/gradiant/src/tests/cross-browser-compatibility.test.ts:46:5
+- Location: /home/runner/work/pixelated/pixelated/src/tests/cross-browser-compatibility.test.ts:46:5
 
 # Error details
 
 ```
 Error: expect.toBeVisible: Error: strict mode violation: locator('header') resolved to 2 elements:
     1) <header class="z-30 w-full bg-card border-b border-border fixed">…</header> aka getByRole('banner')
-    2) <header class="mb-8" data-astro-source-loc="313:32" data-astro-source-file="/home/runner/work/gradiant/gradiant/src/layouts/DocumentationLayout.astro">…</header> aka getByText('Documentation Welcome to the Gradiant Documentation', { exact: true })
+    2) <header class="mb-8" data-astro-source-loc="313:32" data-astro-source-file="/home/runner/work/pixelated/pixelated/src/layouts/DocumentationLayout.astro">…</header> aka getByText('Documentation Welcome to the Pixelated Empathy Documentation', { exact: true })
 
 Call log:
   - expect.toBeVisible with timeout 15000ms
   - waiting for locator('header')
 
-    at testCoreFunctionality (/home/runner/work/gradiant/gradiant/src/tests/cross-browser-compatibility.test.ts:27:40)
-    at /home/runner/work/gradiant/gradiant/src/tests/cross-browser-compatibility.test.ts:51:22
+    at testCoreFunctionality (/home/runner/work/pixelated/pixelated/src/tests/cross-browser-compatibility.test.ts:27:40)
+    at /home/runner/work/pixelated/pixelated/src/tests/cross-browser-compatibility.test.ts:51:22
 ```
 
 # Page snapshot
 
 ```yaml
 - banner:
-  - link "Gradiant Logo Gradiant":
+  - link "Pixelated Empathy Logo Pixelated Empathy":
     - /url: /
-    - img "Gradiant Logo"
-    - text: Gradiant
+    - img "Pixelated Empathy Logo"
+    - text: Pixelated Empathy
   - navigation:
     - link "Home":
       - /url: /
@@ -70,14 +70,14 @@ Call log:
 - main:
   - article:
     - heading "Documentation" [level=1]
-    - paragraph: Welcome to the Gradiant Documentation
-    - heading "Gradiant Documentation" [level=1]
-    - paragraph: Welcome to the Gradiant documentation. Here you'll find comprehensive guides and documentation to help you start working with Gradiant as quickly as possible.
-    - link "Getting Started Get up and running with Gradiant quickly":
+    - paragraph: Welcome to the Pixelated Empathy Documentation
+    - heading "Pixelated Empathy Documentation" [level=1]
+    - paragraph: Welcome to the Pixelated Empathy documentation. Here you'll find comprehensive guides and documentation to help you start working with Pixelated Empathy as quickly as possible.
+    - link "Getting Started Get up and running with Pixelated Empathy quickly":
       - /url: /docs/getting-started
       - img
       - text: Getting Started
-      - paragraph: Get up and running with Gradiant quickly
+      - paragraph: Get up and running with Pixelated Empathy quickly
     - link "API Reference Complete API documentation for developers":
       - /url: /docs/api
       - img
@@ -97,7 +97,7 @@ Call log:
     - img
     - text: Version 2.0 Released
     - paragraph:
-      - text: We've released version 2.0 of Gradiant with many new features and improvements. Check out the
+      - text: We've released version 2.0 of Pixelated Empathy with many new features and improvements. Check out the
       - link "changelog":
         - /url: /docs/changelog
       - text: for details.
@@ -122,12 +122,12 @@ Call log:
     - heading "Get Support" [level=2]
     - paragraph: Need help? Our support team is available to assist you with any questions or issues.
     - link "Email Support Contact our support team directly":
-      - /url: mailto:support@gradiant.dev
+      - /url: mailto:support@pixelated.dev
       - img
       - text: Email Support
       - paragraph: Contact our support team directly
     - link "Discord Community Join our community on Discord":
-      - /url: https://discord.gg/gradiant
+      - /url: https://discord.gg/pixelated
       - img
       - text: Discord Community
       - paragraph: Join our community on Discord
@@ -140,10 +140,10 @@ Call log:
       - text: Next Page
       - img
 - contentinfo:
-  - link "Logo Gradiant":
+  - link "Logo Pixelated Empathy":
     - /url: /
     - img "Logo"
-    - text: Gradiant
+    - text: Pixelated Empathy
   - paragraph: Secure AI therapy platform with advanced encryption for maximum privacy and HIPAA compliance.
   - link "Twitter":
     - /url: "#"
@@ -173,7 +173,7 @@ Call log:
     - listitem:
       - link "FAQ":
         - /url: /faq
-  - paragraph: © 2025 Gradiant. All rights reserved.
+  - paragraph: © 2025 Pixelated Empathy. All rights reserved.
 ```
 
 # Test source

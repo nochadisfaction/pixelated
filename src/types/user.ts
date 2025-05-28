@@ -1,5 +1,5 @@
 /**
- * User definitions for the Gradiant system
+ * User definitions for the Pixelated Empathy system
  */
 
 /**
