@@ -52,7 +52,7 @@ export const UI: Ui = {
       icon: 'i-uil-github-alt',
     },
     {
-      link: 'https://x.com/gradiantascent',
+      link: 'https://x.com/pixelated',
       title: 'Vivi on Twitter',
       displayMode: 'alwaysIcon',
       icon: 'i-ri-twitter-x-fill',

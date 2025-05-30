@@ -2,6 +2,7 @@
 import BaseLayout from '@/layouts/BaseLayout.astro'
 import StandardLayout from '@/layouts/StandardLayout.astro'
 import SpinningGlobe from '@/components/widgets/SpinningGlobe.astro'
+import { supabase } from '../db/supabase';
 
 // Add prerender directive to generate static HTML during build
 export const prerender = true

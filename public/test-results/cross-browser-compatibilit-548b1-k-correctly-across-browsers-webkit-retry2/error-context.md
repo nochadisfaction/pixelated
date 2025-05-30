@@ -46,7 +46,7 @@ Call log:
           - /url: https://github.com/vivirox
       - listitem:
         - link "Vivi on Twitter":
-          - /url: https://x.com/gradiantascent
+          - /url: https://x.com/pixelated
     - button "Toggle theme"
 - main:
   - heading "Contact Us" [level=1]
@@ -64,11 +64,11 @@ Call log:
     - heading "Connect With Us" [level=2]
     - paragraph: Follow us on social media to stay updated with our latest developments, research insights, and community events.
     - link "Twitter":
-      - /url: https://twitter.com/gradiantascent
+      - /url: https://twitter.com/pixelated
     - link "LinkedIn":
       - /url: https://www.linkedin.com/company/pixelated-ascent
     - link "GitHub":
-      - /url: https://github.com/gradiantascent
+      - /url: https://github.com/pixelated
     - heading "Send Us a Message" [level=2]
     - text: Name
     - textbox "Name": Test User

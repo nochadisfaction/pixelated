@@ -11,6 +11,9 @@ import expressiveCode from 'astro-expressive-code'
 import icon from 'astro-icon'
 import sentry from '@sentry/astro'
 import flexsearchSSRPlugin from './src/plugins/vite-plugin-flexsearch-ssr'
+import vitesse from 'astro-vitesse'
+
+import cloudflare from '@astrojs/cloudflare';
 
 // Check build environment
 const isProduction = process.env.NODE_ENV === 'production'
@@ -30,69 +33,10 @@ if (isVercel) {
 const disableWebFonts = process.env.DISABLE_WEB_FONTS === 'true'
 
 export default defineConfig({
-  site: 'https://gradiantascent.com',
+  site: 'https://pixelatedempathy.com',
   output: 'server',
   logLevel: verboseOutput ? 'info' : 'warn',
-  adapter: vercel({
-    maxDuration: 60, // Set function timeout to 60 seconds
-    webAnalytics: {
-      enabled: true,
-    },
-    edgeMiddleware: false, // Disable edge middleware to avoid Node.js built-in issues
-    imagesConfig: {
-      sizes: [640, 750, 828, 1080, 1200, 1920],
-      domains: ['gradiantascent.com'],
-      formats: ['image/avif', 'image/webp'],
-    },
-    functionPerRoute: false, // Use single function to avoid bundling issues
-    isr: {
-      expiration: 60,
-      allowQuery: ['page'],
-    },
-    skewProtection: false,
-    // Specify esbuild platform for proper Node.js built-in handling
-    esbuild: {
-      platform: 'node',
-      target: 'node18',
-      format: 'esm',
-      external: [
-        'node:*',
-        'fs',
-        'path',
-        'crypto',
-        'http',
-        'https',
-        'zlib',
-        'child_process',
-        'os',
-        'util',
-        'net',
-        'tls',
-        'assert',
-        'buffer',
-        'stream',
-        'events',
-        'url',
-        'querystring',
-        'timers',
-        'cluster',
-        'dns',
-        'domain',
-        'inspector',
-        'perf_hooks',
-        'punycode',
-        'readline',
-        'repl',
-        'string_decoder',
-        'tty',
-        'v8',
-        'vm',
-        'worker_threads',
-        'async_hooks',
-        'diagnostics_channel',
-      ],
-    },
-  }),
+  adapter: cloudflare(),
   prefetch: {
     defaultStrategy: 'hover',
     throttle: 3,
@@ -116,7 +60,7 @@ export default defineConfig({
         {
           key: 'X-XSS-Protection',
           value:
-            '1; mode=block; report=https://gradiantascent.com/api/security/xss-report',
+            '1; mode=block; report=https://pixelatedempathy.com/api/security/xss-report',
         },
         {
           key: 'Referrer-Policy',
@@ -130,7 +74,7 @@ export default defineConfig({
         {
           key: 'Content-Security-Policy',
           value:
-            "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.vercel-insights.com https://cdn.gradiantascent.com https://www.googletagmanager.com https://js.sentry-cdn.com; style-src 'self' 'unsafe-inline' https://cdn.gradiantascent.com https://fonts.googleapis.com https://cdn.jsdelivr.net; img-src 'self' data: https: blob:; connect-src 'self' https: wss:; font-src 'self' https://cdn.gradiantascent.com https://fonts.gstatic.com https://fonts.bunny.net https://cdn.jsdelivr.net data:; object-src 'none'; media-src 'self' https://cdn.gradiantascent.com; form-action 'self'; frame-ancestors 'none'; base-uri 'self'; manifest-src 'self'; worker-src 'self' blob:; child-src 'self' blob:; frame-src 'self'; upgrade-insecure-requests",
+            "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.vercel-insights.com https://cdn.pixelatedempathy.com https://www.googletagmanager.com https://js.sentry-cdn.com; style-src 'self' 'unsafe-inline' https://cdn.pixelatedempathy.com https://fonts.googleapis.com https://cdn.jsdelivr.net; img-src 'self' data: https: blob:; connect-src 'self' https: wss:; font-src 'self' https://cdn.pixelatedempathy.com https://fonts.gstatic.com https://fonts.bunny.net https://cdn.jsdelivr.net data:; object-src 'none'; media-src 'self' https://cdn.pixelatedempathy.com; form-action 'self'; frame-ancestors 'none'; base-uri 'self'; manifest-src 'self'; worker-src 'self' blob:; child-src 'self' blob:; frame-src 'self'; upgrade-insecure-requests",
         },
         {
           key: 'Cross-Origin-Embedder-Policy',
@@ -152,7 +96,7 @@ export default defineConfig({
         {
           key: 'Report-To',
           value:
-            '{"group":"default","max_age":31536000,"endpoints":[{"url":"https://gradiantascent.com/api/security/reports"}],"include_subdomains":true}',
+            '{"group":"default","max_age":31536000,"endpoints":[{"url":"https://pixelatedempathy.com/api/security/reports"}],"include_subdomains":true}',
         },
         {
           key: 'X-Permitted-Cross-Domain-Policies',
@@ -170,6 +114,22 @@ export default defineConfig({
     host: process.env.HOST || 'localhost',
   },
   integrations: [
+    // Astro-Vitesse integration - minimal, clean blog theme
+    vitesse({
+      title: 'Pixelated Mental Health',
+      description: 'AI-Powered Mental Health Research & Innovation',
+      disable404Route: true,
+    }),
+    sentry({
+      dsn: process.env.SENTRY_DSN,
+      // Setting this option to true will send default PII data to Sentry.
+      // For example, automatic IP address collection on events
+      sendDefaultPii: true,
+      sourceMapsUploadOptions: {
+        project: "pixelated",
+        authToken: process.env.SENTRY_AUTH_TOKEN,
+      },
+    }),
     expressiveCode({
       themes: ['github-dark', 'github-light'],
       styleOverrides: {
@@ -185,7 +145,7 @@ export default defineConfig({
       injectReset: true,
       mode: 'global',
       safelist: ['font-sans', 'font-mono', 'font-condensed'],
-      configFile: './uno.config.ts',
+      configFile: './uno.config.vitesse.ts',
       presets: {
         web: {
           timeout: 30000,
@@ -194,7 +154,7 @@ export default defineConfig({
       },
       content: {
         filesystem: [
-          'src/**/*.{astro,js,ts,jsx,tsx,vue}',
+          'src/**/*.{astro,js,ts,jsx,tsx,vue,mdx}',
           'components/**/*.{astro,js,ts,jsx,tsx,vue}',
         ],
       },
@@ -231,9 +191,6 @@ export default defineConfig({
       svgdir: './src/icons',
     }),
   ],
-  content: {
-    collections: ['blog', 'docs', 'guides'],
-  },
   vite: {
     resolve: {
       alias: {
@@ -588,11 +545,11 @@ export default defineConfig({
         cacheDir: './.astro/image-cache',
       },
     },
-    domains: ['gradiantascent.com'],
+    domains: ['pixelatedempathy.com'],
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '**.gradiantascent.com',
+        hostname: '**.pixelatedempathy.com',
       },
     ],
   },
@@ -607,4 +564,4 @@ export default defineConfig({
   build: {
     inlineStylesheets: 'auto',
   },
-})
+}) 

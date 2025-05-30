@@ -17,6 +17,15 @@ export function generateId(): string {
 }
 
 /**
+ * Generate a unique ID string (alias for generateId)
+ *
+ * @returns A unique ID string
+ */
+export function generateUniqueId(): string {
+  return generateId()
+}
+
+/**
  * Get a date key string based on the specified period
  *
  * @param dateString - ISO date string
