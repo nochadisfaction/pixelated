@@ -1,5 +1,7 @@
 {
   "$schema": "../../../.astro/collections/projects.schema.json",
+  "title": "Pixelated Projects and Dependencies",
+  "description": "Collection of projects, libraries and dependencies used in the Pixelated Mental Health platform",
   "projects": {
     "Astro Ecosystem": [
       {

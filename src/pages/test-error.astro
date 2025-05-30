@@ -1,0 +1,48 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Sentry Error Test">
+  <main>
+    <h1>Sentry Error Testing</h1>
+    <p>Click the button below to throw a test error and verify Sentry connection:</p>
+    <button id="error-button" style="background-color: #ef4444; color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; margin-top: 20px;">
+      Throw test error
+    </button>
+  </main>
+</Layout>
+
+<script>
+  function handleClick() {
+    throw new Error('This is a test error');
+  }
+  document.querySelector("#error-button")?.addEventListener("click", handleClick);
+</script>
+
+<style>
+  main {
+    padding: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  h1 {
+    color: #333;
+    margin-bottom: 1rem;
+  }
+  
+  p {
+    color: #666;
+    margin-bottom: 1rem;
+  }
+  
+  #error-button:hover {
+    background-color: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  #error-button:active {
+    transform: translateY(0);
+  }
+</style> 

@@ -1,0 +1,385 @@
+---
+import Layout from '../layouts/Layout.astro'
+import EnhancedTodoIsland from '../components/EnhancedTodoIsland.astro'
+import EnhancedTodoAstro from '../components/EnhancedTodoAstro.astro'
+
+// Define the TodoItem interface to match the component requirements
+interface TodoItem {
+  id: string
+  text: string
+  completed: boolean
+  category: string
+  dueDate?: string
+  priority?: 'low' | 'medium' | 'high'
+  createdAt?: string
+}
+
+// Sample todos data
+const sampleTodos: TodoItem[] = [
+  {
+    id: 'sample1',
+    text: 'Learn Astro components',
+    completed: true,
+    category: 'Learning',
+    priority: 'high',
+  },
+  {
+    id: 'sample2',
+    text: 'Build an enhanced Todo app',
+    completed: false,
+    category: 'Development',
+    dueDate: new Date().toISOString().split('T')[0],
+  },
+  {
+    id: 'sample3',
+    text: 'Add accessibility features',
+    completed: false,
+    category: 'Development',
+    priority: 'medium',
+  },
+  {
+    id: 'sample4',
+    text: 'Deploy to production',
+    completed: false,
+    category: 'DevOps',
+    priority: 'low',
+    dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split('T')[0],
+  },
+]
+---
+
+<Layout title="Enhanced Todo App">
+  <main>
+    <section class="hero">
+      <div class="container">
+        <h1>Enhanced Todo App</h1>
+        <p class="description">
+          A feature-rich task management application built with Astro.
+        </p>
+      </div>
+    </section>
+
+    <section class="features">
+      <div class="container">
+        <h2 class="section-title">Key Features</h2>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <h3>🗂️ Categories</h3>
+            <p>Organize your tasks by custom categories.</p>
+          </div>
+          <div class="feature-card">
+            <h3>🔄 Filtering</h3>
+            <p>Easily filter tasks by status and category.</p>
+          </div>
+          <div class="feature-card">
+            <h3>⚡ Priorities</h3>
+            <p>Set low, medium, or high priority for your tasks.</p>
+          </div>
+          <div class="feature-card">
+            <h3>📅 Due Dates</h3>
+            <p>Add due dates to keep track of deadlines.</p>
+          </div>
+          <div class="feature-card">
+            <h3>♿ Accessibility</h3>
+            <p>Fully accessible with keyboard navigation and screen readers.</p>
+          </div>
+          <div class="feature-card">
+            <h3>📱 Responsive</h3>
+            <p>Works great on mobile, tablet, and desktop devices.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="implementation-comparison">
+      <div class="container">
+        <h2 class="section-title">Two Implementations</h2>
+        <p class="section-description">
+          Compare two different implementations of the same Todo application,
+          built with different approaches.
+        </p>
+
+        <div class="tabs">
+          <button
+            id="react-tab"
+            class="tab-button active"
+            aria-selected="true"
+            aria-controls="react-panel"
+          >
+            React Implementation
+          </button>
+          <button
+            id="astro-tab"
+            class="tab-button"
+            aria-selected="false"
+            aria-controls="astro-panel"
+          >
+            Pure Astro Implementation
+          </button>
+        </div>
+
+        <div class="tab-content">
+          <div
+            id="react-panel"
+            class="tab-panel"
+            role="tabpanel"
+            aria-labelledby="react-tab"
+          >
+            <div class="implementation-info">
+              <div class="implementation-header">
+                <h3>React Island Implementation</h3>
+                <span class="badge">~40KB JS</span>
+              </div>
+              <p>
+                This implementation uses Astro's island architecture with a
+                React component for rich interactivity. The component is
+                hydrated on the client side when it becomes visible in the
+                viewport.
+              </p>
+            </div>
+            <div class="demo-wrapper">
+              <EnhancedTodoIsland
+                title="React Todo"
+                initialTodos={sampleTodos}
+                storageKey="react-demo-todos"
+              />
+            </div>
+          </div>
+
+          <div
+            id="astro-panel"
+            class="tab-panel"
+            role="tabpanel"
+            aria-labelledby="astro-tab"
+            hidden
+          >
+            <div class="implementation-info">
+              <div class="implementation-header">
+                <h3>Pure Astro Implementation</h3>
+                <span class="badge">~7KB JS</span>
+              </div>
+              <p>
+                This implementation uses vanilla JavaScript with Astro's
+                templating system. It offers the same features with a much
+                smaller JavaScript footprint.
+              </p>
+            </div>
+            <div class="demo-wrapper">
+              <EnhancedTodoAstro
+                title="Astro Todo"
+                initialTodos={sampleTodos}
+                storageKey="astro-demo-todos"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<script>
+  // Wait for page load
+  document.addEventListener('astro:page-load', () => {
+    const reactTab = document.getElementById('react-tab')
+    const astroTab = document.getElementById('astro-tab')
+    const reactPanel = document.getElementById('react-panel')
+    const astroPanel = document.getElementById('astro-panel')
+
+    // Tab switching logic
+    reactTab?.addEventListener('click', () => {
+      reactTab.classList.add('active')
+      astroTab?.classList.remove('active')
+      reactTab?.setAttribute('aria-selected', 'true')
+      astroTab?.setAttribute('aria-selected', 'false')
+      reactPanel?.removeAttribute('hidden')
+      astroPanel?.setAttribute('hidden', '')
+    })
+
+    astroTab?.addEventListener('click', () => {
+      astroTab.classList.add('active')
+      reactTab?.classList.remove('active')
+      astroTab?.setAttribute('aria-selected', 'true')
+      reactTab?.setAttribute('aria-selected', 'false')
+      astroPanel?.removeAttribute('hidden')
+      reactPanel?.setAttribute('hidden', '')
+    })
+  })
+</script>
+
+<style>
+  /* Hero Section */
+  .hero {
+    background-color: var(--color-primary-600, #6d28d9);
+    color: white;
+    padding: 3rem 0;
+    text-align: center;
+  }
+
+  .hero h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    margin-bottom: 1rem;
+  }
+
+  .hero .description {
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    max-width: 800px;
+    margin: 0 auto;
+    opacity: 0.9;
+  }
+
+  /* Container */
+  .container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  /* Features Section */
+  .features {
+    padding: 4rem 0;
+    background-color: var(--color-bg-secondary, #f8f9fa);
+  }
+
+  .section-title {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    color: var(--color-primary-600, #6d28d9);
+  }
+
+  .section-description {
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto 2.5rem;
+    color: var(--color-text-muted, #666);
+  }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .feature-card {
+    background-color: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    transition:
+      transform 0.2s,
+      box-shadow 0.2s;
+  }
+
+  .feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  .feature-card h3 {
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+    color: var(--color-primary-500, #7c3aed);
+  }
+
+  .feature-card p {
+    margin: 0;
+    color: var(--color-text-muted, #666);
+  }
+
+  /* Implementation Comparison Section */
+  .implementation-comparison {
+    padding: 4rem 0;
+  }
+
+  .tabs {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .tab-button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    background-color: var(--color-bg-light, #f1f3f5);
+    color: var(--color-text, #333);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .tab-button.active {
+    background-color: var(--color-primary-600, #6d28d9);
+    color: white;
+  }
+
+  .tab-panel {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  .implementation-info {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background-color: var(--color-bg-secondary, #f8f9fa);
+    border-radius: 8px;
+  }
+
+  .implementation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .implementation-header h3 {
+    margin: 0;
+    color: var(--color-primary-600, #6d28d9);
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    background-color: var(--color-warning-light, #fff3cd);
+    color: var(--color-warning, #856404);
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+
+  .demo-wrapper {
+    margin-top: 2rem;
+  }
+
+  /* Animation */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Media Queries */
+  @media (max-width: 768px) {
+    .feature-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .tabs {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .tab-button {
+      width: 100%;
+    }
+  }
+</style>

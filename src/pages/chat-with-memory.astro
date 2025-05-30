@@ -1,0 +1,187 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import MemoryAwareChatSystem from '@/components/chat/MemoryAwareChatSystem';
+
+export const title = 'AI Chat with Memory';
+export const description = 'Experience AI conversation with memory powered by mem0 - the AI learns and remembers your preferences';
+---
+
+<Layout title={title} description={description}>
+  <main class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+    <div class="container mx-auto px-4 py-8">
+      <!-- Header Section -->
+      <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+          AI Chat with Memory
+        </h1>
+        <p class="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-6">
+          Experience the future of AI conversation. Our AI assistant powered by 
+          <a href="https://mem0.ai" class="text-blue-600 hover:text-blue-700 font-semibold" target="_blank" rel="noopener">mem0</a>
+          learns from your conversations and provides increasingly personalized responses.
+        </p>
+        
+        <!-- Feature Highlights -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto mb-8">
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <div class="text-blue-600 mb-3">
+              <svg class="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+              Persistent Memory
+            </h3>
+            <p class="text-sm text-gray-600 dark:text-gray-300">
+              The AI remembers your preferences, past conversations, and important details across sessions.
+            </p>
+          </div>
+          
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <div class="text-green-600 mb-3">
+              <svg class="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+              Emotional Intelligence
+            </h3>
+            <p class="text-sm text-gray-600 dark:text-gray-300">
+              Advanced emotion detection and analysis for more empathetic and contextual responses.
+            </p>
+          </div>
+          
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <div class="text-purple-600 mb-3">
+              <svg class="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+              Learning Analytics
+            </h3>
+            <p class="text-sm text-gray-600 dark:text-gray-300">
+              Real-time insights into conversation patterns and memory usage statistics.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Interface -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl overflow-hidden" style="height: 80vh;">
+        <MemoryAwareChatSystem 
+          client:load
+          title="Memory-Powered AI Assistant"
+          subtitle="Ask me anything - I'll remember our conversation!"
+          placeholder="Start chatting... I'll remember what we discuss!"
+          sessionId={`session-${Date.now()}`}
+          enableMemoryToggle={true}
+          enableAnalysisToggle={true}
+          showMemoryStats={true}
+          showMemoryInsights={true}
+          className="h-full p-6"
+        />
+      </div>
+
+      <!-- Instructions -->
+      <div class="mt-8 bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg">
+        <h3 class="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-3">
+          💡 How to Experience the Memory Features:
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-800 dark:text-blue-200">
+          <div>
+            <h4 class="font-medium mb-2">1. Tell the AI about yourself:</h4>
+            <ul class="space-y-1 text-blue-700 dark:text-blue-300">
+              <li>• "My name is Alex and I'm a software developer"</li>
+              <li>• "I enjoy hiking and photography"</li>
+              <li>• "I'm learning Spanish"</li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="font-medium mb-2">2. Return later and reference past topics:</h4>
+            <ul class="space-y-1 text-blue-700 dark:text-blue-300">
+              <li>• "Remember what I told you about my hobby?"</li>
+              <li>• "Any Spanish practice suggestions?"</li>
+              <li>• "How's my learning progress?"</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Technical Info -->
+      <div class="mt-8 bg-gray-50 dark:bg-gray-800/50 p-6 rounded-lg">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">
+          🔧 Technical Features:
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+          <div class="space-y-2">
+            <h4 class="font-medium text-gray-900 dark:text-gray-100">Memory Storage</h4>
+            <ul class="space-y-1 text-gray-600 dark:text-gray-400">
+              <li>• Powered by mem0 API</li>
+              <li>• Semantic search</li>
+              <li>• Context-aware retrieval</li>
+            </ul>
+          </div>
+          <div class="space-y-2">
+            <h4 class="font-medium text-gray-900 dark:text-gray-100">Analysis Engine</h4>
+            <ul class="space-y-1 text-gray-600 dark:text-gray-400">
+              <li>• Emotion detection</li>
+              <li>• Topic extraction</li>
+              <li>• Sentiment analysis</li>
+            </ul>
+          </div>
+          <div class="space-y-2">
+            <h4 class="font-medium text-gray-900 dark:text-gray-100">Smart Features</h4>
+            <ul class="space-y-1 text-gray-600 dark:text-gray-400">
+              <li>• Auto-summarization</li>
+              <li>• Pattern recognition</li>
+              <li>• Preference learning</li>
+            </ul>
+          </div>
+          <div class="space-y-2">
+            <h4 class="font-medium text-gray-900 dark:text-gray-100">Privacy & Control</h4>
+            <ul class="space-y-1 text-gray-600 dark:text-gray-400">
+              <li>• User-controlled memory</li>
+              <li>• Export conversations</li>
+              <li>• Toggle features on/off</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Links -->
+      <div class="mt-8 text-center">
+        <div class="flex justify-center space-x-6 text-sm">
+          <a href="/docs" class="text-blue-600 hover:text-blue-700 dark:text-blue-400">Documentation</a>
+          <a href="https://mem0.ai/docs" class="text-blue-600 hover:text-blue-700 dark:text-blue-400" target="_blank" rel="noopener">mem0 Docs</a>
+          <a href="/memory-dashboard" class="text-blue-600 hover:text-blue-700 dark:text-blue-400">Memory Dashboard</a>
+          <a href="/privacy" class="text-blue-600 hover:text-blue-700 dark:text-blue-400">Privacy Policy</a>
+        </div>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  /* Custom scrollbar for chat */
+  :global(.chat-container) {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+  }
+  
+  :global(.chat-container::-webkit-scrollbar) {
+    width: 6px;
+  }
+  
+  :global(.chat-container::-webkit-scrollbar-track) {
+    background: transparent;
+  }
+  
+  :global(.chat-container::-webkit-scrollbar-thumb) {
+    background-color: rgba(156, 163, 175, 0.5);
+    border-radius: 3px;
+  }
+  
+  :global(.chat-container::-webkit-scrollbar-thumb:hover) {
+    background-color: rgba(156, 163, 175, 0.7);
+  }
+</style> 

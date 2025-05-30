@@ -44,7 +44,7 @@ Call log:
           - /url: https://github.com/vivirox
       - listitem:
         - link "Vivi on Twitter":
-          - /url: https://x.com/gradiantascent
+          - /url: https://x.com/pixelated
     - button "Toggle theme":
       - img
 - main:

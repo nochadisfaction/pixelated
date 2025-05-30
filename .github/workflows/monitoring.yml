@@ -73,7 +73,7 @@ jobs:
           export default {
             testDir: './tests/monitoring',
             use: {
-              baseURL: process.env.BASE_URL || 'http://localhost:3000',
+              baseURL: process.env.BASE_URL || 'https://pixelatedempathy.com',
             },
             projects: [
               {
@@ -192,7 +192,7 @@ jobs:
           export default {
             testDir: './tests/monitoring',
             use: {
-              baseURL: process.env.BASE_URL || 'http://localhost:3000',
+              baseURL: process.env.BASE_URL || 'https://pixelatedempathy.com',
             },
             projects: [
               {
