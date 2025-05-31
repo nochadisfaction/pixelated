@@ -37,24 +37,8 @@ const pageDescription = description || SITE.description
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site)
 
-const generatedOgImage = (await checkFileExistsInDir(
-  'public/og-images',
-  `${basename(Astro.url.pathname)}.png`,
-))
-  ? getUrl('og-images', `${basename(Astro.url.pathname)}.png`)
-  : undefined
-
-const assignedOgImage =
-  ogImage &&
-  ogImage !== true &&
-  (await checkFileExistsInDir('public/og-images', ogImage))
-    ? getUrl('og-images', ogImage)
-    : undefined
-
-const ogImageURL = new URL(
-  assignedOgImage || generatedOgImage || getUrl('og-images', 'og-image.png'),
-  Astro.url,
-).href
+// OG image generation disabled
+const ogImageURL = getUrl('og-images', 'og-image.png')
 
 // https://jsonld.com/blog-post/
 const blogPostingData = {

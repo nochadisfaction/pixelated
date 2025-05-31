@@ -1,9 +1,9 @@
 import type { APIRoute } from 'astro';
 import { BiasDetectionEngine } from '@/lib/ai/bias-detection/BiasDetectionEngine';
-import { createLogger } from '@/lib/utils/logger';
+import { getLogger } from '@/lib/utils/logger';
 import type { SessionData, BiasAnalysisResult } from '@/lib/ai/bias-detection/types';
 
-const logger = createLogger({ context: 'BiasAnalysisAPI' });
+const logger = getLogger('BiasAnalysisAPI');
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {

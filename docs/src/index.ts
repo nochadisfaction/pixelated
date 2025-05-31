@@ -44,7 +44,7 @@ export default function VitesseIntegration({
           config.i18n,
         )
 
-        const integrations = pluginResult.integrations
+        const {integrations} = pluginResult
         pluginTranslations = pluginResult.pluginTranslations
 
         // TODO: is required to use translations in the future
@@ -75,13 +75,14 @@ export default function VitesseIntegration({
           prerender: vitesseConfig.prerender,
         })
 
-        injectRoute({
-          pattern: '[...slug]/og.png',
-          entrypoint: vitesseConfig.prerender
-            ? 'astro-vitesse/routes/static/og.ts'
-            : 'astro-vitesse/routes/ssr/og.ts',
-          prerender: vitesseConfig.prerender,
-        })
+        // Temporarily disable OG image generation due to font file issues
+        // injectRoute({
+        //   pattern: '[...slug]/og.png',
+        //   entrypoint: vitesseConfig.prerender
+        //     ? 'astro-vitesse/routes/static/og.ts'
+        //     : 'astro-vitesse/routes/ssr/og.ts',
+        //   prerender: vitesseConfig.prerender,
+        // })
 
         // Add built-in integrations only if they are not already added by the user through the
         // config or by a plugin.

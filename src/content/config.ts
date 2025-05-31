@@ -34,7 +34,6 @@ const blogCollection = defineCollection({
     seriesOrder: z.number().optional(),
     toc: z.boolean().default(true),
     share: z.boolean().default(true),
-    ogImage: z.union([z.string(), z.boolean()]).default(true),
   }),
 })
 

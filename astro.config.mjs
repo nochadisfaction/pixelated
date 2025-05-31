@@ -114,12 +114,13 @@ export default defineConfig({
     host: process.env.HOST || 'localhost',
   },
   integrations: [
-    // Astro-Vitesse integration - minimal, clean blog theme
-    vitesse({
-      title: 'Pixelated Mental Health',
-      description: 'AI-Powered Mental Health Research & Innovation',
-      disable404Route: true,
-    }),
+    // Astro-Vitesse integration - minimal, clean blog theme - TEMPORARILY DISABLED FOR OG IMAGE FIX
+    // vitesse({
+    //   title: 'Pixelated Mental Health',
+    //   description: 'AI-Powered Mental Health Research & Innovation',
+    //   disable404Route: true,
+    //   disableOGImageRoute: true,
+    // }),
     sentry({
       dsn: process.env.SENTRY_DSN,
       // Setting this option to true will send default PII data to Sentry.
