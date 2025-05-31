@@ -12,6 +12,8 @@ export default defineConfig({
     vitesse({
       title: 'Astro Vitesse',
       credits: true,
+      // Disable OG image generation to fix build issues
+      disableOGImageRoute: true,
       logo: {
         light: '/src/assets/logo-light.svg',
         dark: '/src/assets/logo-dark.svg',

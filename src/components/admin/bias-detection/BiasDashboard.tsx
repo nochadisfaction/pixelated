@@ -42,7 +42,7 @@ import {
   PieChart as PieChartIcon,
   Activity
 } from 'lucide-react';
-import { createLogger } from '@/lib/utils/logger';
+import { getLogger } from '@/lib/utils/logger';
 import type { 
   BiasDashboardData,
   BiasAlert,
@@ -51,7 +51,7 @@ import type {
   BiasAnalysisResult
 } from '@/lib/ai/bias-detection/types';
 
-const logger = createLogger({ context: 'BiasDashboard' });
+const logger = getLogger('BiasDashboard');
 
 interface BiasDashboardProps {
   className?: string;
@@ -132,9 +132,15 @@ export const BiasDashboard: React.FC<BiasDashboardProps> = ({
 
   // Bias score color based on severity
   const getBiasScoreColor = (score: number) => {
-    if (score >= 0.8) return 'text-red-600';
-    if (score >= 0.6) return 'text-orange-600';
-    if (score >= 0.3) return 'text-yellow-600';
+    if (score >= 0.8) {
+      return 'text-red-600';
+    }
+    if (score >= 0.6) {
+      return 'text-orange-600';
+    }
+    if (score >= 0.3) {
+      return 'text-yellow-600';
+    }
     return 'text-green-600';
   };
 
@@ -254,7 +260,7 @@ export const BiasDashboard: React.FC<BiasDashboardProps> = ({
 
       {/* Critical Alerts */}
       {alerts.filter(alert => alert.level === 'critical' || alert.level === 'high').length > 0 && (
-        <Alert variant="destructive">
+        <Alert variant="error">
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>High Priority Bias Alerts</AlertTitle>
           <AlertDescription>
@@ -547,7 +553,8 @@ export const BiasDashboard: React.FC<BiasDashboardProps> = ({
                       <span className={`text-sm font-medium ${getBiasScoreColor(analysis.overallBiasScore)}`}>
                         Bias Score: {(analysis.overallBiasScore * 100).toFixed(1)}%
                       </span>
-                      <Badge variant={analysis.alertLevel === 'low' ? 'secondary' : 'destructive'}>
+
+                      <Badge variant={analysis.alertLevel === 'low' ? 'secondary' : 'error'}>
                         {analysis.alertLevel}
                       </Badge>
                     </div>
@@ -574,27 +581,28 @@ export const BiasDashboard: React.FC<BiasDashboardProps> = ({
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-2">
-                      <Badge variant={rec.priority === 'critical' ? 'destructive' : 'secondary'}>
+
+                      <Badge variant={rec.priority === 'critical' ? 'error' : 'secondary'}>
                         {rec.priority}
                       </Badge>
                       <h4 className="font-semibold">{rec.title}</h4>
                     </div>
                     <p className="text-sm text-muted-foreground mb-3">
-                      {rec.description}
-                    </p>
-                    <p className="text-sm">
-                      <strong>Action:</strong> {rec.action}
-                    </p>
-                    <p className="text-sm mt-1">
-                      <strong>Estimated Impact:</strong> {rec.estimatedImpact}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </TabsContent>
-      </Tabs>
-    </div>
-  );
-}; 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                      }; 

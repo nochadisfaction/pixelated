@@ -52,7 +52,7 @@ const headDefaults: z.input<ReturnType<typeof HeadConfigSchema>> = [
 
 const image = data.image
   ? new URL(data.image.src, Astro.site).href
-  : new URL((entry.id === 'index' ? '' : entry.id) + '/og.png', Astro.site).href
+  : undefined // OG image generation disabled
 
 if (image) {
   headDefaults.push({
