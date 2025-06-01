@@ -1,0 +1,67 @@
+# Bias Detection Engine Python Service Requirements
+# Core fairness and bias detection libraries
+aif360>=0.5.0                    # IBM AI Fairness 360
+fairlearn>=0.8.0                 # Microsoft Fairlearn  
+witwidget>=1.8.0                 # Google What-If Tool
+evaluate>=0.4.0                  # Hugging Face evaluate (includes fairness metrics)
+
+# Flask web framework and extensions
+Flask>=2.3.0                     # Core Flask framework
+Flask-CORS>=4.0.0                # Cross-origin resource sharing
+Werkzeug>=2.3.0                  # WSGI utilities
+
+# Authentication and security
+PyJWT>=2.8.0                     # JSON Web Tokens
+cryptography>=41.0.0             # Encryption utilities
+bcrypt>=4.0.0                    # Password hashing
+
+# NLP processing libraries for linguistic bias detection
+spacy>=3.7.0                     # spaCy for advanced NLP
+nltk>=3.8.0                      # NLTK for text processing
+textblob>=0.17.0                 # Additional text analysis
+transformers>=4.30.0             # Hugging Face transformers
+torch>=2.0.0                     # PyTorch for ML models
+datasets>=2.14.0                 # Hugging Face datasets
+
+# Data processing and ML
+pandas>=2.0.0                    # Data manipulation
+numpy>=1.24.0                    # Numerical computing
+scikit-learn>=1.3.0              # Machine learning utilities
+scipy>=1.11.0                    # Scientific computing
+
+# Visualization and monitoring
+matplotlib>=3.7.0                # Plotting
+seaborn>=0.12.0                  # Statistical visualization
+plotly>=5.15.0                   # Interactive plots
+
+# Model explanation and interpretability
+shap>=0.42.0                     # SHAP values for model explanation
+lime>=0.2.0                      # LIME for model interpretability
+
+# Data validation and quality
+great-expectations>=0.17.0       # Data quality validation
+pandera>=0.15.0                  # Data validation
+
+# Additional utilities
+tqdm>=4.66.0                     # Progress bars
+jsonlines>=3.1.0                 # JSON lines processing
+pyyaml>=6.0                      # YAML processing
+requests>=2.31.0                 # HTTP requests
+
+# Development and testing
+pytest>=7.4.0                   # Testing framework
+pytest-mock>=3.11.0             # Mocking for tests
+pytest-flask>=1.2.0             # Flask testing utilities
+black>=23.7.0                   # Code formatting
+flake8>=6.0.0                   # Code linting
+
+# Production server
+gunicorn>=21.2.0                 # WSGI HTTP Server
+gevent>=23.7.0                   # Async networking library
+
+# Demographic analysis (optional)
+face-recognition>=1.3.0          # For demographic analysis (optional)
+age-gender-estimation>=0.6.0     # Age/gender estimation (optional)
+
+# Environment and configuration
+python-dotenv>=1.0.0             # Environment variable management 

@@ -145,5 +145,4 @@ node_modules/
 tasks.json
 tasks/ 
 
-src/lib/ai/bias-detection
 .sentryclirc

@@ -1,0 +1,38 @@
+Metadata-Version: 2.1
+Name: witwidget
+Version: 1.8.1
+Summary: What-If Tool notebook widget
+Home-page: https://whatif-tool.dev
+Author: Google Inc.
+License: Apache 2.0
+Keywords: ipython,jupyter,widgets
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Framework :: IPython
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Science/Research
+Classifier: Topic :: Multimedia :: Graphics
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Description-Content-Type: text/markdown
+Requires-Dist: absl-py (>=0.4)
+Requires-Dist: google-api-python-client (>=1.7.8)
+Requires-Dist: ipywidgets (>=7.0.0)
+Requires-Dist: oauth2client (>=4.1.3)
+Requires-Dist: six (>=1.12.0)
+Requires-Dist: tensorflow (>=1.12.1)
+
+# What-If Tool notebook widget.
+
+The witwidget package adds the [What-If Tool](https://whatif-tool.dev)
+to Jupyter and Colaboratory notebooks as a widget.
+Installation and usage instructions can be found in this [tutorial](https://pair-code.github.io/what-if-tool/learn/tutorials/notebooks/).
+
+The What-If Tool is an interactive visual probe for ML model understanding.
+
+The source code for the package, and the entire What-If Tool, can be found at https://github.com/pair-code/what-if-tool.
+
+
