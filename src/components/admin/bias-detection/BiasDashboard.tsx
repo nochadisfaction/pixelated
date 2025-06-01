@@ -25,7 +25,6 @@ import {
   PieChart,
   Pie,
   Cell,
-  ScatterPlot,
   Scatter
 } from 'recharts';
 import { 
@@ -185,22 +184,25 @@ export const BiasDashboard: React.FC<BiasDashboardProps> = ({
   if (error) {
     return (
       <div className={`p-6 ${className}`}>
-        <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>Error Loading Dashboard</AlertTitle>
-          <AlertDescription>
-            {error}
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="mt-2"
-              onClick={fetchDashboardData}
-            >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Retry
-            </Button>
-          </AlertDescription>
-        </Alert>
+        <Alert 
+          variant="error"
+          title="Error Loading Dashboard"
+          description={
+            <div>
+              {error}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="mt-2"
+                onClick={fetchDashboardData}
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Retry
+              </Button>
+            </div>
+          }
+          icon={<AlertTriangle className="h-4 w-4" />}
+        />
       </div>
     );
   }
@@ -260,14 +262,12 @@ export const BiasDashboard: React.FC<BiasDashboardProps> = ({
 
       {/* Critical Alerts */}
       {alerts.filter(alert => alert.level === 'critical' || alert.level === 'high').length > 0 && (
-        <Alert variant="error">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>High Priority Bias Alerts</AlertTitle>
-          <AlertDescription>
-            {alerts.filter(alert => alert.level === 'critical' || alert.level === 'high').length} 
-            {' '}critical or high-priority bias issues require immediate attention.
-          </AlertDescription>
-        </Alert>
+        <Alert 
+          variant="error"
+          title="High Priority Bias Alerts"
+          description={`${alerts.filter(alert => alert.level === 'critical' || alert.level === 'high').length} critical or high-priority bias issues require immediate attention.`}
+          icon={<AlertTriangle className="h-4 w-4" />}
+        />
       )}
 
       {/* Summary Cards */}
@@ -554,7 +554,7 @@ export const BiasDashboard: React.FC<BiasDashboardProps> = ({
                         Bias Score: {(analysis.overallBiasScore * 100).toFixed(1)}%
                       </span>
 
-                      <Badge variant={analysis.alertLevel === 'low' ? 'secondary' : 'error'}>
+                      <Badge variant={analysis.alertLevel === 'low' ? 'secondary' : 'destructive'}>
                         {analysis.alertLevel}
                       </Badge>
                     </div>
@@ -581,28 +581,29 @@ export const BiasDashboard: React.FC<BiasDashboardProps> = ({
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-2">
-
-                      <Badge variant={rec.priority === 'critical' ? 'error' : 'secondary'}>
+                      <Badge variant={rec.priority === 'critical' ? 'destructive' : 'secondary'}>
                         {rec.priority}
                       </Badge>
                       <h4 className="font-semibold">{rec.title}</h4>
                     </div>
                     <p className="text-sm text-muted-foreground mb-3">
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                      }; 
+                      {rec.description}
+                    </p>
+                    <div className="flex items-center space-x-2">
+                      <Button size="sm" variant="outline">
+                        View Details
+                      </Button>
+                      <Button size="sm">
+                        Implement
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}; 

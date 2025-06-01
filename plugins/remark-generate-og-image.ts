@@ -9,8 +9,8 @@ import { FEATURES } from '../src/config'
 import { checkFileExistsInDir, unescapeHTML } from '../src/utils/common'
 import type { ReactNode } from 'react'
 import type { VFile } from 'vfile'
-import type { VNode, RendererNode, RendererElement } from 'vue'
 
+import type { VNode, RendererNode, RendererElement } from 'vue'
 import { getCurrentFormattedTime } from '../src/utils/datetime'
 import { ogImageMarkup } from './og-template/markup'
 
