@@ -1,3 +1,14 @@
+---
+title: "Security Policy"
+description: "Security guidelines, vulnerability reporting procedures, and compliance requirements for the Pixelated project"
+pubDate: 2025-03-01
+author: "Security Team"
+tags: ["security", "compliance", "hipaa", "vulnerability"]
+toc: true
+share: false
+draft: false
+---
+
 # Security Policy
 
 ## Reporting a Vulnerability
