@@ -20,11 +20,54 @@ export const GET: APIRoute = async ({ request, cookies }) => {
 
     // Initialize bias detection engine
     const biasEngine = new BiasDetectionEngine({
-      warningThreshold: 0.3,
-      highThreshold: 0.6,
-      criticalThreshold: 0.8,
-      enableHipaaCompliance: true,
-      enableAuditLogging: true
+      pythonServiceUrl: process.env.BIAS_DETECTION_SERVICE_URL || 'http://localhost:8000',
+      pythonServiceTimeout: 30000,
+      thresholds: {
+        warningLevel: 0.3,
+        highLevel: 0.6,
+        criticalLevel: 0.8
+      },
+      layerWeights: {
+        preprocessing: 0.2,
+        modelLevel: 0.3,
+        interactive: 0.2,
+        evaluation: 0.3
+      },
+      evaluationMetrics: ['bias', 'fairness', 'toxicity'],
+      metricsConfig: {
+        enableRealTimeMonitoring: true,
+        metricsRetentionDays: 90,
+        aggregationIntervals: ['1h', '1d', '1w'],
+        dashboardRefreshRate: 30,
+        exportFormats: ['json', 'csv', 'pdf']
+      },
+      alertConfig: {
+        enableSlackNotifications: false,
+        enableEmailNotifications: false,
+        emailRecipients: [],
+        alertCooldownMinutes: 15,
+        escalationThresholds: {
+          criticalResponseTimeMinutes: 5,
+          highResponseTimeMinutes: 15
+        }
+      },
+      reportConfig: {
+        includeConfidentialityAnalysis: true,
+        includeDemographicBreakdown: true,
+        includeTemporalTrends: true,
+        includeRecommendations: true,
+        reportTemplate: 'standard',
+        exportFormats: ['json', 'csv', 'pdf']
+      },
+      explanationConfig: {
+        explanationMethod: 'shap',
+        maxFeatures: 10,
+        includeCounterfactuals: true,
+        generateVisualization: false
+      },
+      hipaaCompliant: true,
+      dataMaskingEnabled: true,
+      auditLogging: true
     });
 
     // Get dashboard data for export
