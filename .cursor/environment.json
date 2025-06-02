@@ -1,0 +1,18 @@
+{
+  "snapshot": "snapshot-id",
+  "user": "ubuntu",
+  "install": "./.cursor/install.sh",
+  "start": "sudo service docker start",
+  "terminals": [
+    {
+      "name": "vscode",
+      "command": "cd vscode && nvm use && npm run watch",
+      "description": "Watches the vscode/src folder for changes and recompiles when saved."
+    },
+    {
+      "name": "code.sh",
+      "command": "sleep 120 && cd vscode && nvm use && ./scripts/code.sh",
+      "description": "Runs the vscode app, visible on localhost:6080 using web VNC (noVNC)."
+    }
+  ]
+}

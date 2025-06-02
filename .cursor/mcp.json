@@ -1,0 +1,109 @@
+{
+    "mcpServers": {
+              "mem0-mcp": {
+                "command": "pnpm",
+                "args": [
+                  "dlx",
+                  "@pinkpixel/mem0-mcp"
+                ],
+                "env": {
+                  "MEM0_API_KEY": "m0-CrQ3kFT1qb7ybwIhwJcUf23FCYFdZFStmxW9V8EY",
+                  "DEFAULT_USER_ID": "CHAD864"
+                },
+                "disabled": false,
+                "alwaysAllow": [
+                  "add_memory",
+                  "search_memory"
+                ]
+              },
+              "perplexity-search": {
+                "command": "pnpm",
+                "args": [
+                  "dlx",
+                  "@smithery/cli@latest",
+                  "run",
+                  "@arjunkmrm/perplexity-search",
+                  "--key",
+                  "ab351ddc-26d1-4448-a316-d9ad9c5df416"
+                ]
+              },
+              "@21st-dev/magic": {
+                "command": "pnpm",
+                "args": [
+                  "dlx",
+                  "@21st-dev/magic@latest",
+                  "API_KEY=\"b0f2dfa281df58509a2ed2773c20beea681e70081c222affdc2a9300d5d994c6\""
+                ]
+              },
+              "github": {
+                "command": "pnpm",
+                "args": [
+                  "dlx",
+                  "@smithery/cli@latest",
+                  "run",
+                  "@smithery-ai/github",
+                  "--key",
+                  "ab351ddc-26d1-4448-a316-d9ad9c5df416"
+                ]
+              },
+              "server-sequential-thinking": {
+                "command": "pnpm",
+                "args": [
+                  "dlx",
+                  "@smithery/cli@latest",
+                  "run",
+                  "@smithery-ai/server-sequential-thinking",
+                  "--key",
+                  "ab351ddc-26d1-4448-a316-d9ad9c5df416"
+                ]
+              },
+              "gitingest-mcp": {
+                "command": "pnpm",
+                "args": [
+                  "dlx",
+                  "@smithery/cli@latest",
+                  "run",
+                  "@puravparab/gitingest-mcp",
+                  "--key",
+                  "2027c5a9-0f31-4895-80c9-82bbfddb4287"
+                ]
+              },
+              "think-mcp-server": {
+                "command": "pnpm",
+                "args": [
+                  "dlx",
+                  "@smithery/cli@latest",
+                  "run",
+                  "@PhillipRt/think-mcp-server",
+                  "--key",
+                  "ab351ddc-26d1-4448-a316-d9ad9c5df416"
+                ]
+              },
+              "playwright-mcp": {
+                "command": "pnpm",
+                "args": [
+                  "dlx",
+                  "@smithery/cli@latest",
+                  "run",
+                  "@microsoft/playwright-mcp",
+                  "--key",
+                  "2027c5a9-0f31-4895-80c9-82bbfddb4287"
+                ]
+              },
+              "time-mcp": {
+                "command": "pnpm",
+                "args": [
+                  "dlx",
+                  "@smithery/cli@latest",
+                  "run",
+                  "@yokingma/time-mcp",
+                  "--key",
+                  "2027c5a9-0f31-4895-80c9-82bbfddb4287"
+                ]
+              },
+              "Neon": {
+                "command": "pnpm",
+                "args": ["dlx", "mcp-remote", "https://mcp.neon.tech/sse"]
+              }
+            }
+        }
