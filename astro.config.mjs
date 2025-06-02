@@ -35,11 +35,14 @@ const disableWebFonts = process.env.DISABLE_WEB_FONTS === 'true'
 export default defineConfig({
   site: 'https://pixelatedempathy.com',
   output: 'server',
-  logLevel: verboseOutput ? 'info' : 'warn',
+  logLevel: verboseOutput ? 'info' : 'error',
   adapter: cloudflare(),
   prefetch: {
     defaultStrategy: 'hover',
     throttle: 3,
+  },
+  experimental: {
+    contentCollectionCache: true,
   },
   headers: [
     {
@@ -148,8 +151,8 @@ export default defineConfig({
       configFile: './uno.config.vitesse.ts',
       presets: {
         web: {
-          timeout: 30000,
-          disable: disableWebFonts,
+          timeout: isProduction ? 10000 : 30000,
+          disable: disableWebFonts || isProduction,
         },
       },
       content: {
@@ -299,11 +302,12 @@ export default defineConfig({
     build: {
       chunkSizeWarningLimit: 1500,
       cssCodeSplit: true,
-      minify: false,
-      cssMinify: true,
-      reportCompressedSize: true,
+      minify: isProduction ? 'esbuild' : false,
+      cssMinify: isProduction,
+      reportCompressedSize: false,
       target: 'node18',
       ssr: true,
+      sourcemap: false,
       rollupOptions: {
         external: [
           // Standard Node.js built-ins

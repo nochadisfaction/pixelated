@@ -1,3 +1,13 @@
+---
+title: "ReadmeAI (Truncated Version)"
+description: "ReadmeAI (Truncated Version) documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation"]
+draft: false
+toc: true
+---
+
 # ReadmeAI (Truncated Version)
 
 > Note: This is a truncated version of the complete readmeai.md file. For the full version, please refer to the original file in the project root.

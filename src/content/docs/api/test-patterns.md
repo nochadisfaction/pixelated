@@ -1,3 +1,13 @@
+---
+title: "Test Patterns Documentation"
+description: "Test Patterns Documentation documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation"]
+draft: false
+toc: true
+---
+
 # Test Patterns Documentation
 
 This document provides comprehensive documentation for test patterns used in the Gradiant platform, including mocking strategies, test fixtures, test organization patterns, integration tests, and performance testing approaches.

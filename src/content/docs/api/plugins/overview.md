@@ -1,3 +1,13 @@
+---
+title: "Plugin System Overview"
+description: "Plugin System Overview documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation"]
+draft: false
+toc: true
+---
+
 # Plugin System Overview
 
 The Gradiant EHR Integration Platform's Plugin System provides a secure and flexible way to extend the platform's functionality. This document provides an overview of the plugin architecture, security model, and basic usage.

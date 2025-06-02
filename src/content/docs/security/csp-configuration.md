@@ -1,3 +1,13 @@
+---
+title: "Content Security Policy (CSP) Configuration"
+description: "Content Security Policy (CSP) Configuration documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation"]
+draft: false
+toc: true
+---
+
 # Content Security Policy (CSP) Configuration
 
 ## Overview

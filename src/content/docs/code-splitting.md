@@ -1,3 +1,13 @@
+---
+title: "Code Splitting Best Practices"
+description: "Code Splitting Best Practices documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation"]
+draft: false
+toc: true
+---
+
 # Code Splitting Best Practices
 
 This guide outlines our approach to code splitting in the project, which helps reduce initial load times and improves performance by loading code only when needed.

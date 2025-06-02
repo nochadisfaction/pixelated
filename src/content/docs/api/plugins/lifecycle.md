@@ -1,3 +1,13 @@
+---
+title: "Plugin Lifecycle Management"
+description: "Plugin Lifecycle Management documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation"]
+draft: false
+toc: true
+---
+
 # Plugin Lifecycle Management
 
 This document describes the lifecycle of plugins in the Gradiant EHR Integration Platform, including installation, initialization, execution, and cleanup.

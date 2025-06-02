@@ -1,3 +1,13 @@
+---
+title: "Plugin Development Best Practices"
+description: "Plugin Development Best Practices documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation"]
+draft: false
+toc: true
+---
+
 # Plugin Development Best Practices
 
 This document provides comprehensive guidelines and best practices for developing plugins for the Gradiant EHR Integration Platform.

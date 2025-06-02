@@ -1,3 +1,13 @@
+---
+title: "Development Environment Setup"
+description: "Development Environment Setup documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation"]
+draft: false
+toc: true
+---
+
 # Development Environment Setup
 
 This document provides detailed instructions for setting up your development environment for the Pixelated Empathy project.

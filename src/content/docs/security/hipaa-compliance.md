@@ -1,3 +1,13 @@
+---
+title: "HIPAA Security Compliance Guide"
+description: "HIPAA Security Compliance Guide documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation"]
+draft: false
+toc: true
+---
+
 # HIPAA Security Compliance Guide
 
 This document outlines the HIPAA security compliance standards and automated checks for the Pixelated Empathy codebase.

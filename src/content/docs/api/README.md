@@ -1,3 +1,13 @@
+---
+title: "API Documentation"
+description: "API Documentation documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation"]
+draft: false
+toc: true
+---
+
 # API Documentation
 
 This documentation provides a comprehensive guide to all APIs available in the application, including both client-side and server-side APIs.

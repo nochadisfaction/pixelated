@@ -1,3 +1,13 @@
+---
+title: "Real User Monitoring (RUM) Documentation"
+description: "Real User Monitoring (RUM) Documentation documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation"]
+draft: false
+toc: true
+---
+
 # Real User Monitoring (RUM) Documentation
 
 This guide provides information about our Real User Monitoring (RUM) implementation, how to use it, and how to interpret the data.

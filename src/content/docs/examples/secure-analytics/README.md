@@ -1,3 +1,13 @@
+---
+title: "Secure Analytics Example"
+description: "Secure Analytics Example documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation"]
+draft: false
+toc: true
+---
+
 # Secure Analytics Example
 
 This example demonstrates how to use MP-SPDZ TypeScript bindings to perform secure analytics on private data from multiple parties.

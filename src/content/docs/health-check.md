@@ -1,3 +1,13 @@
+---
+title: "Website Health Check Documentation"
+description: "Website Health Check Documentation documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation"]
+draft: false
+toc: true
+---
+
 # Website Health Check Documentation
 
 This document explains the automated health check system that monitors the Pixelated Empathy application.

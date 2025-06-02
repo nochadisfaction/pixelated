@@ -1,3 +1,13 @@
+---
+title: "Security Implementation Guide"
+description: "Security Implementation Guide documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation", "security"]
+draft: false
+toc: true
+---
+
 # Security Implementation Guide
 
 This document outlines the security measures implemented in the application to ensure data protection, prevent common web vulnerabilities, and maintain compliance with HIPAA requirements.

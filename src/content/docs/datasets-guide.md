@@ -1,3 +1,13 @@
+---
+title: "Mental Health Datasets Guide"
+description: "Mental Health Datasets Guide documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation"]
+draft: false
+toc: true
+---
+
 # Mental Health Datasets Guide
 
 This guide explains how to use the dataset merging and fine-tuning preparation tools included in this project. These tools allow you to merge multiple mental health conversational datasets and prepare them for fine-tuning various AI models.

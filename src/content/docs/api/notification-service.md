@@ -1,3 +1,13 @@
+---
+title: "Notification Service API Documentation"
+description: "Notification Service API Documentation documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation"]
+draft: false
+toc: true
+---
+
 # Notification Service API Documentation
 
 The Gradiant platform includes multiple notification services that handle different aspects of the system's

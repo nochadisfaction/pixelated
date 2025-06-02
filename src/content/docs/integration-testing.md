@@ -1,3 +1,13 @@
+---
+title: "Astro Integration Testing Guide"
+description: "Astro Integration Testing Guide documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation", "testing"]
+draft: false
+toc: true
+---
+
 # Astro Integration Testing Guide
 
 This document outlines our approach to integration testing for Astro components and pages, focusing on testing the interaction between components, SSR functionality, client-side hydration, and static generation.

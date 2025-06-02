@@ -1,3 +1,13 @@
+---
+title: "Component Testing Guide"
+description: "Component Testing Guide documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation", "testing", "components"]
+draft: false
+toc: true
+---
+
 # Component Testing Guide
 
 This guide outlines how to test components in our hybrid Astro/React architecture.

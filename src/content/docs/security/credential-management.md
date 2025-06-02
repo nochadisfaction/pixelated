@@ -1,3 +1,13 @@
+---
+title: "Credential and PHI Management Guide"
+description: "Credential and PHI Management Guide documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation"]
+draft: false
+toc: true
+---
+
 # Credential and PHI Management Guide
 
 This document outlines best practices for handling credentials and Protected Health Information (PHI) in the Pixelated Empathy codebase.

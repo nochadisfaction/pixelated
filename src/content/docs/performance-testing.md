@@ -1,3 +1,13 @@
+---
+title: "Performance Testing Guide"
+description: "Performance Testing Guide documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation", "testing"]
+draft: false
+toc: true
+---
+
 # Performance Testing Guide
 
 This guide outlines our approach to performance testing for the Astro project, covering key metrics, testing tools, and optimization strategies.

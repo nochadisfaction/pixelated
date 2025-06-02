@@ -1,3 +1,13 @@
+---
+title: "Authentication Types and Protected Routes"
+description: "Authentication Types and Protected Routes documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation", "authentication"]
+draft: false
+toc: true
+---
+
 # Authentication Types and Protected Routes
 
 ## Overview

@@ -1,3 +1,13 @@
+---
+title: "Astro API Integration"
+description: "Astro API Integration documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation"]
+draft: false
+toc: true
+---
+
 # Astro API Integration
 
 This guide explains how to integrate our APIs within Astro components, providing server-side data fetching and client-side interactivity.

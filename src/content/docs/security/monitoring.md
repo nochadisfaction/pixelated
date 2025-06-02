@@ -1,3 +1,13 @@
+---
+title: "Security Monitoring and Logging"
+description: "Security Monitoring and Logging documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation"]
+draft: false
+toc: true
+---
+
 # Security Monitoring and Logging
 
 This document provides an overview of the security monitoring and logging systems implemented in the application.

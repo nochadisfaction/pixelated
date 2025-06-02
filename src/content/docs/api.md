@@ -1,3 +1,13 @@
+---
+title: "API Documentation"
+description: "Complete API documentation for Pixelated Empathy including Convex backend endpoints"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["api", "documentation", "convex"]
+draft: false
+toc: true
+---
+
 # API Documentation
 
 This document provides an overview of the API endpoints available in the application, focusing on the Convex backend.

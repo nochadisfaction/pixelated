@@ -1,3 +1,13 @@
+---
+title: "Monitoring Guide"
+description: "Monitoring Guide documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation"]
+draft: false
+toc: true
+---
+
 # Monitoring Guide
 
 ## Table of Contents

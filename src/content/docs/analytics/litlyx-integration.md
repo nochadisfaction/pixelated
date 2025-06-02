@@ -1,3 +1,13 @@
+---
+title: "Litlyx Analytics Integration"
+description: "Litlyx Analytics Integration documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation"]
+draft: false
+toc: true
+---
+
 # Litlyx Analytics Integration
 
 This project uses [Litlyx](https://docs.litlyx.com/) for analytics, a privacy-focused, open-source analytics solution.

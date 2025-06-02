@@ -1,3 +1,13 @@
+---
+title: "Gradiant Documentation Index"
+description: "Gradiant Documentation Index documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation"]
+draft: false
+toc: true
+---
+
 # Gradiant Documentation Index
 
 This index provides a comprehensive overview of all documentation resources available for the Gradiant project.

@@ -1,3 +1,13 @@
+---
+title: "MP-SPDZ Protocol Documentation"
+description: "MP-SPDZ Protocol Documentation documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation"]
+draft: false
+toc: true
+---
+
 # MP-SPDZ Protocol Documentation
 
 This document provides detailed information about the secure multi-party computation (MPC) protocols available in our TypeScript bindings for MP-SPDZ.

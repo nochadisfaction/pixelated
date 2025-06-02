@@ -1,3 +1,13 @@
+---
+title: "Project Status and Documentation"
+description: "Project Status and Documentation documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation"]
+draft: false
+toc: true
+---
+
 # Project Status and Documentation
 
 ## Overview

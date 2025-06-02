@@ -1,3 +1,13 @@
+---
+title: "Browser Compatibility Testing Guide"
+description: "Browser Compatibility Testing Guide documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation", "testing"]
+draft: false
+toc: true
+---
+
 # Browser Compatibility Testing Guide
 
 This guide outlines the process for testing our AI components across different browsers to ensure consistent functionality and accessibility.

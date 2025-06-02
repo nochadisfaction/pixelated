@@ -1,3 +1,13 @@
+---
+title: "Plugin Security"
+description: "Plugin Security documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation", "security"]
+draft: false
+toc: true
+---
+
 # Plugin Security
 
 This document outlines the security model and best practices for the Gradiant EHR Integration Platform's Plugin System.

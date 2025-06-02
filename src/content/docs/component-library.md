@@ -1,3 +1,13 @@
+---
+title: "Astro Component Library"
+description: "Astro Component Library documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation", "components"]
+draft: false
+toc: true
+---
+
 # Astro Component Library
 
 This documentation provides an overview of our Astro component library, including usage examples, available props, and best practices.

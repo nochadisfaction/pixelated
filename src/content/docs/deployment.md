@@ -1,3 +1,13 @@
+---
+title: "Deployment Guide"
+description: "Deployment Guide documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation"]
+draft: false
+toc: true
+---
+
 # Deployment Guide
 
 This guide covers how to deploy the Astro application to various environments.

@@ -1,3 +1,13 @@
+---
+title: "React Hooks for API Integration"
+description: "React Hooks for API Integration documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation"]
+draft: false
+toc: true
+---
+
 # React Hooks for API Integration
 
 This guide explains how to use the React hooks provided by our API client libraries to integrate with the backend services.

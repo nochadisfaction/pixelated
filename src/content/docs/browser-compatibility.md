@@ -1,3 +1,13 @@
+---
+title: "Browser Compatibility Requirements"
+description: "Browser Compatibility Requirements documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation"]
+draft: false
+toc: true
+---
+
 # Browser Compatibility Requirements
 
 This document outlines the key HTML structure requirements for ensuring our cross-browser compatibility tests pass correctly.

@@ -1,3 +1,13 @@
+---
+title: "Server-Side Authentication Security"
+description: "Server-Side Authentication Security documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation", "authentication"]
+draft: false
+toc: true
+---
+
 # Server-Side Authentication Security
 
 This document outlines the enhanced server-side authentication security features implemented in the application.

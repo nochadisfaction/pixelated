@@ -1,3 +1,13 @@
+---
+title: "Plugin API Reference"
+description: "Plugin API Reference documentation"
+pubDate: 2024-01-15
+author: "Pixelated Team"
+tags: ["documentation", "api"]
+draft: false
+toc: true
+---
+
 # Plugin API Reference
 
 This document provides detailed information about the APIs available to plugin developers in the Gradiant
