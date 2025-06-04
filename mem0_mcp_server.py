@@ -2,7 +2,7 @@
 import argparse
 import json
 import os
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, HTTPServer, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
 # Use correct import based on the available package
@@ -23,7 +23,9 @@ if not api_key:
         "MEM0_API_KEY environment variable not set. Please set it before running the server."
     )
 
-# Default user ID
+# Default user ID for memory operations.
+# Set the DEFAULT_USER_ID environment variable to override the default ("CHAD864").
+# This is used when no user_id is provided in requests.
 default_user_id = os.getenv("DEFAULT_USER_ID", "CHAD864")
 
 # Initialize the client
@@ -144,7 +146,7 @@ class MCPRequestHandler(BaseHTTPRequestHandler):
 
 def run_server(host="localhost", port=8000):
     server_address = (host, port)
-    httpd = HTTPServer(server_address, MCPRequestHandler)
+    httpd = ThreadingHTTPServer(server_address, MCPRequestHandler)
     print(f"Starting MCP server at http://{host}:{port}")
     try:
         httpd.serve_forever()
