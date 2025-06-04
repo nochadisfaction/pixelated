@@ -6,14 +6,14 @@ import vercel from '@astrojs/vercel'
 import UnoCSS from '@unocss/astro'
 import compress from 'astro-compress'
 import { defineConfig } from 'astro/config'
-import flexsearchIntegration from './src/integrations/search'
+import flexsearchIntegration from './src/integrations/search.js'
 import expressiveCode from 'astro-expressive-code'
 import icon from 'astro-icon'
 import sentry from '@sentry/astro'
 import flexsearchSSRPlugin from './src/plugins/vite-plugin-flexsearch-ssr'
 import vitesse from 'astro-vitesse'
 
-import cloudflare from '@astrojs/cloudflare';
+import cloudflare from '@astrojs/cloudflare'
 
 // Check build environment
 const isProduction = process.env.NODE_ENV === 'production'
@@ -36,11 +36,11 @@ export default defineConfig({
   site: 'https://pixelatedempathy.com',
   output: 'server',
   logLevel: verboseOutput ? 'info' : 'error',
-  adapter: cloudflare(),
+  adapter: isVercel ? vercel() : cloudflare(),
   image: {
     service: {
-      entrypoint: 'astro/assets/services/squoosh'
-    }
+      entrypoint: 'astro/assets/services/squoosh',
+    },
   },
   prefetch: {
     defaultStrategy: 'hover',
@@ -129,7 +129,7 @@ export default defineConfig({
       sendDefaultPii: true,
       telemetry: false,
       sourceMapsUploadOptions: {
-        project: "pixelated",
+        project: 'pixelated',
         authToken: process.env.SENTRY_AUTH_TOKEN,
       },
     }),
@@ -567,4 +567,4 @@ export default defineConfig({
   build: {
     inlineStylesheets: 'auto',
   },
-}) 
+})
