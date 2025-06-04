@@ -185,11 +185,17 @@ jobs:
           fi
           vercel deploy --token="${{ secrets.VERCEL_TOKEN }}" --prod --yes
 
-      - name: Create deployment tag
+      - name: Create deployment tags
         run: |
-          TIMESTAMP=$(date +%Y%m%d%H%M%S)
-          git tag production-$TIMESTAMP
-          git push origin production-$TIMESTAMP
+          # Install dependencies for tag manager
+          pnpm install --frozen-lockfile
+
+          # Create comprehensive production tags
+          node scripts/tag-manager.js create production --message="Production deployment $(date +%Y-%m-%d)" --push
+
+          # Verify tags were created
+          echo "Created tags:"
+          git tag -l "production-*" --sort=-committerdate | head -5
 
       - name: Notify deployment status
         if: always()
