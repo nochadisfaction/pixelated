@@ -1,112 +1,173 @@
 {
     "mcpServers": {
-              "MCP Installer": {
-                "command": "npx",
-                "type": "stdio",
-                "args": [
-                  "cursor-mcp-installer-free",
-                  "/workspaces/pixelated"
-                ]
-              },
-              "shadcn": {
-                "command": "npx",
-                "args": [
-                  "-y",
-                  "shadcn@canary",
-                  "registry:mcp"
-                ],
-                "env": {
-                  "REGISTRY_URL": "https://tweakcn.com/r/themes/registry.json"
-                }
-              },
-              "perplexity-search": {
-                "command": "pnpm",
-                "args": [
-                  "dlx",
-                  "@smithery/cli@latest",
-                  "run",
-                  "@arjunkmrm/perplexity-search",
-                  "--key",
-                  "ab351ddc-26d1-4448-a316-d9ad9c5df416"
-                ]
-              },
-              "@21st-dev/magic": {
-                "command": "pnpm",
-                "args": [
-                  "dlx",
-                  "@21st-dev/magic@latest",
-                  "API_KEY=\"${MAGIC_API_KEY}\""
-                ]
-              },
-              "github": {
-                "command": "pnpm",
-                "args": [
-                  "dlx",
-                  "@smithery/cli@latest",
-                  "run",
-                  "@smithery-ai/github",
-                  "--key",
-                  "ab351ddc-26d1-4448-a316-d9ad9c5df416"
-                ]
-              },
-              "server-sequential-thinking": {
-                "command": "pnpm",
-                "args": [
-                  "dlx",
-                  "@smithery/cli@latest",
-                  "run",
-                  "@smithery-ai/server-sequential-thinking",
-                  "--key",
-                  "ab351ddc-26d1-4448-a316-d9ad9c5df416"
-                ]
-              },
-              "gitingest-mcp": {
-                "command": "pnpm",
-                "args": [
-                  "dlx",
-                  "@smithery/cli@latest",
-                  "run",
-                  "@puravparab/gitingest-mcp",
-                  "--key",
-                  "2027c5a9-0f31-4895-80c9-82bbfddb4287"
-                ]
-              },
-              "think-mcp-server": {
-                "command": "pnpm",
-                "args": [
-                  "dlx",
-                  "@smithery/cli@latest",
-                  "run",
-                  "@PhillipRt/think-mcp-server",
-                  "--key",
-                  "ab351ddc-26d1-4448-a316-d9ad9c5df416"
-                ]
-              },
-              "playwright-mcp": {
-                "command": "pnpm",
-                "args": [
-                  "dlx",
-                  "@smithery/cli@latest",
-                  "run",
-                  "@microsoft/playwright-mcp",
-                  "--key",
-                  "2027c5a9-0f31-4895-80c9-82bbfddb4287"
-                ]
-              },
-              "time-mcp": {
-                "command": "pnpm",
-                "args": [
-                  "dlx",
-                  "@smithery/cli@latest",
-                  "run",
-                  "@yokingma/time-mcp",
-                  "--key",
-                  "2027c5a9-0f31-4895-80c9-82bbfddb4287"
-                ]
-              },
-              "Neon": {
-                "command": "pnpm",
-                "args": ["dlx", "mcp-remote", "https://mcp.neon.tech/sse"]
-              }
+        "MCP Installer": {
+            "command": "/home/vscode/.nvm/versions/node/v22.16.0/bin/npx",
+            "type": "stdio",
+            "args": [
+                "cursor-mcp-installer-free",
+                "/workspaces/pixelated"
+            ],
+            "env": {
+                "PATH": "/home/vscode/.nvm/versions/node/v22.16.0/bin:${PATH}",
+                "NODE_PATH": "/home/vscode/.nvm/versions/node/v22.16.0/lib/node_modules"
+            }
+        },
+        "shadcn": {
+            "command": "/home/vscode/.nvm/versions/node/v22.16.0/bin/npx",
+            "args": [
+                "-y",
+                "shadcn@canary",
+                "registry:mcp"
+            ],
+            "env": {
+                "PATH": "/home/vscode/.nvm/versions/node/v22.16.0/bin:${PATH}",
+                "NODE_PATH": "/home/vscode/.nvm/versions/node/v22.16.0/lib/node_modules",
+                "REGISTRY_URL": "https://tweakcn.com/r/themes/registry.json"
+            }
+        },
+        "perplexity-search": {
+            "command": "/home/vscode/.nvm/versions/node/v22.16.0/bin/pnpm",
+            "args": [
+                "dlx",
+                "@smithery/cli@latest",
+                "run",
+                "@arjunkmrm/perplexity-search",
+                "--key",
+                "ab351ddc-26d1-4448-a316-d9ad9c5df416"
+            ],
+            "env": {
+                "PATH": "/home/vscode/.nvm/versions/node/v22.16.0/bin:${PATH}",
+                "NODE_PATH": "/home/vscode/.nvm/versions/node/v22.16.0/lib/node_modules"
+            }
+        },
+        "@21st-dev/magic": {
+            "command": "/home/vscode/.nvm/versions/node/v22.16.0/bin/pnpm",
+            "args": [
+                "dlx",
+                "@21st-dev/magic@latest",
+                "API_KEY=\"${MAGIC_API_KEY}\""
+            ],
+            "env": {
+                "PATH": "/home/vscode/.nvm/versions/node/v22.16.0/bin:${PATH}",
+                "NODE_PATH": "/home/vscode/.nvm/versions/node/v22.16.0/lib/node_modules"
+            }
+        },
+        "github": {
+            "command": "/home/vscode/.nvm/versions/node/v22.16.0/bin/pnpm",
+            "args": [
+                "dlx",
+                "@smithery/cli@latest",
+                "run",
+                "@smithery-ai/github",
+                "--key",
+                "ab351ddc-26d1-4448-a316-d9ad9c5df416"
+            ],
+            "env": {
+                "PATH": "/home/vscode/.nvm/versions/node/v22.16.0/bin:${PATH}",
+                "NODE_PATH": "/home/vscode/.nvm/versions/node/v22.16.0/lib/node_modules"
+            }
+        },
+        "server-sequential-thinking": {
+            "command": "/home/vscode/.nvm/versions/node/v22.16.0/bin/pnpm",
+            "args": [
+                "dlx",
+                "@smithery/cli@latest",
+                "run",
+                "@smithery-ai/server-sequential-thinking",
+                "--key",
+                "ab351ddc-26d1-4448-a316-d9ad9c5df416"
+            ],
+            "env": {
+                "PATH": "/home/vscode/.nvm/versions/node/v22.16.0/bin:${PATH}",
+                "NODE_PATH": "/home/vscode/.nvm/versions/node/v22.16.0/lib/node_modules"
+            }
+        },
+        "gitingest-mcp": {
+            "command": "/home/vscode/.nvm/versions/node/v22.16.0/bin/pnpm",
+            "args": [
+                "dlx",
+                "@smithery/cli@latest",
+                "run",
+                "@puravparab/gitingest-mcp",
+                "--key",
+                "2027c5a9-0f31-4895-80c9-82bbfddb4287"
+            ],
+            "env": {
+                "PATH": "/home/vscode/.nvm/versions/node/v22.16.0/bin:${PATH}",
+                "NODE_PATH": "/home/vscode/.nvm/versions/node/v22.16.0/lib/node_modules"
+            }
+        },
+        "think-mcp-server": {
+            "command": "/home/vscode/.nvm/versions/node/v22.16.0/bin/pnpm",
+            "args": [
+                "dlx",
+                "@smithery/cli@latest",
+                "run",
+                "@PhillipRt/think-mcp-server",
+                "--key",
+                "ab351ddc-26d1-4448-a316-d9ad9c5df416"
+            ],
+            "env": {
+                "PATH": "/home/vscode/.nvm/versions/node/v22.16.0/bin:${PATH}",
+                "NODE_PATH": "/home/vscode/.nvm/versions/node/v22.16.0/lib/node_modules"
+            }
+        },
+        "playwright-mcp": {
+            "command": "/home/vscode/.nvm/versions/node/v22.16.0/bin/pnpm",
+            "args": [
+                "dlx",
+                "@smithery/cli@latest",
+                "run",
+                "@microsoft/playwright-mcp",
+                "--key",
+                "2027c5a9-0f31-4895-80c9-82bbfddb4287"
+            ],
+            "env": {
+                "PATH": "/home/vscode/.nvm/versions/node/v22.16.0/bin:${PATH}",
+                "NODE_PATH": "/home/vscode/.nvm/versions/node/v22.16.0/lib/node_modules"
+            }
+        },
+        "time-mcp": {
+            "command": "/home/vscode/.nvm/versions/node/v22.16.0/bin/pnpm",
+            "args": [
+                "dlx",
+                "@smithery/cli@latest",
+                "run",
+                "@yokingma/time-mcp",
+                "--key",
+                "2027c5a9-0f31-4895-80c9-82bbfddb4287"
+            ],
+            "env": {
+                "PATH": "/home/vscode/.nvm/versions/node/v22.16.0/bin:${PATH}",
+                "NODE_PATH": "/home/vscode/.nvm/versions/node/v22.16.0/lib/node_modules"
+            }
+        },
+        "Neon": {
+            "command": "/home/vscode/.nvm/versions/node/v22.16.0/bin/pnpm",
+            "args": [
+                "dlx",
+                "mcp-remote",
+                "https://mcp.neon.tech/sse"
+            ],
+            "env": {
+                "PATH": "/home/vscode/.nvm/versions/node/v22.16.0/bin:${PATH}",
+                "NODE_PATH": "/home/vscode/.nvm/versions/node/v22.16.0/lib/node_modules"
+            }
+        },
+        "task-master-ai": {
+            "command": "/home/vscode/.nvm/versions/node/v22.16.0/bin/npx",
+            "args": [
+                "-y",
+                "--package=task-master-ai",
+                "task-master-ai"
+            ],
+            "env": {
+                "PATH": "/home/vscode/.nvm/versions/node/v22.16.0/bin:${PATH}",
+                "NODE_PATH": "/home/vscode/.nvm/versions/node/v22.16.0/lib/node_modules",
+                "OLLAMA_API_KEY": "OLLAMA_API_KEY_HERE",
+                "OLLAMA_BASE_URL": "https://api.pixelatedempathy.com",
+                "OPENAI_BASE_URL": "https://api.pixelatedempathy.com"
             }
         }
+    }
+}
