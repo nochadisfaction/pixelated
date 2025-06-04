@@ -562,7 +562,9 @@ export const OptimizationUtils = {
    * Calculate performance improvement percentage
    */
   calculateImprovement(originalTime: number, optimizedTime: number): number {
-    if (originalTime === 0) return 0
+    if (originalTime === 0) {
+      return 0
+    }
     return ((originalTime - optimizedTime) / originalTime) * 100
   },
 
