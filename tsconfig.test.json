@@ -1,0 +1,64 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "types": [
+      "vitest/globals",
+      "node",
+      "@testing-library/jest-dom",
+      "astro/client"
+    ],
+    "allowJs": true,
+    "skipLibCheck": false,
+
+    /* Test-specific strict type checking */
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "noImplicitThis": true,
+    "useUnknownInCatchVariables": true,
+
+    /* Enhanced checks for test files */
+    "noUnusedLocals": false, // Allow unused variables in tests for setup
+    "noUnusedParameters": false, // Allow unused parameters in test mocks
+    "exactOptionalPropertyTypes": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noPropertyAccessFromIndexSignature": true,
+
+    /* Test environment specific */
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true
+  },
+  "include": [
+    "tests/**/*.ts",
+    "tests/**/*.tsx",
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/**/*.spec.ts",
+    "src/**/*.spec.tsx",
+    "src/**/__tests__/**/*.ts",
+    "src/**/__tests__/**/*.tsx",
+    "vitest.setup.ts",
+    "vitest.config.ts",
+    "playwright.config.ts",
+    "browserstack.config.ts"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules",
+    "**/node_modules/**",
+    ".vercel",
+    ".astro",
+    ".local",
+    "**/test-results/**",
+    "**/performance-results/**"
+  ]
+}
