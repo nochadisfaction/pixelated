@@ -418,7 +418,8 @@
       "sharp",
       "sqlite3",
       "supabase",
-      "unrs-resolver"
+      "unrs-resolver",
+      "workerd"
     ],
     "ignoredBuiltDependencies": [
       "libpg-query"
