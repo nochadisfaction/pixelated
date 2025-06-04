@@ -45,21 +45,26 @@ jobs:
       - name: Determine rollback tag
         id: get-tag
         run: |
-          TAGS=$(git tag -l "staging-*" --sort=-committerdate)
-          TAG_COUNT=$(echo "$TAGS" | grep -v "^$" | wc -l)
+      - name: Determine rollback tag
+        id: get-tag
+        run: |
+          # Install dependencies for tag manager
+          pnpm install --frozen-lockfile
 
-          if [ "$TAG_COUNT" -eq 0 ]; then
-            echo "::error::No staging tags found"
-            exit 1
-          elif [ "$TAG_COUNT" -eq 1 ]; then
-            echo "::error::Only one staging tag exists"
+          # Use the tag manager to validate and get rollback tag
+          if node scripts/tag-manager.js validate staging; then
+            TAGS=$(git tag -l "staging-*" --sort=-committerdate)
+            TAG=$(echo "$TAGS" | sed -n '2p')
+            echo "tag=$TAG" >> $GITHUB_OUTPUT
+            echo "Rolling back to: $TAG"
+            git checkout $TAG
+          else
+            echo "::warning::Cannot rollback - insufficient staging tags"
+            echo "::notice::Creating initial staging tags for future rollbacks"
+            node scripts/tag-manager.js create staging --message="Initial staging tag for rollback capability" --push
+            echo "::error::Rollback not possible - this appears to be the first deployment"
             exit 1
           fi
-
-          TAG=$(echo "$TAGS" | sed -n '2p')
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
-          echo "Rolling back to: $TAG"
-          git checkout $TAG
         shell: /usr/bin/bash -e {0}
 
       - name: Setup Node.js
@@ -131,21 +136,23 @@ jobs:
       - name: Determine rollback tag
         id: get-tag
         run: |
-          TAGS=$(git tag -l "production-*" --sort=-committerdate)
-          TAG_COUNT=$(echo "$TAGS" | grep -v "^$" | wc -l)
+          # Install dependencies for tag manager
+          pnpm install --frozen-lockfile
 
-          if [ "$TAG_COUNT" -eq 0 ]; then
-            echo "::error::No production tags found"
-            exit 1
-          elif [ "$TAG_COUNT" -eq 1 ]; then
-            echo "::error::Only one production tag exists"
+          # Use the tag manager to validate and get rollback tag
+          if node scripts/tag-manager.js validate production; then
+            TAGS=$(git tag -l "production-*" --sort=-committerdate)
+            TAG=$(echo "$TAGS" | sed -n '2p')
+            echo "tag=$TAG" >> $GITHUB_OUTPUT
+            echo "Rolling back to: $TAG"
+            git checkout $TAG
+          else
+            echo "::warning::Cannot rollback - insufficient production tags"
+            echo "::notice::Creating initial production tags for future rollbacks"
+            node scripts/tag-manager.js create production --message="Initial production tag for rollback capability" --push
+            echo "::error::Rollback not possible - this appears to be the first deployment"
             exit 1
           fi
-
-          TAG=$(echo "$TAGS" | sed -n '2p')
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
-          echo "Rolling back to: $TAG"
-          git checkout $TAG
         shell: /usr/bin/bash -e {0}
 
       - name: Setup Node.js

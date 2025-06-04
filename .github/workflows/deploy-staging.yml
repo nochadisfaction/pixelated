@@ -108,6 +108,18 @@ jobs:
           node-version: ${{ needs.setup.outputs.node-version }}
           cache: 'pnpm'
 
+      - name: Create staging tags
+        run: |
+          # Install dependencies for tag manager
+          pnpm install --frozen-lockfile
+
+          # Create staging tags
+          node scripts/tag-manager.js create staging --message="Staging deployment $(date +%Y-%m-%d)" --push
+
+          # Verify tags were created
+          echo "Created staging tag:"
+          git tag -l "staging-*" --sort=-committerdate | head -1
+
       - name: Deploy to staging
         run: |
           vercel --token ${{ secrets.VERCEL_TOKEN }} --confirm --prod -d dist
