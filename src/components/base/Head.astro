@@ -1,17 +1,16 @@
 ---
 // import { ViewTransitions } from 'astro:transitions'
 import PageTransitions from '../transitions/PageTransitions.astro'
-import { basename } from 'node:path'
-import { checkFileExistsInDir, getUrl } from '~/utils/common'
+import { getUrl } from '~/utils/common'
 import { SITE } from '~/config'
 import SpeedInsights from '@vercel/speed-insights/astro'
 
 interface Props {
-  title?: string
-  description?: string
-  ogImage?: string | boolean
-  pubDate?: string
-  lastModDate?: string
+  title?: string | undefined
+  description?: string | undefined
+  ogImage?: string | boolean | undefined
+  pubDate?: string | undefined
+  lastModDate?: string | undefined
   transitionMode?:
     | 'default'
     | 'fade'
@@ -19,12 +18,12 @@ interface Props {
     | 'slide-up'
     | 'slide-down'
     | 'zoom'
+    | undefined
 }
 
 const {
   title,
   description,
-  ogImage,
   pubDate,
   lastModDate,
   transitionMode = 'slide',

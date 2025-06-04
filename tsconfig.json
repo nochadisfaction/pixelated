@@ -19,17 +19,59 @@
       "@layouts/*": ["./src/layouts/*"],
       "@utils/*": ["./src/utils/*"],
       "@lib/*": ["./src/lib/*"],
+      "@types/*": ["./src/types/*"],
+      "@testing/*": ["./tests/*"],
       "three": ["./node_modules/three"],
       "three/*": ["./node_modules/three/*"]
     },
     "types": ["astro/client", "node", "vitest/globals"],
-    "typeRoots": ["./node_modules/@types", "./src/types"],
-    "skipLibCheck": true,
+    "typeRoots": ["./node_modules/@types", "./src/types", "./types"],
+    "skipLibCheck": false,
     "allowJs": true,
+
+    /* Enhanced Strict Type-Checking Options */
     "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "useUnknownInCatchVariables": true,
+    "alwaysStrict": true,
+
+    /* Additional Checks */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+
+    /* Module Resolution Options */
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "allowUmdGlobalAccess": false,
+
+    /* Performance & Incremental Compilation */
+    "incremental": true,
+    "composite": false,
+    "tsBuildInfoFile": ".tsbuildinfo",
+    "disableSourceOfProjectReferenceRedirect": true,
+    "disableSolutionSearching": true,
+
+    /* Advanced Options */
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "preserveConstEnums": true,
+    "removeComments": false,
+    "sourceMap": true,
+    "declaration": false,
+    "declarationMap": false,
+
     "plugins": [
       // Disabling @astrojs/ts-plugin as it's generating too many errors in Cursor
       // {
@@ -62,12 +104,30 @@
     "**/node_modules/**",
     ".vercel",
     ".astro",
-    ".local"
+    ".local",
+    "**/test-results/**",
+    "**/performance-results/**",
+    "**/youtube-transcription-pipeline/**",
+    "**/public/test-results/**",
+    "**/secret-scan-artifacts/**",
+    "**/security-scan-artifacts/**",
+    "**/*.test.*",
+    "**/*.spec.*"
   ],
   "watchOptions": {
-    "watchFile": "dynamicPriorityPolling",
-    "watchDirectory": "dynamicPriorityPolling",
+    "watchFile": "useFsEvents",
+    "watchDirectory": "useFsEvents",
     "fallbackPolling": "dynamicPriority",
-    "excludeDirectories": ["**/node_modules", "dist", ".astro"]
+    "excludeDirectories": [
+      "**/node_modules",
+      "dist",
+      ".astro",
+      ".vercel",
+      "public/test-results",
+      "performance-results",
+      "youtube-transcription-pipeline",
+      "secret-scan-artifacts",
+      "security-scan-artifacts"
+    ]
   }
 }

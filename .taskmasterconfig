@@ -26,8 +26,6 @@
     "defaultSubtasks": 5,
     "defaultPriority": "medium",
     "projectName": "pixelated",
-    "ollamaBaseUrl": "http://localhost:11434/api",
-    "azureOpenaiBaseUrl": "https://your-endpoint.openai.azure.com/",
-    "userId": "1234567890"
+    "ollamaBaseUrl": "https://api.pixelatedempathy.com"
   }
 }

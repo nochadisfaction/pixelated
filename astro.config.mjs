@@ -13,7 +13,7 @@ import sentry from '@sentry/astro'
 import flexsearchSSRPlugin from './src/plugins/vite-plugin-flexsearch-ssr'
 import vitesse from 'astro-vitesse'
 
-import cloudflare from '@astrojs/cloudflare';
+import cloudflare from '@astrojs/cloudflare'
 
 // Check build environment
 const isProduction = process.env.NODE_ENV === 'production'
@@ -39,8 +39,8 @@ export default defineConfig({
   adapter: cloudflare(),
   image: {
     service: {
-      entrypoint: 'astro/assets/services/squoosh'
-    }
+      entrypoint: 'astro/assets/services/squoosh',
+    },
   },
   prefetch: {
     defaultStrategy: 'hover',
@@ -129,7 +129,7 @@ export default defineConfig({
       sendDefaultPii: true,
       telemetry: false,
       sourceMapsUploadOptions: {
-        project: "pixelated",
+        project: 'pixelated',
         authToken: process.env.SENTRY_AUTH_TOKEN,
       },
     }),
@@ -149,18 +149,13 @@ export default defineConfig({
       mode: 'global',
       safelist: ['font-sans', 'font-mono', 'font-condensed'],
       configFile: './uno.config.vitesse.ts',
-      presets: {
-        web: {
-          timeout: isProduction ? 10000 : 30000,
-          disable: disableWebFonts || isProduction,
-        },
-      },
       content: {
         filesystem: [
           'src/**/*.{astro,js,ts,jsx,tsx,vue,mdx}',
           'components/**/*.{astro,js,ts,jsx,tsx,vue}',
         ],
       },
+
       transformers: [
         {
           name: 'unocss:reset',
@@ -567,4 +562,4 @@ export default defineConfig({
   build: {
     inlineStylesheets: 'auto',
   },
-}) 
+})

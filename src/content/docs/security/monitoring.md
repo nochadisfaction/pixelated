@@ -121,7 +121,7 @@ The logging and security monitoring systems are integrated with other system com
 
 Both systems are configurable through environment variables:
 
-```env
+```bash
 # Logging configuration
 LOG_LEVEL=info
 LOG_CONSOLE=true
