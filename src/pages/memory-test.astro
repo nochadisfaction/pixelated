@@ -1,0 +1,19 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { MemoryDashboard } from '@/components/memory/MemoryDashboard';
+
+export const prerender = false;
+
+const title = "Memory System Test";
+const description = "Test and demonstrate the mem0 memory management system";
+---
+
+<Layout title={title} description={description}>
+    <main>
+        <MemoryDashboard 
+            userId="test_user" 
+            showUserSelector={true}
+            client:load
+        />
+    </main>
+</Layout> 

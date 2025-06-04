@@ -1,0 +1,367 @@
+---
+import { Card } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Button } from '@/components/ui/button'
+import { IconFilter } from '@/components/ui/icons'
+import AdvancedFilteringComponent from './AdvancedFilteringComponent.astro'
+import PatternVisualizationReact from './PatternVisualizationReact'
+import type { PatternVisualizationProps } from './PatternVisualizationReact'
+import type {
+  CrossSessionPattern,
+  RiskCorrelation,
+  TrendPattern,
+} from '@/lib/fhe/pattern-recognition'
+
+// Add cache control for better client-side caching
+export const cacheControl = {
+  maxAge: 120, // Cache for 2 minutes
+  staleWhileRevalidate: 300, // Allow stale content while revalidating for 5 minutes
+}
+
+export interface Props extends PatternVisualizationProps {
+  title?: string
+  description?: string
+  lazyLoad?: boolean // Option to lazy load component
+  showAdvancedFiltering?: boolean // Added missing property
+}
+
+const {
+  trends = [],
+  crossSessionPatterns = [],
+  riskCorrelations = [],
+  isLoading = false,
+  highlightedPatterns = [],
+  showAdvancedFiltering = false,
+} = Astro.props
+
+// Extract available emotion types from trends
+const emotionTypes = Array.from(
+  new Set(trends.flatMap((trend) => trend.emotionTypes || [])),
+)
+
+// Extract unique pattern types for filter dropdown
+const patternTypes = Array.from(
+  new Set(crossSessionPatterns.map((p) => p.type)),
+)
+
+// Extract pattern categories
+const patternCategories = Array.from(
+  new Set(crossSessionPatterns.flatMap((p) => p.categories || [])),
+)
+
+// Initial active tab
+const initialActiveTab = 'trends'
+---
+
+<div class="space-y-4" id="pattern-visualization">
+  <div class="flex justify-between items-center">
+    <h2 class="text-xl font-semibold">Pattern Analysis</h2>
+    <div class="flex items-center gap-2">
+      <Button
+        variant="outline"
+        size="sm"
+        id="toggle-filtering-mode"
+        className="flex items-center gap-1"
+      >
+        {showAdvancedFiltering ? 'Basic' : 'Advanced'} Filtering
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        id="toggle-filters"
+        className="flex items-center gap-2"
+      >
+        <IconFilter className="h-4 w-4" />
+        Filter
+      </Button>
+    </div>
+  </div>
+
+  <!-- Advanced Filtering Component (Hidden by default) -->
+  <div
+    class={showAdvancedFiltering ? '' : 'hidden'}
+    id="advanced-filtering-container"
+  >
+    <AdvancedFilteringComponent
+      availableEmotionTypes={emotionTypes}
+      availablePatternTypes={patternTypes}
+      availablePatternCategories={patternCategories}
+    />
+  </div>
+
+  <!-- Tabs for different pattern types -->
+  <Card className="overflow-hidden">
+    <Tabs defaultValue={initialActiveTab}>
+      <TabsList className="bg-muted p-0 w-full border-b rounded-none flex">
+        <TabsTrigger
+          value="trends"
+          className="flex-1 py-3 rounded-none data-[state=active]:bg-background"
+        >
+          Trends
+        </TabsTrigger>
+        <TabsTrigger
+          value="patterns"
+          className="flex-1 py-3 rounded-none data-[state=active]:bg-background"
+        >
+          Patterns
+        </TabsTrigger>
+        <TabsTrigger
+          value="risks"
+          className="flex-1 py-3 rounded-none data-[state=active]:bg-background"
+        >
+          Risk Factors
+        </TabsTrigger>
+      </TabsList>
+
+      <div class="p-4">
+        <!-- Trends Tab -->
+        <TabsContent value="trends" className="m-0 py-2">
+          <div class="h-64 w-full trend-chart-container" data-tab="trends">
+            {
+              isLoading ? (
+                <div class="animate-pulse h-full w-full bg-gray-200 rounded" />
+              ) : trends.length > 0 ? (
+                <div class="text-center text-sm">
+                  <p class="text-gray-500">
+                    Trend visualization will be rendered here
+                  </p>
+                  <div class="text-xs mt-2">
+                    {trends.map((trend) => (
+                      <div
+                        class="inline-block m-1 p-1 border rounded text-xs"
+                        data-trend-id={trend.id}
+                      >
+                        {trend.type} ({trend.indicators?.length || 0} indicators):{' '}
+                        {trend.confidence.toFixed(2)}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div class="flex h-full items-center justify-center text-center text-gray-500">
+                  <p>
+                    No trend data available. Try different filters or time
+                    ranges.
+                  </p>
+                </div>
+              )
+            }
+          </div>
+        </TabsContent>
+
+        <!-- Patterns Tab -->
+        <TabsContent value="patterns" className="m-0 py-2">
+          <div class="h-64 w-full pattern-chart-container" data-tab="patterns">
+            {
+              isLoading ? (
+                <div class="animate-pulse h-full w-full bg-gray-200 rounded" />
+              ) : crossSessionPatterns.length > 0 ? (
+                <div class="text-center text-sm">
+                  <p class="text-gray-500">
+                    Pattern visualization will be rendered here
+                  </p>
+                  <div class="text-xs mt-2 grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {crossSessionPatterns.map((pattern) => (
+                      <div
+                        class="p-2 border rounded text-xs flex flex-col"
+                        data-pattern-id={pattern.id}
+                        data-highlighted={
+                          highlightedPatterns.includes(pattern.id)
+                            ? 'true'
+                            : 'false'
+                        }
+                      >
+                        <span class="font-semibold">{pattern.type}</span>
+                        <span>Significance: {pattern.significance?.toFixed(2) || 'N/A'}</span>
+                        <span>Confidence: {pattern.confidence.toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div class="flex h-full items-center justify-center text-center text-gray-500">
+                  <p>
+                    No pattern data available. Try different filters or time
+                    ranges.
+                  </p>
+                </div>
+              )
+            }
+          </div>
+        </TabsContent>
+
+        <!-- Risks Tab -->
+        <TabsContent value="risks" className="m-0 py-2">
+          <div class="h-64 w-full risk-chart-container" data-tab="risks">
+            {
+              isLoading ? (
+                <div class="animate-pulse h-full w-full bg-gray-200 rounded" />
+              ) : riskCorrelations.length > 0 ? (
+                <div class="text-center text-sm">
+                  <p class="text-gray-500">
+                    Risk correlation visualization will be rendered here
+                  </p>
+                  <div class="text-xs mt-2 grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {riskCorrelations.map((risk) => (
+                      <div
+                        class="p-2 border rounded text-xs flex flex-col"
+                        data-risk-id={risk.id}
+                      >
+                        <span class="font-semibold">{risk.riskFactor}</span>
+                        <span>Severity: {risk.severityScore.toFixed(2)}</span>
+                        <span>Confidence: {risk.confidence.toFixed(2)}</span>
+                        {risk.significance && <span>Significance: {risk.significance}</span>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div class="flex h-full items-center justify-center text-center text-gray-500">
+                  <p>
+                    No risk correlation data available. Try different filters or
+                    time ranges.
+                  </p>
+                </div>
+              )
+            }
+          </div>
+        </TabsContent>
+      </div>
+    </Tabs>
+  </Card>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', initializePatternVisualization)
+
+  function initializePatternVisualization() {
+    const component = document.getElementById('pattern-visualization')
+    if (!component) return
+
+    // Elements
+    const toggleFilteringModeButton = component.querySelector(
+      '#toggle-filtering-mode',
+    )
+    const toggleFiltersButton = component.querySelector('#toggle-filters')
+    const advancedFilteringContainer = component.querySelector(
+      '#advanced-filtering-container',
+    )
+    const patternTabs = component.querySelector('#pattern-tabs')
+
+    // State
+    let activeTab = 'trends'
+    let showAdvancedFiltering =
+      advancedFilteringContainer?.classList.contains('hidden') === false
+    let showFilters = false
+
+    // Options/filters
+    let options = {
+      timeRange: {},
+      emotions: {},
+      patterns: {},
+      visualization: {},
+    }
+
+    // Initialize filtering mode toggle
+    toggleFilteringModeButton?.addEventListener('click', () => {
+      showAdvancedFiltering = !showAdvancedFiltering
+
+      if (advancedFilteringContainer) {
+        if (showAdvancedFiltering) {
+          advancedFilteringContainer.classList.remove('hidden')
+        } else {
+          advancedFilteringContainer.classList.add('hidden')
+        }
+      }
+
+      // Update button text
+      if (toggleFilteringModeButton) {
+        toggleFilteringModeButton.textContent = showAdvancedFiltering
+          ? 'Basic Filtering'
+          : 'Advanced Filtering'
+      }
+    })
+
+    // Initialize filters toggle
+    toggleFiltersButton?.addEventListener('click', () => {
+      showFilters = !showFilters
+
+      // Here we would show/hide basic filters
+      // For now, we'll just disable the button when using advanced filtering
+      if (showAdvancedFiltering) {
+        showFilters = false
+      }
+    })
+
+    // Tab change
+    patternTabs?.addEventListener('valueChange', (e) => {
+      // @ts-ignore - Custom event
+      activeTab = e.detail
+
+      // For now, this is a stub for future functionality
+      console.log(`Tab changed to: ${activeTab}`)
+    })
+
+    // Advanced filtering events
+    component.addEventListener('advancedFilterOptionsChange', (e) => {
+      // @ts-ignore - Custom event
+      options = e.detail.options
+
+      // For now, this is a stub for future functionality
+      console.log('Filter options changed:', options)
+    })
+
+    component.addEventListener('advancedFilterApply', () => {
+      // Apply the filters and update visualizations
+      // This would fetch new data based on filters or filter existing data
+      console.log('Applying filters:', options)
+
+      // Here we would update the visualizations based on the selected filters
+      // In a real implementation, this might involve API calls or filtering local data
+    })
+
+    // Pattern item click events - for pattern highlighting
+    const patternItems = component.querySelectorAll('[data-pattern-id]')
+    patternItems.forEach((item) => {
+      item.addEventListener('click', () => {
+        const patternId = item.getAttribute('data-pattern-id')
+        const isHighlighted = item.getAttribute('data-highlighted') === 'true'
+
+        // Toggle highlight state
+        item.setAttribute('data-highlighted', isHighlighted ? 'false' : 'true')
+
+        // In a real implementation, we might update styles or trigger other UI changes
+        console.log(
+          `Pattern ${patternId} ${isHighlighted ? 'unhighlighted' : 'highlighted'}`,
+        )
+
+        // Dispatch a custom event for pattern selection
+        component.dispatchEvent(
+          new CustomEvent('patternSelect', {
+            detail: { patternId, highlighted: !isHighlighted },
+          }),
+        )
+      })
+    })
+
+    // Initialize visualizations
+    // In a real implementation, this would create the actual charts using a library like Recharts
+    // For now we'll just log that initialization would happen here
+    console.log('Initializing visualizations for trends, patterns, and risks')
+  }
+</script>
+
+<style>
+  /* Styles for highlighted patterns */
+  [data-highlighted='true'] {
+    border-color: var(--color-primary);
+    background-color: rgba(var(--color-primary-rgb), 0.1);
+  }
+
+  /* Chart container styles */
+  .trend-chart-container,
+  .pattern-chart-container,
+  .risk-chart-container {
+    transition: height 0.3s ease;
+  }
+</style>

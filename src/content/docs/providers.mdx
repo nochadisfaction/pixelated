@@ -1,0 +1,184 @@
+---
+title: 'Provider System'
+description: "Comprehensive guide to Pixelated Healths provider system for managing global state and functionality"
+pubDate: 2025-03-24
+share: true
+toc: true
+lastModDate: 2025-03-25
+tags: ['providers', 'state-management', 'architecture']
+author: 'Pixelated Team'
+---
+
+# Provider System
+
+The provider system in Pixelated is designed to manage global state and functionality across the application. It includes several key providers that handle different aspects of the application's functionality.
+
+## SharedProviders
+
+The `SharedProviders` component is the root provider that composes all other providers. It includes:
+
+- Error handling with ErrorBoundary
+- Theme management with ThemeProvider
+- Security settings with SecurityProvider
+- Convex client with ConvexProvider
+
+### Usage
+
+```tsx
+import { SharedProviders } from '@/lib/providers'
+
+function App() {
+  return (
+    <SharedProviders>
+      <YourApp />
+    </SharedProviders>
+  )
+}
+```
+
+You can also use the HOC pattern:
+
+```tsx
+import { withSharedProviders } from '@/lib/providers'
+
+function YourComponent() {
+  return <div>Your component content</div>
+}
+
+export default withSharedProviders(YourComponent)
+```
+
+## ThemeProvider
+
+Manages the application's theme state including:
+
+- Color scheme (light/dark/system)
+- Contrast mode (standard/high)
+- Motion preferences (reduced/full)
+
+### Usage
+
+```tsx
+import { useTheme } from '@/lib/providers'
+
+function YourComponent() {
+  const { colorScheme, setColorScheme } = useTheme()
+
+  return (
+    <button onClick={() => setColorScheme('dark')}>Switch to Dark Mode</button>
+  )
+}
+```
+
+## SecurityProvider
+
+Handles security-related functionality including:
+
+- Security levels (standard/HIPAA/maximum)
+- FHE operations
+- Key rotation
+- Data encryption/decryption
+
+### Usage
+
+```tsx
+import { useSecurity } from '@/lib/providers'
+
+function YourComponent() {
+  const { securityLevel, setSecurityLevel, encryptData } = useSecurity()
+
+  const handleSubmit = async (data: string) => {
+    const encrypted = await encryptData(data)
+    // Handle encrypted data
+  }
+
+  return (
+    <div>
+      <select
+        value={securityLevel}
+        onChange={(e) => setSecurityLevel(e.target.value)}
+      >
+        <option value="standard">Standard</option>
+        <option value="hipaa">HIPAA</option>
+        <option value="maximum">Maximum</option>
+      </select>
+    </div>
+  )
+}
+```
+
+## ErrorBoundary
+
+Provides error handling and fallback UI for runtime errors.
+
+### Usage
+
+```tsx
+import { useErrorBoundary } from '@/lib/providers'
+
+function YourComponent() {
+  const { throwError } = useErrorBoundary()
+
+  return (
+    <button onClick={() => throwError(new Error('Test error'))}>
+      Trigger Error
+    </button>
+  )
+}
+```
+
+You can also use the HOC pattern:
+
+```tsx
+import { withErrorBoundary } from '@/lib/providers'
+
+function YourComponent() {
+  return <div>Your component content</div>
+}
+
+export default withErrorBoundary(YourComponent, {
+  fallback: <CustomErrorUI />,
+  onError: (error, errorInfo) => {
+    // Custom error handling
+  },
+})
+```
+
+## Best Practices
+
+1. Always use the `SharedProviders` at the root of your application
+2. Use the appropriate hooks (`useTheme`, `useSecurity`) to access provider functionality
+3. Handle errors appropriately with ErrorBoundary
+4. Consider performance implications when updating provider state
+5. Use TypeScript for better type safety and developer experience
+6. Follow the principle of least privilege when setting security levels
+7. Test provider integration thoroughly
+8. Document any custom provider implementations
+
+## TypeScript Support
+
+All providers and their hooks are fully typed. Example type definitions:
+
+```tsx
+interface ThemeState {
+  colorScheme: 'light' | 'dark' | 'system'
+  contrastMode: 'standard' | 'high'
+  motionPreference: 'reduced' | 'full'
+}
+
+interface SecurityState {
+  securityLevel: 'standard' | 'hipaa' | 'maximum'
+  isKeyRotationNeeded: boolean
+  lastKeyRotation: Date
+}
+```
+
+## Testing
+
+The provider system includes comprehensive tests. Run them with:
+
+```bash
+pnpm test src/lib/providers/__tests__
+```
+
+See the test file for examples of testing provider functionality.

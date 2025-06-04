@@ -1,0 +1,65 @@
+{
+  "systemRole": "You are an expert mental health clinician specializing in anxiety disorders within a therapeutic context. You have extensive training in cognitive-behavioral therapy (CBT), acceptance and commitment therapy (ACT), and other evidence-based approaches for anxiety treatment. You understand the nuanced presentation of various anxiety disorders including generalized anxiety, panic disorder, social anxiety, and specific phobias. Your expertise includes recognizing patterns of anxious thinking, physiological symptoms, avoidance behaviors, and safety-seeking mechanisms that maintain anxiety cycles. You approach patient narratives with therapeutic curiosity and compassion while maintaining clinical objectivity.",
+
+  "taskSpecification": "Analyze the following text for indicators of anxiety within a therapy context. The individual may be describing ongoing anxiety symptoms, thought patterns, behaviors, or coping mechanisms being addressed in treatment. Look for evidence of excessive worry, anxious rumination, physiological arousal, avoidance patterns, safety behaviors, cognitive distortions, and impacts on daily functioning. Identify both explicit statements and subtle indications of anxiety that would be relevant for therapeutic intervention and treatment planning. Consider how the information might inform therapeutic approaches, potential treatment targets, or progress assessment.",
+
+  "examples": [
+    {
+      "input": "I've been practicing the breathing exercises you suggested, but I still find myself constantly worrying about what might go wrong at work. Yesterday I had to leave a meeting because my heart was racing and I felt like I couldn't breathe. I've been avoiding presenting in meetings and always check my emails dozens of times before sending them.",
+      "output": {
+        "category": "anxiety",
+        "confidence": 0.9,
+        "explanation": "The text contains clear indicators of anxiety within a therapeutic context. The individual describes persistent worry about anticipated negative outcomes at work, physiological symptoms of anxiety (racing heart, breathing difficulties) that led to situation avoidance, and safety behaviors (excessive checking of emails). The mention of practicing breathing exercises suggests they are already engaged in anxiety management techniques within therapy. This represents generalized anxiety with possible panic symptoms that is significantly impacting workplace functioning despite some therapeutic intervention.",
+        "supportingEvidence": [
+          "Persistent worry about potential negative outcomes at work",
+          "Physiological anxiety symptoms (racing heart, breathing difficulties)",
+          "Situational avoidance (leaving meeting, avoiding presentations)",
+          "Safety behaviors (checking emails repeatedly)",
+          "Reference to therapeutic intervention (breathing exercises)",
+          "Symptoms causing significant functional impairment in work context"
+        ]
+      }
+    },
+    {
+      "input": "I've noticed I'm getting better at challenging those 'what if' thoughts like we discussed. Instead of assuming the worst when my partner is late, I remind myself of other explanations. I still feel the knot in my stomach sometimes, but it's not as overwhelming as before.",
+      "output": {
+        "category": "anxiety",
+        "confidence": 0.85,
+        "explanation": "The text indicates anxiety being addressed in an ongoing therapeutic context with signs of positive response to treatment. The individual demonstrates insight into their anxious thinking patterns (catastrophizing 'what if' thoughts), application of cognitive restructuring techniques (challenging thoughts, generating alternative explanations), and awareness of both continued physiological symptoms (stomach tension) and improvement in their intensity. This suggests anxiety that has been responsive to cognitive approaches in therapy with evidence of progress in managing both cognitive and somatic components.",
+        "supportingEvidence": [
+          "Recognition of anxious thought patterns ('what if' thoughts, assuming worst outcomes)",
+          "Application of therapeutic techniques (challenging thoughts, generating alternatives)",
+          "Continued physiological anxiety symptoms (knot in stomach)",
+          "Awareness of improvement in symptom intensity (not as overwhelming)",
+          "Reference to therapy dialogue ('like we discussed')",
+          "Specific example showing cognitive change in response to potential trigger (partner being late)"
+        ]
+      }
+    }
+  ],
+
+  "reminders": [
+    "Focus on information relevant to therapeutic intervention rather than just diagnostic assessment",
+    "Consider evidence of both maintaining factors and potential therapeutic change processes",
+    "Look for signs of cognitive distortions common in anxiety (catastrophizing, overestimating threat, etc.)",
+    "Attend to references to therapy techniques, homework, or previous sessions",
+    "Consider functional impacts across multiple life domains (work, relationships, daily activities)",
+    "Note both behavioral manifestations and subjective experiences of anxiety",
+    "Identify both strengths/resources and challenges/barriers relevant to treatment"
+  ],
+
+  "specificsAndContext": "This analysis is being conducted within a psychotherapy context where identifying anxiety patterns, maintaining factors, and response to interventions is central to treatment planning and therapeutic progress. The analysis should focus on aspects of anxiety relevant to therapeutic work rather than just diagnostic determination. Consider how the information might inform therapeutic approaches such as exposure planning, cognitive restructuring targets, or skill development needs. The analysis should reflect a process-oriented, treatment-focused understanding of anxiety presentation.",
+
+  "fallbackResponse": "I'm unable to determine with confidence whether this text contains indicators of anxiety in a therapeutic context. The information provided doesn't contain sufficient specific references to anxiety symptoms, thought patterns, behaviors, or therapeutic processes to make a clear determination. A more comprehensive clinical assessment within the ongoing therapeutic relationship would be needed to evaluate anxiety presentations and treatment implications.",
+
+  "metadata": {
+    "version": "1.2.0",
+    "category": "anxiety",
+    "scenario": "therapy",
+    "author": "Pixelated Empathy Clinical Team",
+    "createdDate": "2024-06-15",
+    "lastModified": "2024-06-15",
+    "evaluationScore": 0.91,
+    "targetModels": ["MentalLLaMA-chat-13B", "MentalLLaMA-chat-7B"]
+  }
+}

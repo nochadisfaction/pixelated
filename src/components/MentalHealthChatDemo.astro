@@ -1,0 +1,92 @@
+---
+// Import the component directly for client:only
+import MentalHealthChatDemoReact from './MentalHealthChatDemoReact'
+
+export interface Props {
+  initialTab?: string
+  showSettingsPanel?: boolean
+  showAnalysisPanel?: boolean
+  title?: string
+  description?: string
+}
+
+const {
+  initialTab = 'chat',
+  showSettingsPanel = true,
+  showAnalysisPanel = true,
+  title = 'Mental Health Chat Demo',
+  description = 'This demonstration shows how mental health analysis can be integrated into chat experiences.',
+} = Astro.props
+---
+
+<div class="w-full max-w-6xl mx-auto transition-colors duration-300">
+  {
+    title && (
+      <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
+        {title}
+      </h2>
+    )
+  }
+  {
+    description && (
+      <p class="mb-6 text-gray-600 dark:text-gray-400">{description}</p>
+    )
+  }
+
+  <div id="loading-placeholder" class="animate-pulse">
+    <div class="w-full h-[600px] bg-gray-200 dark:bg-gray-800 rounded-lg"></div>
+  </div>
+
+  <div id="chat-component" class="hidden">
+    <MentalHealthChatDemoReact
+      client:only="react"
+      {initialTab}
+      {showSettingsPanel}
+      {showAnalysisPanel}
+    />
+  </div>
+</div>
+
+<script>
+  // This script handles showing the component after the page loads
+  document.addEventListener('DOMContentLoaded', () => {
+    const loadingPlaceholder = document.getElementById('loading-placeholder')
+    const chatComponent = document.getElementById('chat-component')
+
+    // Hide loading placeholder and show component after a small delay
+    // to ensure hydration has completed
+    setTimeout(() => {
+      if (loadingPlaceholder) loadingPlaceholder.style.display = 'none'
+      if (chatComponent) chatComponent.classList.remove('hidden')
+    }, 500)
+  })
+</script>
+
+<style>
+  /* Ensure smooth dark mode transitions */
+  :root {
+    --transition-duration: 300ms;
+  }
+
+  .transition-colors {
+    transition:
+      background-color var(--transition-duration) ease-in-out,
+      color var(--transition-duration) ease-in-out,
+      border-color var(--transition-duration) ease-in-out;
+  }
+
+  /* Add animation for loading placeholder */
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  .animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+</style>

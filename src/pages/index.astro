@@ -1,0 +1,309 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+
+// Add prerender directive to generate static HTML during build
+export const prerender = true
+
+// Hero section data
+const heroStats = [
+  { value: "10,000+", label: "Mental Health Professionals" },
+  { value: "50,000+", label: "Patients Served" },
+  { value: "95%", label: "Improvement Rate" },
+  { value: "24/7", label: "AI Support" }
+]
+
+// Features data
+const features = [
+  {
+    title: "AI-Powered Therapy Training",
+    description: "Advanced machine learning algorithms provide personalized training experiences for mental health professionals.",
+    icon: "🧠"
+  },
+  {
+    title: "Real-Time Emotional Analysis",
+    description: "Monitor and analyze emotional states in real-time to provide better patient care and outcomes.",
+    icon: "💡"
+  },
+  {
+    title: "Secure & HIPAA Compliant",
+    description: "Enterprise-grade security ensures patient data protection with full HIPAA compliance.",
+    icon: "🔒"
+  },
+  {
+    title: "Intelligent Interventions",
+    description: "AI-driven intervention recommendations based on evidence-based practices and patient history.",
+    icon: "⚡"
+  },
+  {
+    title: "Comprehensive Analytics",
+    description: "Deep insights into therapy sessions, patient progress, and treatment effectiveness.",
+    icon: "📊"
+  },
+  {
+    title: "Seamless Integration",
+    description: "Easy integration with existing EHR systems and clinical workflows.",
+    icon: "🔗"
+  }
+]
+
+// Testimonials data
+const testimonials = [
+  {
+    name: "Dr. Sarah Chen",
+    role: "Clinical Psychologist",
+    quote: "Pixelated Empathy has transformed how I approach therapy training. The AI insights are incredibly accurate.",
+    avatar: "/images/avatar-1.jpg"
+  },
+  {
+    name: "Michael Rodriguez",
+    role: "Therapy Director",
+    quote: "The real-time emotional analysis has helped our team provide better patient care than ever before.",
+    avatar: "/images/avatar-2.jpg"
+  },
+  {
+    name: "Dr. Emily Watson",
+    role: "Psychiatrist",
+    quote: "The security and compliance features give us complete confidence in using this platform.",
+    avatar: "/images/avatar-3.jpg"
+  }
+]
+---
+
+<BaseLayout
+  title="Pixelated Empathy - AI-Powered Mental Health Training"
+  description="The premier destination for AI-assisted emotional intelligence and therapy training. Transform mental health care with advanced AI technology."
+  bgType="plum"
+>
+  <div class="relative min-h-screen">
+    <!-- Hero Section -->
+    <section class="relative py-20 lg:py-32 overflow-hidden">
+      <!-- Background gradient -->
+      <div class="absolute inset-0 bg-gradient-to-br from-purple-50 via-indigo-50 to-cyan-50 dark:from-purple-950/20 dark:via-indigo-950/20 dark:to-cyan-950/20"></div>
+      
+      <!-- Animated background elements -->
+      <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute -top-40 -right-40 w-80 h-80 bg-purple-400/10 rounded-full blur-3xl animate-pulse"></div>
+        <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-cyan-400/10 rounded-full blur-3xl animate-pulse" style="animation-delay: 2s;"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-400/5 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
+      </div>
+
+      <div class="relative container mx-auto px-4">
+        <div class="max-w-4xl mx-auto text-center">
+          <!-- Badge -->
+          <div class="mb-8 animate-fade-in">
+            <Badge variant="outline" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium">
+              <span class="relative flex h-2 w-2">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+              </span>
+              Now in Production
+            </Badge>
+          </div>
+
+          <!-- Main headline -->
+          <h1 class="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight mb-8 animate-slide-up bg-gradient-to-r from-gray-900 via-purple-900 to-gray-900 dark:from-white dark:via-purple-200 dark:to-white bg-clip-text text-transparent" style="animation-delay: 0.2s;">
+            The Future of<br />
+            <span class="bg-gradient-to-r from-purple-600 to-cyan-600 bg-clip-text text-transparent">
+              AI-Assisted Therapy
+            </span>
+          </h1>
+
+          <!-- Description -->
+          <p class="text-xl lg:text-2xl text-gray-600 dark:text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed animate-slide-up" style="animation-delay: 0.4s;">
+            Transform mental health care with advanced AI technology. Train therapists, analyze emotions, and provide intelligent interventions with unprecedented accuracy and insight.
+          </p>
+
+          <!-- CTA Buttons -->
+          <div class="flex flex-col sm:flex-row gap-4 justify-center mb-16 animate-slide-up" style="animation-delay: 0.6s;">
+            <Button size="lg" class="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200">
+              Start Free Trial
+            </Button>
+            <Button variant="outline" size="lg" class="px-8 py-4 text-lg font-semibold rounded-xl border-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200">
+              Watch Demo
+            </Button>
+          </div>
+
+          <!-- Stats -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 mt-16 animate-slide-up" style="animation-delay: 0.8s;">
+            {heroStats.map((stat) => (
+              <div class="text-center">
+                <div class="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">
+                  {stat.value}
+                </div>
+                <div class="text-sm lg:text-base text-gray-600 dark:text-gray-400">
+                  {stat.label}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-20 lg:py-32 bg-white dark:bg-gray-900">
+      <div class="container mx-auto px-4">
+        <div class="max-w-3xl mx-auto text-center mb-16">
+          <h2 class="text-3xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+            Powerful Features for 
+            <span class="bg-gradient-to-r from-purple-600 to-cyan-600 bg-clip-text text-transparent">
+              Modern Healthcare
+            </span>
+          </h2>
+          <p class="text-xl text-gray-600 dark:text-gray-300">
+            Our AI-powered platform provides comprehensive tools for mental health professionals to deliver exceptional patient care.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {features.map((feature, index) => (
+            <Card class="border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 group">
+              <CardHeader class="pb-4">
+                <div class="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">
+                  {feature.icon}
+                </div>
+                <CardTitle class="text-xl font-semibold text-gray-900 dark:text-white">
+                  {feature.title}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription class="text-gray-600 dark:text-gray-300 leading-relaxed">
+                  {feature.description}
+                </CardDescription>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="py-20 lg:py-32 bg-gradient-to-br from-purple-50 to-cyan-50 dark:from-purple-950/10 dark:to-cyan-950/10">
+      <div class="container mx-auto px-4">
+        <div class="max-w-3xl mx-auto text-center mb-16">
+          <h2 class="text-3xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+            Trusted by Healthcare 
+            <span class="bg-gradient-to-r from-purple-600 to-cyan-600 bg-clip-text text-transparent">
+              Professionals
+            </span>
+          </h2>
+          <p class="text-xl text-gray-600 dark:text-gray-300">
+            See what mental health professionals are saying about our platform.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {testimonials.map((testimonial, index) => (
+            <Card class="border-0 shadow-lg bg-white dark:bg-gray-800 hover:shadow-xl transition-all duration-300">
+              <CardContent class="pt-6">
+                <blockquote class="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">
+                  "{testimonial.quote}"
+                </blockquote>
+                <div class="flex items-center gap-4">
+                  <div class="w-12 h-12 bg-gradient-to-r from-purple-400 to-cyan-400 rounded-full flex items-center justify-center text-white font-semibold">
+                    {testimonial.name.split(' ').map(n => n[0]).join('')}
+                  </div>
+                  <div>
+                    <div class="font-semibold text-gray-900 dark:text-white">
+                      {testimonial.name}
+                    </div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">
+                      {testimonial.role}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 lg:py-32 bg-gradient-to-r from-purple-600 to-cyan-600 relative overflow-hidden">
+      <!-- Background pattern -->
+      <div class="absolute inset-0 opacity-10">
+        <div class="absolute inset-0" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 32px 32px;"></div>
+      </div>
+      
+      <div class="relative container mx-auto px-4 text-center">
+        <div class="max-w-4xl mx-auto">
+          <h2 class="text-4xl lg:text-6xl font-bold text-white mb-6">
+            Ready to Transform 
+            <br />Mental Healthcare?
+          </h2>
+          <p class="text-xl lg:text-2xl text-purple-100 mb-12 leading-relaxed">
+            Join thousands of mental health professionals who are already using AI to provide better patient care.
+          </p>
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button size="lg" variant="outline" class="bg-white text-purple-600 hover:bg-gray-50 px-8 py-4 text-lg font-semibold rounded-xl border-0 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200">
+              Start Free Trial
+            </Button>
+            <Button size="lg" class="bg-transparent border-2 border-white text-white hover:bg-white hover:text-purple-600 px-8 py-4 text-lg font-semibold rounded-xl transition-all duration-200">
+              Contact Sales
+            </Button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.8s ease-out forwards;
+    opacity: 0;
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.8s ease-out forwards;
+    opacity: 0;
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Custom gradient text animation */
+  @keyframes gradient-shift {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  .gradient-text-animated {
+    background: linear-gradient(-45deg, #6366f1, #8b5cf6, #06b6d4, #6366f1);
+    background-size: 400% 400%;
+    animation: gradient-shift 3s ease infinite;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+</style>

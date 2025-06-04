@@ -1,0 +1,56 @@
+name: 'Security Analysis'
+
+disable-default-queries: false
+
+queries:
+  - name: Extended Security Queries
+    uses: security-extended
+  - name: Security and Quality Queries
+    uses: security-and-quality
+
+paths:
+  - src/lib
+  - src/services
+  - src/components
+  - src/utils
+  - src/api
+
+# Add this section to only analyze JavaScript and TypeScript
+languages:
+  - javascript
+  - typescript
+
+exclude:
+  - '**/node_modules'
+  - '**/dist'
+  - '**/build'
+  - '**/*.test.ts'
+  - '**/*.test.tsx'
+  - '**/*.spec.ts'
+  - '**/*.spec.tsx'
+  - '**/tests/**'
+  - '**/mocks/**'
+
+query-filters:
+  - exclude:
+      problem.severity:
+        - warning
+        - recommendation
+      tags contain: test
+
+paths-ignore:
+  - '**/test'
+  - '**/tests'
+  - '**/spec'
+  - '**/mocks'
+  - '**/fixtures'
+
+max-paths-per-root: 5000
+
+security-severity-thresholds:
+  - level: high
+    severity: 8.0
+  - level: medium
+    severity: 5.0
+  - level: low
+    severity: 2.0

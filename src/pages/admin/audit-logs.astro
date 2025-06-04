@@ -1,0 +1,26 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { AuditLogDashboard } from '../../components/security/AuditLogDashboard'
+import { protectRoute } from '../../lib/auth/serverAuth'
+
+// Protect this route - only allow admin access
+const { user, redirect } = await protectRoute(Astro, { requiredRole: 'admin' })
+
+// If not authenticated or not admin, redirect
+if (redirect) {
+  return redirect
+}
+---
+
+<BaseLayout title="Audit Logs | Admin Dashboard">
+  <main class="container mx-auto px-4 py-8">
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold">Audit Log Dashboard</h1>
+      <p class="text-muted-foreground mt-2">
+        Monitor and analyze system activity and security events
+      </p>
+    </div>
+
+    <AuditLogDashboard client:load />
+  </main>
+</BaseLayout>
