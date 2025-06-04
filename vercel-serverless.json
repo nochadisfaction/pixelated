@@ -1,0 +1,127 @@
+{
+  "version": 2,
+  "name": "bias-detection-engine",
+  "regions": ["iad1", "sfo1"],
+  "functions": {
+    "src/pages/api/bias-detection/health.ts": {
+      "memory": 256,
+      "maxDuration": 10
+    },
+    "src/pages/api/bias-detection/analyze.ts": {
+      "memory": 1024,
+      "maxDuration": 30
+    },
+    "src/pages/api/bias-detection/dashboard.ts": {
+      "memory": 512,
+      "maxDuration": 20
+    },
+    "src/pages/api/bias-detection/export.ts": {
+      "memory": 1024,
+      "maxDuration": 60
+    }
+  },
+  "builds": [
+    {
+      "src": "src/pages/api/**/*.ts",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": [
+          "src/lib/**",
+          "src/types/**",
+          "src/utils/**"
+        ]
+      }
+    },
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/bias-detection/health",
+      "dest": "/src/pages/api/bias-detection/health.ts",
+      "methods": ["GET"],
+      "headers": {
+        "Cache-Control": "s-maxage=60, stale-while-revalidate"
+      }
+    },
+    {
+      "src": "/api/bias-detection/analyze",
+      "dest": "/src/pages/api/bias-detection/analyze.ts",
+      "methods": ["POST"],
+      "headers": {
+        "Cache-Control": "no-cache"
+      }
+    },
+    {
+      "src": "/api/bias-detection/dashboard",
+      "dest": "/src/pages/api/bias-detection/dashboard.ts",
+      "methods": ["GET"],
+      "headers": {
+        "Cache-Control": "s-maxage=300, stale-while-revalidate"
+      }
+    },
+    {
+      "src": "/api/bias-detection/export",
+      "dest": "/src/pages/api/bias-detection/export.ts",
+      "methods": ["GET"],
+      "headers": {
+        "Cache-Control": "no-cache"
+      }
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production",
+    "DATABASE_URL": "@database-url",
+    "REDIS_URL": "@redis-url",
+    "JWT_SECRET": "@jwt-secret",
+    "SUPABASE_URL": "@supabase-url",
+    "SUPABASE_ANON_KEY": "@supabase-anon-key",
+    "ENCRYPTION_KEY": "@encryption-key",
+    "PYTHON_SERVICE_URL": "@python-service-url",
+    "LOG_LEVEL": "info"
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/health",
+      "destination": "/api/bias-detection/health"
+    }
+  ],
+  "github": {
+    "autoAlias": false,
+    "silent": true
+  },
+  "trailingSlash": false,
+  "cleanUrls": true
+} 

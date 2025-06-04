@@ -1,0 +1,91 @@
+---
+interface Props {
+  title?: string
+  subtitle?: string
+  isSearchable?: boolean
+  isCentered?: boolean
+  class?: string
+}
+
+const {
+  title,
+  subtitle,
+  isSearchable = false,
+  isCentered = false,
+  class: className,
+} = Astro.props
+---
+
+<div
+  role="banner"
+  aria-label="Page header"
+  class:list={{
+    'prose mx-auto mb-4': true,
+    'text-center': isCentered,
+  }}
+>
+  {
+    title && (
+      <h1
+        class="text-3xl mb-2"
+        data-pagefind-body={isSearchable ? true : undefined}
+        data-pagefind-weight={isSearchable ? '10' : undefined}
+        data-pagefind-meta={isSearchable ? 'title' : undefined}
+      >
+        {title}
+      </h1>
+    )
+  }
+  {subtitle && <p class="mt--4! op-50 italic">{subtitle}</p>}
+  <slot name="head" />
+</div>
+
+{
+  Astro.slots.has('article') && (
+    <article
+      class="slide-enter-content prose mx-auto"
+      data-pagefind-body={isSearchable ? true : undefined}
+    >
+      <slot name="article" />
+    </article>
+  )
+}
+
+{
+  Astro.slots.has('default') && (
+    <div class:list={['mx-auto w-full', className]}>
+      <slot />
+    </div>
+  )
+}
+
+{
+  Astro.slots.has('list') && (
+    <div class="prose mx-auto">
+      <slot name="list" />
+    </div>
+  )
+}
+
+{
+  Astro.slots.has('wide') && (
+    <div class="max-w-300 mx-auto">
+      <slot name="wide" />
+    </div>
+  )
+}
+
+{
+  Astro.slots.has('github') && (
+    <div class="max-w-65ch mx-auto">
+      <slot name="github" />
+    </div>
+  )
+}
+
+<style>
+  .prose {
+    width: 100%;
+    max-width: 65ch;
+  }
+</style>

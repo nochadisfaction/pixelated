@@ -1,0 +1,192 @@
+name: 🚀 Dual Deployment (Vercel + Cloudflare)
+
+on:
+  push:
+    branches: [main, production]
+  workflow_dispatch:
+    inputs:
+      deploy_vercel:
+        description: 'Deploy to Vercel'
+        required: true
+        default: true
+        type: boolean
+      deploy_cloudflare:
+        description: 'Deploy to Cloudflare'
+        required: true
+        default: true
+        type: boolean
+      parallel_deployment:
+        description: 'Run deployments in parallel'
+        required: true
+        default: true
+        type: boolean
+
+env:
+  NODE_VERSION: '18'
+  PNPM_VERSION: '9'
+
+jobs:
+  # Parallel deployment strategy
+  deploy-parallel:
+    if: ${{ (github.event_name == 'push') || (github.event.inputs.parallel_deployment == 'true') }}
+    runs-on: ubuntu-latest
+    name: 🔄 Parallel Deployment
+    strategy:
+      matrix:
+        platform: 
+          - name: vercel
+            enabled: ${{ github.event_name == 'push' || github.event.inputs.deploy_vercel == 'true' }}
+          - name: cloudflare  
+            enabled: ${{ github.event_name == 'push' || github.event.inputs.deploy_cloudflare == 'true' }}
+        exclude:
+          - platform: { enabled: false }
+
+    steps:
+      - name: 📚 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📦 Setup PNPM
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: 🔧 Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🏗️ Build for Vercel
+        if: matrix.platform.name == 'vercel'
+        env:
+          NODE_ENV: production
+          VERCEL: 1
+          BUILDING_FOR_VERCEL: 1
+        run: pnpm astro build --config astro.config.mjs
+
+      - name: 🏗️ Build for Cloudflare  
+        if: matrix.platform.name == 'cloudflare'
+        env:
+          NODE_ENV: production
+          CLOUDFLARE_BUILD: 1
+          BUILDING_FOR_CLOUDFLARE: 1
+        run: pnpm astro build --config astro.config.cloudflare.mjs
+
+      - name: 🚀 Deploy to Vercel
+        if: matrix.platform.name == 'vercel'
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+
+      - name: ☁️ Deploy to Cloudflare Pages
+        if: matrix.platform.name == 'cloudflare'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=pixelated-backup
+
+  # Sequential deployment strategy (fallback)
+  deploy-sequential:
+    if: ${{ github.event.inputs.parallel_deployment == 'false' }}
+    runs-on: ubuntu-latest
+    name: 🔄 Sequential Deployment
+
+    steps:
+      - name: 📚 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📦 Setup PNPM
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: 🔧 Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Deploy to Vercel first
+      - name: 🏗️ Build for Vercel
+        if: ${{ github.event.inputs.deploy_vercel == 'true' || github.event_name == 'push' }}
+        env:
+          NODE_ENV: production
+          VERCEL: 1
+          BUILDING_FOR_VERCEL: 1
+        run: pnpm astro build --config astro.config.mjs
+
+      - name: 🚀 Deploy to Vercel
+        if: ${{ github.event.inputs.deploy_vercel == 'true' || github.event_name == 'push' }}
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+
+      # Clean and deploy to Cloudflare
+      - name: 🧹 Clean Build Directory
+        if: ${{ github.event.inputs.deploy_cloudflare == 'true' || github.event_name == 'push' }}
+        run: |
+          rm -rf dist
+          rm -rf .astro
+
+      - name: 🏗️ Build for Cloudflare
+        if: ${{ github.event.inputs.deploy_cloudflare == 'true' || github.event_name == 'push' }}
+        env:
+          NODE_ENV: production
+          CLOUDFLARE_BUILD: 1
+          BUILDING_FOR_CLOUDFLARE: 1
+        run: pnpm astro build --config astro.config.cloudflare.mjs
+
+      - name: ☁️ Deploy to Cloudflare Pages
+        if: ${{ github.event.inputs.deploy_cloudflare == 'true' || github.event_name == 'push' }}
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=pixelated-backup
+
+  # Health check and notification
+  post-deployment:
+    needs: [deploy-parallel]
+    if: always()
+    runs-on: ubuntu-latest
+    name: 🔍 Post-Deployment Health Check
+
+    steps:
+      - name: 🏥 Health Check - Vercel
+        if: ${{ github.event.inputs.deploy_vercel == 'true' || github.event_name == 'push' }}
+        run: |
+          echo "🔍 Checking Vercel deployment..."
+          curl -f https://pixelatedempathy.com/health || exit 1
+          echo "✅ Vercel deployment is healthy"
+
+      - name: 🏥 Health Check - Cloudflare
+        if: ${{ github.event.inputs.deploy_cloudflare == 'true' || github.event_name == 'push' }}
+        run: |
+          echo "🔍 Checking Cloudflare deployment..."
+          sleep 30 # Wait for Cloudflare propagation
+          curl -f https://pixelated-backup.pages.dev/health || exit 1
+          echo "✅ Cloudflare deployment is healthy"
+
+      - name: 📊 Deployment Summary
+        run: |
+          echo "🌐 Deployment Summary:"
+          echo "Primary (Vercel): https://pixelatedempathy.com"
+          echo "Backup (Cloudflare): https://pixelated-backup.pages.dev"
+          echo "✅ Dual deployment completed successfully!" 

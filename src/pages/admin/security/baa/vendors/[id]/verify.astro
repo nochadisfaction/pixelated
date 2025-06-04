@@ -1,0 +1,737 @@
+---
+/// <reference types="astro/client" />
+export const prerender = false;
+import AdminLayout from '../../../../../../layouts/AdminLayout.astro'
+import { BusinessAssociateService } from '../../../../../../lib/security/baa/BusinessAssociateService'
+import { ComplianceVerificationService } from '../../../../../../lib/security/baa/ComplianceVerificationService'
+import {
+  ComplianceLevel,
+  VerificationMethod,
+} from '../../../../../../lib/security/baa/types'
+
+// Get vendor ID from URL params
+const id = Astro.url.searchParams.get('id') as string // Initialize servicesconst businessAssociateService = new BusinessAssociateService()
+const verificationService = new ComplianceVerificationService()
+
+// Initialize with default requirements if necessary
+if (verificationService.getAllRequirements().length === 0) {
+  verificationService.initializeDefaultRequirements()
+}
+
+// Get the business associate
+const businessAssociateService = new BusinessAssociateService()
+const vendor = businessAssociateService.getBusinessAssociate(id || '')
+// Redirect if vendor not found
+if (!vendor) {
+  return { redirect: '/admin/security/baa/vendors' }
+}
+
+// Get applicable requirements for this vendor
+const requirements = verificationService.getApplicableRequirements(
+  vendor.type,
+  vendor.serviceCategories,
+)
+
+// Get existing verification history
+const verificationHistory = verificationService.getVerifications(vendor.id)
+
+// Get existing documents
+const documents = verificationService.getDocuments(vendor.id)
+
+// Generate options for select fields
+const complianceLevelOptions = Object.values(ComplianceLevel).map((level) => ({
+  value: level,
+  label: level
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase()),
+}))
+
+const verificationMethodOptions = Object.values(VerificationMethod).map(
+  (method) => ({
+    value: method,
+    label: method
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, (char) => char.toUpperCase()),
+  }),
+)
+
+const documentTypeOptions = [
+  { value: 'certification', label: 'Certification' },
+  { value: 'attestation', label: 'Attestation' },
+  { value: 'audit_report', label: 'Audit Report' },
+  { value: 'questionnaire', label: 'Questionnaire' },
+  { value: 'policy', label: 'Policy Document' },
+  { value: 'other', label: 'Other' },
+]
+---
+
+<AdminLayout
+  title={`Verify Compliance: ${vendor.name}`}
+  description="Verify and document vendor HIPAA compliance"
+>
+  <div class="px-6 py-8">
+    <div class="flex items-center mb-6">
+      <a
+        href="/admin/security/baa/vendors"
+        class="text-indigo-600 hover:text-indigo-900 mr-4"
+      >
+        &larr; Back to Vendors
+      </a>
+      <h1 class="text-2xl font-bold text-gray-800">
+        Verify Compliance: {vendor.name}
+      </h1>
+    </div>
+
+    <!-- Vendor Overview Card -->
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+      <div class="flex justify-between">
+        <div>
+          <h2 class="text-xl font-semibold text-gray-800">{vendor.name}</h2>
+          <p class="text-gray-600 mt-1">{vendor.type.replace(/_/g, ' ')}</p>
+        </div>
+        <div class="text-right">
+          <p class="text-gray-600">Current Status:</p>
+          <div class="mt-1">
+            {
+              (() => {
+                switch (vendor.complianceLevel) {
+                  case ComplianceLevel.HIPAA_CERTIFIED:
+                    return (
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        HIPAA Certified
+                      </span>
+                    )
+                  case ComplianceLevel.THIRD_PARTY_VERIFIED:
+                    return (
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800">
+                        Third Party Verified
+                      </span>
+                    )
+                  case ComplianceLevel.SELF_ATTESTED:
+                    return (
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                        Self Attested
+                      </span>
+                    )
+                  case ComplianceLevel.NON_COMPLIANT:
+                    return (
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        Non Compliant
+                      </span>
+                    )
+                  default:
+                    return (
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                        Not Verified
+                      </span>
+                    )
+                }
+              })()
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+        <div>
+          <p class="text-sm text-gray-500">Contact</p>
+          <p class="text-gray-800">{vendor.contactName}</p>
+          <p class="text-gray-600">{vendor.contactEmail}</p>
+          {
+            vendor.contactPhone && (
+              <p class="text-gray-600">{vendor.contactPhone}</p>
+            )
+          }
+        </div>
+        <div>
+          <p class="text-sm text-gray-500">Services</p>
+          <div class="flex flex-wrap gap-1 mt-1">
+            {
+              vendor.serviceCategories.map((category) => (
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  {category.replace(/_/g, ' ')}
+                </span>
+              ))
+            }
+          </div>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500">Last Verification</p>
+          {
+            vendor.complianceVerificationDate ? (
+              <div>
+                <p class="text-gray-800">
+                  {new Date(
+                    vendor.complianceVerificationDate,
+                  ).toLocaleDateString()}
+                </p>
+                {vendor.complianceExpiryDate && (
+                  <p class="text-gray-600">
+                    Expires:{' '}
+                    {new Date(vendor.complianceExpiryDate).toLocaleDateString()}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <p class="text-gray-600">Not previously verified</p>
+            )
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Compliance Requirements Card -->
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+      <h2 class="text-lg font-semibold mb-4">Compliance Requirements</h2>
+
+      {
+        requirements.length === 0 ? (
+          <p class="text-gray-500">
+            No specific compliance requirements defined for this vendor type and
+            services.
+          </p>
+        ) : (
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th
+                    scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Requirement
+                  </th>
+                  <th
+                    scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Description
+                  </th>
+                  <th
+                    scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Required Documents
+                  </th>
+                  <th
+                    scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Min. Compliance Level
+                  </th>
+                  <th
+                    scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Frequency
+                  </th>
+                  <th
+                    scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                {requirements.map((req) => {
+                  // Check if vendor has documents that satisfy this requirement
+                  const hasRequiredDocuments = req.requiredDocuments.some(
+                    (docType) =>
+                      documents.some(
+                        (doc) => doc.name.includes(docType) && doc.isValid,
+                      ),
+                  )
+
+                  // Check if the vendor's compliance level meets the minimum
+                  const meetsComplianceLevel =
+                    Object.values(ComplianceLevel).indexOf(
+                      vendor.complianceLevel,
+                    ) >=
+                    Object.values(ComplianceLevel).indexOf(
+                      req.minimumComplianceLevel,
+                    )
+
+                  // Determine status
+                  let status = 'Not Verified'
+                  let statusClass = 'bg-gray-100 text-gray-800'
+
+                  if (hasRequiredDocuments && meetsComplianceLevel) {
+                    status = 'Compliant'
+                    statusClass = 'bg-green-100 text-green-800'
+                  } else if (req.isRequired) {
+                    status = 'Non-Compliant'
+                    statusClass = 'bg-red-100 text-red-800'
+                  } else {
+                    status = 'Optional'
+                    statusClass = 'bg-yellow-100 text-yellow-800'
+                  }
+
+                  return (
+                    <tr>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {req.name}
+                      </td>
+                      <td class="px-6 py-4 text-sm text-gray-500">
+                        {req.description}
+                      </td>
+                      <td class="px-6 py-4 text-sm text-gray-500">
+                        <ul class="list-disc list-inside">
+                          {req.requiredDocuments.map((doc) => (
+                            <li>{doc}</li>
+                          ))}
+                        </ul>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {req.minimumComplianceLevel.replace(/_/g, ' ')}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {req.frequency.replace(/_/g, ' ')}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <span
+                          class={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClass}`}
+                        >
+                          {status}
+                        </span>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )
+      }
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <!-- New Verification Form -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <h2 class="text-lg font-semibold mb-4">Record New Verification</h2>
+        <form id="verification-form" class="space-y-4">
+          <input type="hidden" name="vendorId" value={vendor.id} />
+
+          <div>
+            <label
+              for="complianceLevel"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Compliance Level*</label
+            >
+            <select
+              id="complianceLevel"
+              name="complianceLevel"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            >
+              {
+                complianceLevelOptions.map((option) => (
+                  <option value={option.value}>{option.label}</option>
+                ))
+              }
+            </select>
+          </div>
+
+          <div>
+            <label
+              for="verificationMethod"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Verification Method*</label
+            >
+            <select
+              id="verificationMethod"
+              name="verificationMethod"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            >
+              {
+                verificationMethodOptions.map((option) => (
+                  <option value={option.value}>{option.label}</option>
+                ))
+              }
+            </select>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label
+                for="verificationDate"
+                class="block text-sm font-medium text-gray-700 mb-1"
+                >Verification Date*</label
+              >
+              <input
+                type="date"
+                id="verificationDate"
+                name="verificationDate"
+                required
+                value={new Date().toISOString().slice(0, 10)}
+                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+            <div>
+              <label
+                for="expiryDate"
+                class="block text-sm font-medium text-gray-700 mb-1"
+                >Expiry Date</label
+              >
+              <input
+                type="date"
+                id="expiryDate"
+                name="expiryDate"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label
+              for="notes"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Verification Notes</label
+            >
+            <textarea
+              id="notes"
+              name="notes"
+              rows="3"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="Enter any notes about the verification process or findings..."
+            ></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Attach Documents</label
+            >
+            <div id="document-attachments" class="space-y-2 mb-2">
+              <!-- No attachments by default -->
+            </div>
+            <button
+              type="button"
+              id="select-documents-btn"
+              class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              Select Documents
+            </button>
+          </div>
+
+          <div class="flex justify-end pt-4">
+            <button
+              type="submit"
+              class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            >
+              Record Verification
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Upload New Document Form -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <h2 class="text-lg font-semibold mb-4">Upload New Document</h2>
+        <form id="document-form" class="space-y-4">
+          <input type="hidden" name="vendorId" value={vendor.id} />
+
+          <div>
+            <label
+              for="documentName"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Document Name*</label
+            >
+            <input
+              type="text"
+              id="documentName"
+              name="documentName"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="e.g., SOC 2 Type II Report 2025"
+            />
+          </div>
+
+          <div>
+            <label
+              for="documentType"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Document Type*</label
+            >
+            <select
+              id="documentType"
+              name="documentType"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            >
+              {
+                documentTypeOptions.map((option) => (
+                  <option value={option.value}>{option.label}</option>
+                ))
+              }
+            </select>
+          </div>
+
+          <div>
+            <label
+              for="documentDescription"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Description</label
+            >
+            <textarea
+              id="documentDescription"
+              name="documentDescription"
+              rows="2"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="Brief description of the document..."></textarea>
+          </div>
+
+          <div>
+            <label
+              for="documentExpiryDate"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Document Expiry Date</label
+            >
+            <input
+              type="date"
+              id="documentExpiryDate"
+              name="documentExpiryDate"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          </div>
+
+          <div>
+            <label
+              for="documentFile"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Upload Document*</label
+            >
+            <input
+              type="file"
+              id="documentFile"
+              name="documentFile"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            />
+            <p class="mt-1 text-xs text-gray-500">
+              Accepted formats: PDF, DOC, DOCX, XLS, XLSX (max 10MB)
+            </p>
+          </div>
+
+          <div class="flex justify-end pt-4">
+            <button
+              type="submit"
+              class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              Upload Document
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Documents and Verification History -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <!-- Documents Section -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <h2 class="text-lg font-semibold mb-4">Compliance Documents</h2>
+
+        {
+          documents.length === 0 ? (
+            <p class="text-gray-500">
+              No documents have been uploaded for this vendor.
+            </p>
+          ) : (
+            <div class="overflow-y-auto max-h-96">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th
+                      scope="col"
+                      class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Document
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Type
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Uploaded
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  {documents.map((doc) => (
+                    <tr>
+                      <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-600 hover:text-indigo-900">
+                        <a
+                          href={doc.documentUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {doc.name}
+                        </a>
+                        {doc.description && (
+                          <p class="text-xs text-gray-500 truncate">
+                            {doc.description}
+                          </p>
+                        )}
+                      </td>
+                      <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 capitalize">
+                        {doc.type.replace(/_/g, ' ')}
+                      </td>
+                      <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(doc.uploadDate).toLocaleDateString()}
+                        {doc.expiryDate && (
+                          <div class="text-xs text-gray-500">
+                            Expires:{' '}
+                            {new Date(doc.expiryDate).toLocaleDateString()}
+                          </div>
+                        )}
+                      </td>
+                      <td class="px-4 py-3 whitespace-nowrap">
+                        {doc.isValid ? (
+                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            Valid
+                          </span>
+                        ) : (
+                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            Invalid
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )
+        }
+      </div>
+
+      <!-- Verification History Section -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <h2 class="text-lg font-semibold mb-4">Verification History</h2>
+
+        {
+          verificationHistory.length === 0 ? (
+            <p class="text-gray-500">
+              No verification history found for this vendor.
+            </p>
+          ) : (
+            <div class="overflow-y-auto max-h-96">
+              <div class="space-y-4">
+                {verificationHistory.map((verification) => (
+                  <div class="border border-gray-200 rounded-md p-4">
+                    <div class="flex justify-between items-start">
+                      <div>
+                        <p class="text-sm font-medium">
+                          {verification.complianceLevel
+                            .replace(/_/g, ' ')
+                            .replace(/\b\w/g, (char) => char.toUpperCase())}
+                        </p>
+                        <p class="text-xs text-gray-500">
+                          Verified on{' '}
+                          {new Date(
+                            verification.verificationDate,
+                          ).toLocaleDateString()}
+                          via{' '}
+                          {verification.verificationMethod.replace(/_/g, ' ')}
+                        </p>
+                      </div>
+                      {verification.expiryDate && (
+                        <div class="text-right">
+                          <p class="text-xs text-gray-500">
+                            {new Date(verification.expiryDate) > new Date()
+                              ? `Expires on ${new Date(verification.expiryDate).toLocaleDateString()}`
+                              : `Expired on ${new Date(verification.expiryDate).toLocaleDateString()}`}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {verification.notes && (
+                      <div class="mt-2 text-sm text-gray-600 border-t border-gray-100 pt-2">
+                        {verification.notes}
+                      </div>
+                    )}
+
+                    {verification.attachments &&
+                      verification.attachments.length > 0 && (
+                        <div class="mt-2">
+                          <p class="text-xs font-medium text-gray-500">
+                            Attached Documents:
+                          </p>
+                          <ul class="mt-1 text-xs text-indigo-600">
+                            {verification.attachments.map((docId) => {
+                              const doc = documents.find((d) => d.id === docId)
+                              return doc ? (
+                                <li class="inline-block mr-2">
+                                  <a
+                                    href={doc.documentUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="hover:text-indigo-900"
+                                  >
+                                    {doc.name}
+                                  </a>
+                                </li>
+                              ) : null
+                            })}
+                          </ul>
+                        </div>
+                      )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )
+        }
+      </div>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  // Document selection modal - this would be implemented with a proper modal in production
+  document.addEventListener('DOMContentLoaded', () => {
+    const selectDocumentsBtn = document.getElementById('select-documents-btn')
+
+    selectDocumentsBtn?.addEventListener('click', () => {
+      alert(
+        'In a production environment, this would open a modal for selecting from existing documents. For this demo, please upload documents first and then reference them in your verification.',
+      )
+    })
+
+    // Handle document form submission
+    const documentForm = document.getElementById('document-form')
+    documentForm?.addEventListener('submit', (e) => {
+      e.preventDefault()
+
+      // In a real implementation, this would upload the document via API
+      alert('Document upload would be processed here with a real backend API.')
+
+      // In practice, we would show a success message and reload/update the page
+      window.location.reload()
+    })
+
+    // Handle verification form submission
+    const verificationForm = document.getElementById('verification-form')
+    verificationForm?.addEventListener('submit', (e) => {
+      e.preventDefault()
+
+      // In a real implementation, this would record the verification via API
+      alert('Verification would be recorded here with a real backend API.')
+
+      // In practice, we would show a success message and reload/update the page
+      window.location.reload()
+    })
+  })
+</script>

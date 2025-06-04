@@ -1,0 +1,264 @@
+---
+// DLPRulesList.astro
+// Displays the list of DLP rules with toggle controls
+
+import { Badge } from '@/components/ui/badge'
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card'
+import { Switch } from '@/components/ui/switch'
+import { Button } from '@/components/ui/button'
+import type { DLPRule, DLPAction } from '../../../lib/security/dlp'
+
+interface Props {
+  rules: DLPRule[]
+}
+
+const { rules } = Astro.props
+
+// Function to render badge for rule action
+const getActionBadge = (action: DLPAction) => {
+  switch (action) {
+    case 'ALLOW':
+      return { variant: 'outline', text: 'Allow' }
+    case 'REDACT':
+      return { variant: 'secondary', text: 'Redact' }
+    case 'BLOCK':
+      return { variant: 'destructive', text: 'Block' }
+    case 'BLOCK_AND_ALERT':
+      return { variant: 'destructive', text: 'Block & Alert' }
+    default:
+      return { variant: 'outline', text: 'Unknown' }
+  }
+}
+---
+
+<div class="rules-list">
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-xl font-semibold">DLP Rules</h2>
+    <Button data-new-rule class="bg-primary text-white hover:bg-primary/90"
+      >Add New Rule</Button
+    >
+  </div>
+
+  {
+    rules.length === 0 ? (
+      <Card>
+        <CardContent class="py-8">
+          <p class="text-center text-muted-foreground">
+            No DLP rules found. Add a rule to get started.
+          </p>
+        </CardContent>
+      </Card>
+    ) : (
+      <div class="space-y-4">
+        {rules.map((rule) => {
+          const actionBadge = getActionBadge(rule.action)
+          return (
+            <Card key={rule.id}>
+              <CardHeader class="pb-2">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <CardTitle class="text-lg">{rule.name}</CardTitle>
+                    <CardDescription>{rule.description}</CardDescription>
+                  </div>
+                  <div class="flex items-center space-x-2">
+                    <span class="text-sm text-muted-foreground">
+                      {rule.isActive ? 'Active' : 'Inactive'}
+                    </span>
+                    <Switch
+                      checked={rule.isActive}
+                      data-rule-id={rule.id}
+                      data-rule-name={rule.name}
+                      class="toggle-rule"
+                    />
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent class="pt-0">
+                <div class="flex justify-between items-center">
+                  <div>
+                    <Badge variant={actionBadge.variant}>
+                      {actionBadge.text}
+                    </Badge>
+                  </div>
+                  <div class="flex space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      data-edit-rule={rule.id}
+                      data-rule={JSON.stringify(rule)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      data-delete-rule={rule.id}
+                      data-rule-name={rule.name}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )
+        })}
+      </div>
+    )
+  }
+</div>
+
+<script>
+  import { dlpService } from '../../../lib/security/dlp'
+
+  // Function to handle toggle switches for rules
+  function setupToggleHandlers() {
+    document.querySelectorAll('.toggle-rule').forEach((toggle) => {
+      toggle.addEventListener('click', (event) => {
+        const target = event.currentTarget as HTMLElement
+        const ruleId = target.dataset.ruleId
+        const ruleName = target.dataset.ruleName
+
+        if (!ruleId) return
+
+        const isActive = (target as HTMLInputElement).checked
+
+        // Update rule in the service
+        const rule = dlpService.getRule(ruleId)
+        if (rule) {
+          rule.isActive = isActive
+          dlpService.addRule(rule)
+
+          // Dispatch event for the parent component to handle
+          document.dispatchEvent(
+            new CustomEvent('dlp:rule-updated', {
+              detail: { id: ruleId, name: ruleName, isActive },
+            }),
+          )
+        }
+      })
+    })
+  }
+
+  // Function to handle delete buttons
+  function setupDeleteHandlers() {
+    document.querySelectorAll('[data-delete-rule]').forEach((button) => {
+      button.addEventListener('click', (event) => {
+        const target = event.currentTarget as HTMLElement
+        const ruleId = target.dataset.deleteRule
+        const ruleName = target.dataset.ruleName
+
+        if (!ruleId) return
+
+        if (
+          confirm(`Are you sure you want to delete the rule "${ruleName}"?`)
+        ) {
+          // Delete the rule from the service
+          dlpService.removeRule(ruleId)
+
+          // Remove the card from the UI
+          const card = (target as HTMLElement).closest('.card')
+          if (card) {
+            card.remove()
+          }
+
+          // Dispatch event for the parent component to handle
+          document.dispatchEvent(
+            new CustomEvent('dlp:rule-deleted', {
+              detail: { id: ruleId, name: ruleName },
+            }),
+          )
+
+          // Check if there are no more rules
+          const rulesList = document.querySelector('.rules-list')
+          if (rulesList && rulesList.querySelectorAll('.card').length === 0) {
+            // Show the "No rules" message
+            const noRulesCard = document.createElement('div')
+            noRulesCard.className = 'card'
+            noRulesCard.innerHTML = `
+              <div class="py-8">
+                <p class="text-center text-muted-foreground">
+                  No DLP rules found. Add a rule to get started.
+                </p>
+              </div>
+            `
+            rulesList.appendChild(noRulesCard)
+          }
+        }
+      })
+    })
+  }
+
+  // Function to handle edit buttons
+  function setupEditHandlers() {
+    document.querySelectorAll('[data-edit-rule]').forEach((button) => {
+      button.addEventListener('click', (event) => {
+        const target = event.currentTarget as HTMLElement
+        const ruleData = target.dataset.rule
+
+        if (!ruleData) return
+
+        try {
+          const rule = JSON.parse(ruleData)
+
+          // Switch to the editor tab
+          const editorTab = document.querySelector(
+            '[value="editor"]',
+          ) as HTMLElement
+          if (editorTab) {
+            editorTab.click()
+          }
+
+          // Dispatch event to populate the form
+          document.dispatchEvent(
+            new CustomEvent('dlp:edit-rule', {
+              detail: rule,
+            }),
+          )
+        } catch (error) {
+          console.error('Error parsing rule data:', error)
+        }
+      })
+    })
+  }
+
+  // Function to handle add new rule button
+  function setupAddRuleHandler() {
+    const addButton = document.querySelector('[data-new-rule]')
+    if (addButton) {
+      addButton.addEventListener('click', () => {
+        // Switch to the editor tab
+        const editorTab = document.querySelector(
+          '[value="editor"]',
+        ) as HTMLElement
+        if (editorTab) {
+          editorTab.click()
+        }
+
+        // Dispatch event to reset the form
+        document.dispatchEvent(new CustomEvent('dlp:new-rule'))
+      })
+    }
+  }
+
+  // Set up all event handlers when the DOM is ready
+  document.addEventListener('DOMContentLoaded', () => {
+    setupToggleHandlers()
+    setupDeleteHandlers()
+    setupEditHandlers()
+    setupAddRuleHandler()
+
+    // Re-attach handlers when rules list is updated
+    document.addEventListener('dlp:rules-updated', () => {
+      setupToggleHandlers()
+      setupDeleteHandlers()
+      setupEditHandlers()
+    })
+  })
+</script>

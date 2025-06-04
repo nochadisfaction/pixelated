@@ -1,0 +1,145 @@
+# Multi-stage Dockerfile for Bias Detection Engine
+# Stage 1: Build the Node.js application
+FROM node:18-alpine AS builder
+
+# Set working directory
+WORKDIR /app
+
+# Install pnpm
+RUN npm install -g pnpm@8
+
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy source code
+COPY . .
+
+# Build the application
+RUN pnpm build
+
+# Stage 2: Python ML Service
+FROM python:3.11-slim AS python-builder
+
+# Set working directory
+WORKDIR /app/python-service
+
+# Install system dependencies for ML libraries
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    gcc \
+    g++ \
+    gfortran \
+    libopenblas-dev \
+    liblapack-dev \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy Python requirements
+COPY src/lib/ai/bias-detection/python-service/requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Copy Python service files
+COPY src/lib/ai/bias-detection/python-service/ .
+
+# Stage 3: Production runtime
+FROM node:18-alpine AS runtime
+
+# Install Python and system dependencies
+RUN apk add --no-cache \
+    python3 \
+    py3-pip \
+    build-base \
+    linux-headers \
+    libffi-dev \
+    openssl-dev \
+    postgresql-client \
+    curl
+
+# Create app user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nextjs -u 1001
+
+# Set working directory
+WORKDIR /app
+
+# Copy built application from builder stage
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+
+# Copy Python ML service
+COPY --from=python-builder --chown=nextjs:nodejs /app/python-service ./python-service
+
+# Install Python dependencies in runtime
+RUN pip3 install --no-cache-dir -r ./python-service/requirements.txt
+
+# Create necessary directories
+RUN mkdir -p /app/logs /app/data /app/temp && \
+    chown -R nextjs:nodejs /app/logs /app/data /app/temp
+
+# Set environment variables
+ENV NODE_ENV=production \
+    PORT=3000 \
+    PYTHON_SERVICE_PORT=5000 \
+    PYTHON_PATH=/usr/bin/python3
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:3000/api/bias-detection/health || exit 1
+
+# Expose ports
+EXPOSE 3000 5000
+
+# Switch to non-root user
+USER nextjs
+
+# Create startup script
+COPY --chown=nextjs:nodejs <<EOF /app/start.sh
+#!/bin/sh
+set -e
+
+echo "Starting Python ML service..."
+cd /app/python-service
+python3 bias_detection_service.py &
+PYTHON_PID=\$!
+
+echo "Waiting for Python service to be ready..."
+sleep 10
+
+echo "Starting Node.js application..."
+cd /app
+node server.js &
+NODE_PID=\$!
+
+# Function to handle shutdown
+shutdown() {
+    echo "Shutting down services..."
+    kill \$PYTHON_PID \$NODE_PID 2>/dev/null || true
+    wait \$PYTHON_PID \$NODE_PID 2>/dev/null || true
+    echo "Services stopped"
+    exit 0
+}
+
+# Trap signals
+trap shutdown SIGTERM SIGINT
+
+# Wait for services
+wait \$NODE_PID
+EOF
+
+RUN chmod +x /app/start.sh
+
+# Start services
+CMD ["/app/start.sh"]
+
+# Labels for metadata
+LABEL maintainer="bias-detection-team@company.com"
+LABEL version="1.0.0"
+LABEL description="Bias Detection Engine with Node.js API and Python ML Service"
+LABEL org.opencontainers.image.source="https://github.com/company/bias-detection-engine" 

@@ -1,0 +1,304 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { Icon } from 'astro-icon/components'
+import Background from '@/components/backgrounds/Background.astro'
+import type { BgType } from '@/types'
+
+// Add prerender directive to generate static HTML during build
+export const prerender = true
+
+// Define the background type with proper type annotation
+const bgType: BgType = 'particle'
+
+// Define feature interface for type safety
+interface Feature {
+  title: string
+  description: string
+  icon: string
+  benefits: string[]
+  stats: {
+    value: string
+    label: string
+  }[]
+}
+
+// Define main features focusing on AI training and security
+const features: Feature[] = [
+  {
+    title: 'AI-Powered Training',
+    description:
+      'Our platform uses advanced AI to simulate realistic therapy scenarios, providing mental health professionals with hands-on experience in a safe, controlled environment.',
+    icon: 'lucide:brain-circuit',
+    stats: [
+      { value: '98%', label: 'Training Accuracy' },
+      { value: '500+', label: 'Scenarios' },
+      { value: '24/7', label: 'Availability' },
+    ],
+    benefits: [
+      'Realistic patient simulations',
+      'Adaptive learning paths',
+      'Detailed performance analytics',
+      'Scenario customization',
+    ],
+  },
+  {
+    title: 'Military-Grade Security',
+    description:
+      'We implement the highest security standards to protect sensitive data, with end-to-end encryption, secure infrastructure, and regular security audits.',
+    icon: 'lucide:shield-check',
+    stats: [
+      { value: 'AES-256', label: 'Encryption' },
+      { value: 'HIPAA', label: 'Compliant' },
+      { value: 'SOC 2', label: 'Certified' },
+    ],
+    benefits: [
+      'End-to-end encryption',
+      'Role-based access control',
+      'Comprehensive audit logs',
+      'Regular penetration testing',
+    ],
+  },
+]
+
+// Define training scenarios with enhanced descriptions
+const trainingScenarios = [
+  {
+    name: 'Crisis Intervention',
+    icon: 'lucide:alert-triangle',
+    description:
+      'Master critical response techniques for high-stakes situations',
+  },
+  {
+    name: 'Trauma Response',
+    icon: 'lucide:heart-handshake',
+    description: 'Develop expertise in trauma-informed care approaches',
+  },
+  {
+    name: 'Anxiety Management',
+    icon: 'lucide:wind',
+    description: 'Learn effective strategies for anxiety treatment',
+  },
+  {
+    name: 'Depression Treatment',
+    icon: 'lucide:cloud-rain',
+    description: 'Practice evidence-based depression interventions',
+  },
+  {
+    name: 'Substance Abuse',
+    icon: 'lucide:pill',
+    description: 'Handle complex addiction cases with confidence',
+  },
+  {
+    name: 'Personality Disorders',
+    icon: 'lucide:users',
+    description: 'Navigate challenging personality disorder scenarios',
+  },
+  {
+    name: 'Family Therapy',
+    icon: 'lucide:home',
+    description: 'Facilitate effective family therapy sessions',
+  },
+  {
+    name: 'Youth Counseling',
+    icon: 'lucide:baby',
+    description: 'Specialize in child and adolescent therapy',
+  },
+]
+
+// Define pricing tiers
+const pricingTiers = [
+  {
+    name: 'Basic',
+    price: '$99',
+    period: 'per month',
+    description: 'For individual practitioners',
+    features: [
+      '100 training sessions',
+      '10 custom scenarios',
+      'Basic analytics',
+      'Email support',
+    ],
+  },
+  {
+    name: 'Professional',
+    price: '$249',
+    period: 'per month',
+    description: 'For growing practices and clinics',
+    features: [
+      'Unlimited training sessions',
+      '50 custom scenarios',
+      'Advanced analytics',
+      'Priority support',
+      'Advanced analytics',
+    ],
+    popular: true,
+  },
+  {
+    name: 'Enterprise',
+    price: 'Custom',
+    period: 'per organization',
+    description: 'For large organizations and institutions',
+    features: [
+      'All Professional features',
+      'Custom AI model training',
+      'Dedicated support team',
+      'Custom integration options',
+      'Enterprise-grade security',
+    ],
+  },
+]
+---
+
+<BaseLayout
+  title="Features - Pixelated Empathy"
+  description="Discover our advanced AI training platform with military-grade security"
+>
+  <Background type="particle" />
+
+  <main class="relative min-h-screen">
+    <!-- Hero Section -->
+    <section
+      class="relative min-h-[70vh] flex items-center justify-center py-8"
+    >
+      <div class="container mx-auto px-4 py-12 relative z-10">
+        <div
+          class="max-w-4xl mx-auto text-center backdrop-blur-sm bg-black/10 p-8 rounded-2xl"
+        >
+          <h1 class="text-5xl md:text-6xl font-bold text-white mb-6">
+            Revolutionizing Mental Health Training
+          </h1>
+          <p class="text-xl md:text-2xl text-gray-300 mb-8">
+            Experience the future of mental health professional training with
+            our AI-powered platform
+          </p>
+          <div class="mt-8">
+            <a
+              href="/gradient-demo"
+              class="inline-flex items-center gap-2 px-6 py-3 bg-white/20 hover:bg-white/30 rounded-lg transition-colors duration-300 font-medium"
+            >
+              <Icon name="lucide:palette" class="w-5 h-5" />
+              View Background Demo
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="relative py-24">
+      <div class="container mx-auto px-4">
+        {
+          features.map((feature, index) => (
+            <div class="mb-32 last:mb-0">
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div class={`space-y-8 ${index % 2 === 1 ? 'lg:order-2' : ''}`}>
+                  <div class="flex items-center gap-4">
+                    <div class="p-2 rounded-lg bg-lime-500/10">
+                      <Icon name={feature.icon} class="w-8 h-8 text-lime-500" />
+                    </div>
+                    <h2 class="text-3xl font-bold">{feature.title}</h2>
+                  </div>
+
+                  <p class="text-lg text-gray-300">{feature.description}</p>
+
+                  <div class="grid grid-cols-3 gap-4">
+                    {feature.stats.map((stat) => (
+                      <div class="p-4 rounded-lg bg-lime-500/5">
+                        <div class="text-2xl font-bold text-lime-500">
+                          {stat.value}
+                        </div>
+                        <div class="text-sm text-gray-400">{stat.label}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <ul class="space-y-4">
+                    {feature.benefits.map((benefit) => (
+                      <li class="flex items-start gap-3">
+                        <Icon
+                          name="lucide:check-circle"
+                          class="w-6 h-6 text-lime-500 flex-shrink-0 mt-0.5"
+                        />
+                        <span>{benefit}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div class={`relative ${index % 2 === 1 ? 'lg:order-1' : ''}`}>
+                  <img
+                    src={`/images/features/${index === 0 ? 'ai-training' : 'security'}.jpg`}
+                    alt={feature.title}
+                    width="800"
+                    height="600"
+                    class="w-full h-[600px] object-cover rounded-2xl shadow-lg"
+                    loading="lazy"
+                  />
+                </div>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-24 relative">
+      <div class="container mx-auto px-4">
+        <div
+          class="max-w-3xl mx-auto text-center backdrop-blur-sm bg-black/10 p-8 rounded-2xl"
+        >
+          <h2 class="text-4xl font-bold text-white mb-8">
+            Ready to Transform Your Practice?
+          </h2>
+          <p class="text-xl text-gray-300 mb-12">
+            Join the future of mental health training with our secure,
+            AI-powered platform.
+          </p>
+          <div class="flex flex-wrap gap-6 justify-center">
+            <a
+              href="/register"
+              class="px-8 py-4 bg-lime-600 hover:bg-lime-500 rounded-lg font-semibold text-white transition-colors"
+            >
+              Start Free Trial
+            </a>
+            <a
+              href="/demo"
+              class="px-8 py-4 bg-gray-800 hover:bg-gray-700 rounded-lg font-semibold text-white transition-colors"
+            >
+              Schedule Demo
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+
+<script>
+  // Optimize loading of page elements
+  document.addEventListener('DOMContentLoaded', () => {
+    // Lazy load non-critical sections
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible')
+            observer.unobserve(entry.target)
+          }
+        })
+      },
+      {
+        rootMargin: '100px',
+        threshold: 0.1,
+      },
+    )
+
+    // Observe sections that are not in the initial viewport
+    document
+      .querySelectorAll('section:not(:first-child)')
+      .forEach((section) => {
+        observer.observe(section)
+      })
+  })
+</script>

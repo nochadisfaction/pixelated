@@ -1,0 +1,62 @@
+/* Font loading fix */
+@font-face {
+  font-family: 'Inter var';
+  font-weight: 100 900;
+  font-display: swap;
+  font-style: normal;
+  font-named-instance: 'Regular';
+  src: url('/fonts/inter-var.woff2') format('woff2');
+}
+
+/* Fallback */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/inter-regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/inter-semibold.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('/fonts/inter-extrabold.woff2') format('woff2');
+}
+
+/* Font fixes and overrides */
+
+/* Ensure CutePixel font is loaded with the correct path */
+@font-face {
+  font-family: 'CutePixel';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/CutePixel.ttf') format('truetype');
+}
+
+/* Apply CutePixel font consistently */
+.font-cute {
+  font-family: 'CutePixel', monospace, sans-serif !important;
+  letter-spacing: 0.03em !important;
+}
+
+/* Fix for overall font sizing */
+html {
+  font-size: 16px;
+}
+
+/* Ensure consistent font smoothing */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

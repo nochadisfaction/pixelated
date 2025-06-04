@@ -1,0 +1,5 @@
+# Essential packages that should not be removed by linters
+archiver
+buffer
+@google-cloud/storage
+.github/workflows/security-scanning.yml:447:448:449

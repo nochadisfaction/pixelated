@@ -1,0 +1,137 @@
+
+> pixelated-astro@0.0.1 prebuild /home/vivi/astro
+> pnpm run polyfills && node scripts/download-fonts.mjs
+
+
+> pixelated-astro@0.0.1 polyfills /home/vivi/astro
+> node scripts/copy-polyfills.js
+
+
+📦 Copying polyfill files to public/polyfills...
+
+[36m┌────────────────────────────────────────────────┐[0m
+[36m│[0m [1m✅ Polyfill Packaging Complete[0m          [36m│[0m
+[36m├────────────────────────────────────────────────┤[0m
+[36m│[0m Copied: [32m7[0m files from node_modules     [36m│[0m
+[36m│[0m Created: [32m4[0m custom polyfills           [36m│[0m
+[36m│[0m Total: [1m11[0m files processed              [36m│[0m
+[36m└────────────────────────────────────────────────┘[0m
+Starting font downloads...
+Font already exists: inter-regular.woff2
+Font already exists: inter-semibold.woff2
+Font already exists: inter-extrabold.woff2
+Font already exists: dm-mono-regular.woff2
+Font already exists: dm-mono-medium.woff2
+Font already exists: roboto-condensed-regular.woff2
+
+✅ All fonts downloaded successfully!
+Creating font fallbacks for offline builds...
+✅ Created fallback font CSS
+
+🎉 Font setup complete! Your build should now work offline.
+
+> pixelated-astro@0.0.1 build /home/vivi/astro
+> node scripts/verify-env-startup.js && node scripts/safe-build.js
+
+🔍 Verifying environment variables...
+📊 Current environment: development
+✅ All required environment variables are set.
+   Ensure you are using test data only and not exposing real PHI.
+   For development and testing, use fake patient data and credentials.
+
+============================================================
+ 🛠️  GRADIANT SAFE BUILD PROCESS 🛠️
+============================================================
+
+🧹 Step 1: Cleaning up environment...
+📋 Running: node /home/vivi/astro/scripts/clean-build.js
+🧹 Cleaning up before build...
+No backup files found, continuing...
+Removing cache directory: .astro
+Removing cache directory: node_modules/.vite
+Removing cache directory: node_modules/.astro
+✅ Cleanup completed successfully
+
+📦 Step 2: Preparing polyfills...
+📋 Running: node /home/vivi/astro/scripts/copy-polyfills.js
+
+📦 Copying polyfill files to public/polyfills...
+
+[36m┌────────────────────────────────────────────────┐[0m
+[36m│[0m [1m✅ Polyfill Packaging Complete[0m          [36m│[0m
+[36m├────────────────────────────────────────────────┤[0m
+[36m│[0m Copied: [32m7[0m files from node_modules     [36m│[0m
+[36m│[0m Created: [32m4[0m custom polyfills           [36m│[0m
+[36m│[0m Total: [1m11[0m files processed              [36m│[0m
+[36m└────────────────────────────────────────────────┘[0m
+
+🚀 Step 3: Running Astro build...
+📋 Running: npx astro build
+npm warn Unknown env config "package-manager". This will stop working in the next major version of npm.
+npm warn Unknown env config "auto-install-peers". This will stop working in the next major version of npm.
+npm warn Unknown env config "enable-pre-post-scripts". This will stop working in the next major version of npm.
+npm warn Unknown env config "verify-deps-before-run". This will stop working in the next major version of npm.
+npm warn Unknown env config "_jsr-registry". This will stop working in the next major version of npm.
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm.
+npm warn Unknown project config "strict-peer-dependencies". This will stop working in the next major version of npm.
+npm warn Unknown project config "package-manager". This will stop working in the next major version of npm.
+npm warn Unknown project config "enable-pre-post-scripts". This will stop working in the next major version of npm.
+✅ Found SENTRY_AUTH_TOKEN (length: 71)
+09:41:03 [astro-flexsearch] [astro-flexsearch] Setting up FlexSearch integration
+[2025-05-04T13:41:03.741Z] [INFO] [phi-audit] Configuration module loaded {"dataType":"system-config","action":"module-load","component":"config.ts"}
+09:41:04 [WARN] [vite] (!) Experimental optimizeDeps.disabled and deps pre-bundling during build were removed in Vite 5.1.
+    To disable the deps optimizer, set optimizeDeps.noDiscovery to true and optimizeDeps.include as undefined or empty.
+    Please remove optimizeDeps.disabled from your config.
+
+
+09:41:04 [content] Syncing content
+09:41:05 [content] Synced content
+09:41:05 [types] Generated 1.37s
+09:41:05 [build] output: "server"
+09:41:05 [build] mode: "server"
+09:41:05 [build] directory: /home/vivi/astro/dist/
+09:41:05 [build] adapter: @astrojs/vercel
+09:41:05 [build] Collecting build info...
+09:41:05 [build] ✓ Completed in 2.47s.
+09:41:05 [build] Building server entrypoints...
+09:41:05 [WARN] [vite] (!) Experimental optimizeDeps.disabled and deps pre-bundling during build were removed in Vite 5.1.
+    To disable the deps optimizer, set optimizeDeps.noDiscovery to true and optimizeDeps.include as undefined or empty.
+    Please remove optimizeDeps.disabled from your config.
+
+
+[flexsearch-ssr] Intercepting import: flexsearch
+[flexsearch-ssr] Intercepting import: flexsearch/dist/module/document
+09:41:16 [astro-icon] Loaded icons from src/icons, lucide, mdi
+09:41:25 [ERROR] [vite] ✗ Build failed in 20.06s
+src/pages/api/v1/search.ts (3:9): "blogSearch" is not exported by "src/lib/search.ts", imported by "src/pages/api/v1/search.ts".
+file: [hidden-data].ts:3:9
+
+1: import type { APIRoute } from 'astro'
+2: import { getCollection } from 'astro:content'
+3: import { blogSearch } from '@/lib/search'
+            ^
+4:
+5: let isIndexed = false
+
+  Location:
+    [hidden-data].ts:3:9
+  Stack trace:
+    at getRollupError (file:///home/vivi/astro/node_modules/.pnpm/rollup@4.40.0/node_modules/rollup/dist/es/shared/parseAst.js:397:41)
+    at Module.error (file:///home/vivi/astro/node_modules/.pnpm/rollup@4.40.0/node_modules/rollup/dist/es/shared/node-entry.js:16750:16)
+    at ModuleScope.findVariable (file:///home/vivi/astro/node_modules/.pnpm/rollup@4.40.0/node_modules/rollup/dist/es/shared/node-entry.js:14855:39)
+    at FunctionBodyScope.findVariable (file:///home/vivi/astro/node_modules/.pnpm/rollup@4.40.0/node_modules/rollup/dist/es/shared/node-entry.js:5583:38)
+    at BlockScope.findVariable (file:///home/vivi/astro/node_modules/.pnpm/rollup@4.40.0/node_modules/rollup/dist/es/shared/node-entry.js:5583:38)
+    at CallExpression.bind (file:///home/vivi/astro/node_modules/.pnpm/rollup@4.40.0/node_modules/rollup/dist/es/shared/node-entry.js:2784:23)
+    at ExpressionStatement.bind (file:///home/vivi/astro/node_modules/.pnpm/rollup@4.40.0/node_modules/rollup/dist/es/shared/node-entry.js:2784:23)
+    at ForOfStatement.bind (file:///home/vivi/astro/node_modules/.pnpm/rollup@4.40.0/node_modules/rollup/dist/es/shared/node-entry.js:2784:23)
+    at FunctionDeclaration.bind (file:///home/vivi/astro/node_modules/.pnpm/rollup@4.40.0/node_modules/rollup/dist/es/shared/node-entry.js:2784:23)
+    at Module.bindReferences (file:///home/vivi/astro/node_modules/.pnpm/rollup@4.40.0/node_modules/rollup/dist/es/shared/node-entry.js:16729:18)
+    at Graph.build (file:///home/vivi/astro/node_modules/.pnpm/rollup@4.40.0/node_modules/rollup/dist/es/shared/node-entry.js:22381:14)
+    at async catchUnfinishedHookActions (file:///home/vivi/astro/node_modules/.pnpm/rollup@4.40.0/node_modules/rollup/dist/es/shared/node-entry.js:22540:16)
+    at async buildEnvironment (file:///home/vivi/astro/node_modules/.pnpm/vite@6.3.4_@types+node@22.15.2_jiti@2.4.2_lightningcss@1.29.3_terser@5.39.0_tsx@4.19.3_yaml@2.7.1/node_modules/vite/dist/node/chunks/dep-Bn81Esdm.js:46206:14)
+    at async viteBuild (file:///home/vivi/astro/node_modules/.pnpm/astro@5.7.10_@azure+cosmos@4.3.0_@azure+data-tables@13.3.0_@azure+storage-blob@12.27.0__c347c0bdb20e4785a14affc15147db09/node_modules/astro/dist/core/build/static-build.js:47:21)
+    at async AstroBuilder.run (file:///home/vivi/astro/node_modules/.pnpm/astro@5.7.10_@azure+cosmos@4.3.0_@azure+data-tables@13.3.0_@azure+storage-blob@12.27.0__c347c0bdb20e4785a14affc15147db09/node_modules/astro/dist/core/build/index.js:186:7)
+    at async build (file:///home/vivi/astro/node_modules/.pnpm/astro@5.7.10_@azure+cosmos@4.3.0_@azure+data-tables@13.3.0_@azure+storage-blob@12.27.0__c347c0bdb20e4785a14affc15147db09/node_modules/astro/dist/cli/build/index.js:29:3)
+    at async cli (file:///home/vivi/astro/node_modules/.pnpm/astro@5.7.10_@azure+cosmos@4.3.0_@azure+data-tables@13.3.0_@azure+storage-blob@12.27.0__c347c0bdb20e4785a14affc15147db09/node_modules/astro/dist/cli/index.js:175:5)
+❌ Command failed with exit code: 1
+ ELIFECYCLE  Command failed with exit code 1.

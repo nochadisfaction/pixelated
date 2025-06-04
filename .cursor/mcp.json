@@ -1,0 +1,112 @@
+{
+    "mcpServers": {
+              "MCP Installer": {
+                "command": "npx",
+                "type": "stdio",
+                "args": [
+                  "cursor-mcp-installer-free",
+                  "/workspaces/pixelated"
+                ]
+              },
+              "shadcn": {
+                "command": "npx",
+                "args": [
+                  "-y",
+                  "shadcn@canary",
+                  "registry:mcp"
+                ],
+                "env": {
+                  "REGISTRY_URL": "https://tweakcn.com/r/themes/registry.json"
+                }
+              },
+              "perplexity-search": {
+                "command": "pnpm",
+                "args": [
+                  "dlx",
+                  "@smithery/cli@latest",
+                  "run",
+                  "@arjunkmrm/perplexity-search",
+                  "--key",
+                  "ab351ddc-26d1-4448-a316-d9ad9c5df416"
+                ]
+              },
+              "@21st-dev/magic": {
+                "command": "pnpm",
+                "args": [
+                  "dlx",
+                  "@21st-dev/magic@latest",
+                  "API_KEY=\"${MAGIC_API_KEY}\""
+                ]
+              },
+              "github": {
+                "command": "pnpm",
+                "args": [
+                  "dlx",
+                  "@smithery/cli@latest",
+                  "run",
+                  "@smithery-ai/github",
+                  "--key",
+                  "ab351ddc-26d1-4448-a316-d9ad9c5df416"
+                ]
+              },
+              "server-sequential-thinking": {
+                "command": "pnpm",
+                "args": [
+                  "dlx",
+                  "@smithery/cli@latest",
+                  "run",
+                  "@smithery-ai/server-sequential-thinking",
+                  "--key",
+                  "ab351ddc-26d1-4448-a316-d9ad9c5df416"
+                ]
+              },
+              "gitingest-mcp": {
+                "command": "pnpm",
+                "args": [
+                  "dlx",
+                  "@smithery/cli@latest",
+                  "run",
+                  "@puravparab/gitingest-mcp",
+                  "--key",
+                  "2027c5a9-0f31-4895-80c9-82bbfddb4287"
+                ]
+              },
+              "think-mcp-server": {
+                "command": "pnpm",
+                "args": [
+                  "dlx",
+                  "@smithery/cli@latest",
+                  "run",
+                  "@PhillipRt/think-mcp-server",
+                  "--key",
+                  "ab351ddc-26d1-4448-a316-d9ad9c5df416"
+                ]
+              },
+              "playwright-mcp": {
+                "command": "pnpm",
+                "args": [
+                  "dlx",
+                  "@smithery/cli@latest",
+                  "run",
+                  "@microsoft/playwright-mcp",
+                  "--key",
+                  "2027c5a9-0f31-4895-80c9-82bbfddb4287"
+                ]
+              },
+              "time-mcp": {
+                "command": "pnpm",
+                "args": [
+                  "dlx",
+                  "@smithery/cli@latest",
+                  "run",
+                  "@yokingma/time-mcp",
+                  "--key",
+                  "2027c5a9-0f31-4895-80c9-82bbfddb4287"
+                ]
+              },
+              "Neon": {
+                "command": "pnpm",
+                "args": ["dlx", "mcp-remote", "https://mcp.neon.tech/sse"]
+              }
+            }
+        }

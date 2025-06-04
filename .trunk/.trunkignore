@@ -1,0 +1,6 @@
+*/.specstory/*
+*/node_modules/*
+.specstory/**/*
+**/.specstory/**/*
+public/polyfills/**/*
+**/*.min.js
