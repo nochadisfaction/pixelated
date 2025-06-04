@@ -11,7 +11,7 @@ def print_response(response):
     """Print formatted response from the server"""
     try:
         print(json.dumps(response.json(), indent=2))
-    except Exception:
+    except json.JSONDecodeError:
         print(response.text)
 
 

@@ -8,7 +8,7 @@ fi
 
 # Install dependencies (if they're not already installed)
 echo "Installing required packages..."
-pip install -r requirements-mem0.txt
+python3 -m pip install -r requirements-mem0.txt
 
 # Set environment variables if not already set
 if [ -z "${MEM0_API_KEY}" ]; then
