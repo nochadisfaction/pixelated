@@ -10,7 +10,7 @@ import icon from 'astro-icon'
 import sentry from '@sentry/astro'
 import vitesse from 'astro-vitesse'
 
-import cloudflare from '@astrojs/cloudflare';
+import cloudflare from '@astrojs/cloudflare'
 
 // Check build environment
 const isProduction = process.env.NODE_ENV === 'production'
@@ -27,7 +27,8 @@ if (isVercel) {
 }
 
 // Check if web fonts fetching should be disabled
-const disableWebFonts = process.env.DISABLE_WEB_FONTS === 'true'
+const disableWebFonts =
+  process.env.DISABLE_WEB_FONTS === 'true' || process.env.CI === 'true'
 
 export default defineConfig({
   site: 'https://pixelatedempathy.com',
@@ -90,7 +91,7 @@ export default defineConfig({
       dsn: process.env.SENTRY_DSN,
       sendDefaultPii: true,
       sourceMapsUploadOptions: {
-        project: "pixelated",
+        project: 'pixelated',
         authToken: process.env.SENTRY_AUTH_TOKEN,
       },
     }),
@@ -243,4 +244,4 @@ export default defineConfig({
   build: {
     inlineStylesheets: 'auto',
   },
-}) 
+})
