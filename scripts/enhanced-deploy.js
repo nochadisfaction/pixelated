@@ -45,7 +45,7 @@ function runCommand(command, label, silent = false) {
 
 function confirmPrompt(message) {
   // In CI environment, assume yes
-  if (process.env.CI === 'true') {
+  if (process.env.CI) {
     return Promise.resolve(true)
   }
   
@@ -75,7 +75,6 @@ async function runPreDeploymentChecks(environment) {
     }
   }
   
-  // Check branch for production deployments
   const branch = (await git.branch()).current
   if (environment === 'production' && !['main', 'master'].includes(branch)) {
     const proceed = await confirmPrompt(`Deploying to production from ${branch} branch. Continue?`)
@@ -84,15 +83,16 @@ async function runPreDeploymentChecks(environment) {
     }
   }
   
-  // Validate existing tags for rollback capability
   try {
     await validateTagsForRollback(environment)
     console.log(chalk.green('✅ Previous deployments found - rollback capability available'))
   } catch (error) {
-    if (error.message.includes('No') && error.message.includes('tags found')) {
-      console.log(chalk.yellow('⚠️ No previous deployment tags found - this will be the first deployment'))
-    } else if (error.message.includes('Only one')) {
-      console.log(chalk.yellow('⚠️ Only one previous deployment - limited rollback capability'))
+    if ((error.message.includes('No') && error.message.includes('tags found')) || 
+        error.message.includes('Only one')) {
+      const message = error.message.includes('No') ? 
+        '⚠️ No previous deployment tags found - this will be the first deployment' :
+        '⚠️ Only one previous deployment - limited rollback capability'
+      console.log(chalk.yellow(message))
     } else {
       console.log(chalk.yellow(`⚠️ Tag validation: ${error.message}`))
     }
@@ -323,7 +323,8 @@ async function main() {
   
   const validEnvironments = ['staging', 'production']
   
-  if (!validEnvironments.includes(environment) && command === 'deploy') {
+  // Merge nested condition: validate environment and command in one check
+  if (command === 'deploy' && !validEnvironments.includes(environment)) {
     console.error(chalk.red(`❌ Invalid environment: ${environment}. Must be one of: ${validEnvironments.join(', ')}`))
     process.exit(1)
   }
