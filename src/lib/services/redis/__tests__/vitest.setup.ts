@@ -15,7 +15,7 @@ declare global {
       toHaveTTL(expectedTTL: number): Promise<void>
     }
     // Ensure we're not accidentally using JestAssertion
-    interface AsymmetricMatchersContaining extends Assertion {}
+    type AsymmetricMatchersContaining = Assertion
   }
 }
 

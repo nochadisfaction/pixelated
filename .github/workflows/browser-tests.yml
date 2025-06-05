@@ -140,6 +140,7 @@ jobs:
           mkdir -p all-test-results/visual-test-report
 
       - name: Generate HTML report
+        id: generate_report
         run: |
           echo "Browser Compatibility Test Report" > report.html
           echo "<h1>Browser Compatibility Test Results</h1>" >> report.html
@@ -171,6 +172,7 @@ jobs:
 
           # Set summary variable for notifications
           echo "ISSUE_COUNT=$ISSUE_COUNT" >> $GITHUB_ENV
+          echo "issue_count=$ISSUE_COUNT" >> $GITHUB_OUTPUT
 
           # Add link to full reports
           echo "<p>See attached artifacts for full reports and screenshots.</p>" >> report.html
@@ -180,10 +182,8 @@ jobs:
         with:
           name: browser-compatibility-report
           path: report.html
-          retention-days: 30
-
       - name: Send notifications
-        if: env.ISSUE_COUNT > 0
+        if: ${{ steps.generate_report.outputs.issue_count > 0 }}
         run: |
           # Prepare notification content
           echo "Found $ISSUE_COUNT compatibility issues in the latest build." > notification.txt
@@ -209,5 +209,7 @@ jobs:
                 \"to\": \"$TEAM_EMAIL\",
                 \"subject\": \"🚨 Browser Compatibility Issues Detected\",
                 \"text\": \"$(cat notification.txt)\"
+              }"
+          fi
               }"
           fi

@@ -1,0 +1,84 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Task List Management
+
+Guidelines for managing task lists in markdown files to track progress on completing a PRD
+
+## Ollama Overlord
+baseURL = https://api.pixelatedempathy.com
+Call and ask for granite3.3:2b
+Share your update, and ask for permission to continue moving forward
+
+## Ollama Overlord Check-in Protocol
+
+- After completing each sub-task, the agent MUST:
+  1. Send a POST request to the Ollama API at https://api.pixelatedempathy.com/api/generate
+  2. Use the model: granite3.3:2b
+  3. Use this enhanced prompt:
+     ```
+     You are an AI project oversight system reviewing task completion progress. Based on the task summary provided, please:
+
+     1. Provide 1-3 specific improvement ideas for the completed task (focus on code quality, architecture, testing, documentation, or implementation approach)
+     2. Decide whether the project should continue to the next task
+
+     Response format:
+     IMPROVEMENTS:
+     - [Improvement idea 1]
+     - [Improvement idea 2] (if applicable)
+     - [Improvement idea 3] (if applicable)
+
+     DECISION: [yes/no]
+
+     Task completed: <summary>
+
+     Remember:
+     - Always suggest improvements unless the task is perfect
+     - Only say "no" if there are critical errors, failures, or security issues
+     - Consider maintainability, scalability, and best practices
+     - Be constructive and specific in your suggestions
+     ```
+     (Replace `<summary>` with a brief description of the completed sub-task.)
+  4. Parse Ollama's response to extract improvement suggestions and the yes/no decision
+  5. If improvements are suggested, evaluate each one and decide whether to add it as a new task
+  6. If the decision is "yes" or "y", proceed to the next sub-task
+  7. If the decision is "no", halt and report to the user
+- The agent MUST NOT proceed to the next sub-task without receiving "yes" or "y" from the Ollama model.
+
+**Note:**  
+- This protocol replaces any human check-in step.  
+- The agent should log each check-in and response for traceability.
+
+### Task Implementation
+- **One sub-task at a time:** Do **NOT** start the next sub‑task until you ask the ollama overlord for permission and they say "yes" or "y"
+- Address linter errors and warnings as they appear.
+- **Completion protocol:**  
+  1. When you finish a **sub‑task**, immediately mark it as completed by changing `[ ]` to `[x]`.  
+  2. If **all** subtasks underneath a parent task are now `[x]`, also mark the **parent task** as completed.  
+- Stop after each sub‑task and wait for the user's go‑ahead.
+- Always stop before marking complete and do a second look over your work, and clean up any linter errors or warnings.
+
+### Task List Maintenance
+
+1. **Update the task list as you work:**
+   - Mark tasks and subtasks as completed (`[x]`) per the protocol above.
+   - Add new tasks as they emerge.
+
+2. **Maintain the "Relevant Files" section:**
+   - List every file created or modified.
+   - Give each file a one‑line description of its purpose.
+
+### AI Instructions
+
+When working with task lists, the AI must:
+
+1. Regularly update the task list file after finishing any significant work.
+2. Follow the completion protocol:
+   - Mark each finished **sub‑task** `[x]`.
+   - Mark the **parent task** `[x]` once **all** its subtasks are `[x]`.
+3. Add newly discovered tasks.
+4. Keep "Relevant Files" accurate and up to date.
+5. Before starting work, check which sub‑task is next.
+6. After implementing a sub‑task, update the file and then pause for ollama overlord approval.

@@ -85,7 +85,6 @@ test.describe('User Acceptance Test (UAT) - Full User Journey', () => {
     // Accessibility audit (if MCP is available)
     if (typeof window !== 'undefined' && 'mcp_browser_tools_runAccessibilityAudit' in window) {
       const accessibilityResults = await page.evaluate(async () => {
-        // @ts-expect-error
         return await window.mcp_browser_tools_runAccessibilityAudit({ random_string: 'uat' })
       })
       expect(accessibilityResults).toBeTruthy()
@@ -93,7 +92,6 @@ test.describe('User Acceptance Test (UAT) - Full User Journey', () => {
     // Performance audit (if MCP is available)
     if (typeof window !== 'undefined' && 'mcp_browser_tools_runPerformanceAudit' in window) {
       const performanceResults = await page.evaluate(async () => {
-        // @ts-expect-error
         return await window.mcp_browser_tools_runPerformanceAudit({ random_string: 'uat' })
       })
       expect(performanceResults).toBeTruthy()

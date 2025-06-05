@@ -3,17 +3,17 @@ import * as AccordionPrimitive from '@radix-ui/react-accordion'
 import { ChevronDown } from 'lucide-react'
 import { cn } from '../../../lib/utils'
 
-export interface AccordionProps
-  extends React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Root> {}
+export type AccordionProps =
+  React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Root>
 
-export interface AccordionItemProps
-  extends React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Item> {}
+export type AccordionItemProps =
+  React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Item>
 
-export interface AccordionTriggerProps
-  extends React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Trigger> {}
+export type AccordionTriggerProps =
+  React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Trigger>
 
-export interface AccordionContentProps
-  extends React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Content> {}
+export type AccordionContentProps =
+  React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Content>
 
 const Accordion = React.forwardRef<
   React.ElementRef<typeof AccordionPrimitive.Root>,
