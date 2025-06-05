@@ -61,4 +61,4 @@ jobs:
           app-name: 'pixelated'
           slot-name: 'Production'
           package: .
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_BC214F71FB934A50BE2BD2A3B682CA90 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_9DA5E3E711E44EC680A6D72EE26843BB }}
