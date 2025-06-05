@@ -72,6 +72,7 @@ jobs:
           UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
           UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
           CI: 'true'
+          DISABLE_WEB_FONTS: 'true'
 
       - name: Upload test results
         if: always()

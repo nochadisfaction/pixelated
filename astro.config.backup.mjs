@@ -12,7 +12,7 @@ import icon from 'astro-icon'
 import sentry from '@sentry/astro'
 import flexsearchSSRPlugin from './src/plugins/vite-plugin-flexsearch-ssr'
 
-import cloudflare from '@astrojs/cloudflare';
+import cloudflare from '@astrojs/cloudflare'
 
 // Check build environment
 const isProduction = process.env.NODE_ENV === 'production'
@@ -29,7 +29,8 @@ if (isVercel) {
 }
 
 // Check if web fonts fetching should be disabled
-const disableWebFonts = process.env.DISABLE_WEB_FONTS === 'true'
+const disableWebFonts =
+  process.env.DISABLE_WEB_FONTS === 'true' || process.env.CI === 'true'
 
 export default defineConfig({
   site: 'https://pixelatedempathy.com',
@@ -119,7 +120,7 @@ export default defineConfig({
       // For example, automatic IP address collection on events
       sendDefaultPii: true,
       sourceMapsUploadOptions: {
-        project: "pixelated",
+        project: 'pixelated',
         authToken: process.env.SENTRY_AUTH_TOKEN,
       },
     }),

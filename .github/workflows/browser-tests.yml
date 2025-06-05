@@ -51,6 +51,8 @@ jobs:
 
       - name: Run browser tests
         run: pnpm exec playwright test src/tests/cross-browser-compatibility.test.ts --reporter=html,list
+        env:
+          DISABLE_WEB_FONTS: 'true'
 
       - name: Upload test results
         if: always()
@@ -94,6 +96,7 @@ jobs:
         env:
           CI: true
           NODE_ENV: test
+          DISABLE_WEB_FONTS: 'true'
         id: visual-tests
 
       - name: Upload test results

@@ -1,0 +1,110 @@
+{
+  "mcpServers": {
+    "MCP Installer": {
+      "command": "pnpm",
+      "type": "stdio",
+      "args": ["exec", "cursor-mcp-installer-free", "/workspaces/pixelated"],
+      "cwd": "/workspaces/pixelated"
+    },
+    "shadcn": {
+      "command": "pnpm",
+      "args": ["exec", "shadcn", "registry:mcp"],
+      "cwd": "/workspaces/pixelated",
+      "env": {
+        "REGISTRY_URL": "https://tweakcn.com/r/themes/registry.json"
+      }
+    },
+    "perplexity-search": {
+      "command": "pnpm",
+      "args": [
+        "exec",
+        "@smithery/cli",
+        "run",
+        "@arjunkmrm/perplexity-search",
+        "--key",
+        "ab351ddc-26d1-4448-a316-d9ad9c5df416"
+      ],
+      "cwd": "/workspaces/pixelated"
+    },
+    "@21st-dev/magic": {
+      "command": "pnpm",
+      "args": ["exec", "@21st-dev/magic"],
+      "cwd": "/workspaces/pixelated",
+      "env": {
+        "API_KEY": "${MAGIC_API_KEY}"
+      }
+    },
+    "github": {
+      "command": "pnpm",
+      "args": [
+        "exec",
+        "@smithery/cli",
+        "run",
+        "@smithery-ai/github",
+        "--key",
+        "ab351ddc-26d1-4448-a316-d9ad9c5df416"
+      ],
+      "cwd": "/workspaces/pixelated"
+    },
+    "server-sequential-thinking": {
+      "command": "pnpm",
+      "args": [
+        "exec",
+        "@smithery/cli",
+        "run",
+        "@smithery-ai/server-sequential-thinking",
+        "--key",
+        "ab351ddc-26d1-4448-a316-d9ad9c5df416"
+      ],
+      "cwd": "/workspaces/pixelated"
+    },
+    "gitingest-mcp": {
+      "command": "pnpm",
+      "args": [
+        "exec",
+        "@smithery/cli",
+        "run",
+        "@puravparab/gitingest-mcp",
+        "--key",
+        "2027c5a9-0f31-4895-80c9-82bbfddb4287"
+      ],
+      "cwd": "/workspaces/pixelated"
+    },
+    "think-mcp-server": {
+      "command": "pnpm",
+      "args": [
+        "exec",
+        "@smithery/cli",
+        "run",
+        "@PhillipRt/think-mcp-server",
+        "--key",
+        "ab351ddc-26d1-4448-a316-d9ad9c5df416"
+      ],
+      "cwd": "/workspaces/pixelated"
+    },
+    "playwright-mcp": {
+      "command": "pnpm",
+      "args": [
+        "exec",
+        "@smithery/cli",
+        "run",
+        "@microsoft/playwright-mcp",
+        "--key",
+        "2027c5a9-0f31-4895-80c9-82bbfddb4287"
+      ],
+      "cwd": "/workspaces/pixelated"
+    },
+    "time-mcp": {
+      "command": "pnpm",
+      "args": [
+        "exec",
+        "@smithery/cli",
+        "run",
+        "@yokingma/time-mcp",
+        "--key",
+        "2027c5a9-0f31-4895-80c9-82bbfddb4287"
+      ],
+      "cwd": "/workspaces/pixelated"
+    }
+  }
+}

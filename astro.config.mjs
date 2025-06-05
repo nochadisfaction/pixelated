@@ -30,7 +30,8 @@ if (isVercel) {
 }
 
 // Check if web fonts fetching should be disabled
-const disableWebFonts = process.env.DISABLE_WEB_FONTS === 'true'
+const disableWebFonts =
+  process.env.DISABLE_WEB_FONTS === 'true' || process.env.CI === 'true'
 
 export default defineConfig({
   site: 'https://pixelatedempathy.com',

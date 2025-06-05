@@ -27,7 +27,8 @@ if (isVercel) {
 }
 
 // Check if web fonts fetching should be disabled
-const disableWebFonts = process.env.DISABLE_WEB_FONTS === 'true'
+const disableWebFonts =
+  process.env.DISABLE_WEB_FONTS === 'true' || process.env.CI === 'true'
 
 export default defineConfig({
   site: 'https://pixelatedempathy.com',
@@ -48,7 +49,7 @@ export default defineConfig({
       dsn: process.env.SENTRY_DSN,
       sendDefaultPii: true,
       sourceMapsUploadOptions: {
-        project: "pixelated-cloudflare",
+        project: 'pixelated-cloudflare',
         authToken: process.env.SENTRY_AUTH_TOKEN,
       },
     }),
@@ -74,9 +75,7 @@ export default defineConfig({
         },
       },
       content: {
-        filesystem: [
-          'src/**/*.{astro,js,ts,jsx,tsx,vue,mdx}',
-        ],
+        filesystem: ['src/**/*.{astro,js,ts,jsx,tsx,vue,mdx}'],
       },
     }),
     compress({
@@ -113,12 +112,40 @@ export default defineConfig({
     ssr: {
       noExternal: ['sharp'],
       external: [
-        'fs', 'fs/promises', 'path', 'crypto', 'http', 'https', 'zlib',
-        'child_process', 'os', 'util', 'net', 'tls', 'assert', 'buffer',
-        'stream', 'events', 'url', 'querystring', 'timers', 'cluster',
-        'dns', 'domain', 'inspector', 'perf_hooks', 'punycode', 'readline',
-        'repl', 'string_decoder', 'tty', 'v8', 'vm', 'worker_threads',
-        'async_hooks', 'diagnostics_channel'
+        'fs',
+        'fs/promises',
+        'path',
+        'crypto',
+        'http',
+        'https',
+        'zlib',
+        'child_process',
+        'os',
+        'util',
+        'net',
+        'tls',
+        'assert',
+        'buffer',
+        'stream',
+        'events',
+        'url',
+        'querystring',
+        'timers',
+        'cluster',
+        'dns',
+        'domain',
+        'inspector',
+        'perf_hooks',
+        'punycode',
+        'readline',
+        'repl',
+        'string_decoder',
+        'tty',
+        'v8',
+        'vm',
+        'worker_threads',
+        'async_hooks',
+        'diagnostics_channel',
       ],
       target: 'node',
     },
@@ -133,16 +160,47 @@ export default defineConfig({
       sourcemap: false,
       rollupOptions: {
         external: [
-          'fs', 'fs/promises', 'path', 'crypto', 'http', 'https', 'zlib',
-          'child_process', 'os', 'util', 'net', 'tls', 'assert', 'buffer',
-          'stream', 'events', 'url', 'querystring', 'timers', 'cluster',
-          'dns', 'domain', 'inspector', 'perf_hooks', 'punycode', 'readline',
-          'repl', 'string_decoder', 'tty', 'v8', 'vm', 'worker_threads',
-          'async_hooks', 'diagnostics_channel'
+          'fs',
+          'fs/promises',
+          'path',
+          'crypto',
+          'http',
+          'https',
+          'zlib',
+          'child_process',
+          'os',
+          'util',
+          'net',
+          'tls',
+          'assert',
+          'buffer',
+          'stream',
+          'events',
+          'url',
+          'querystring',
+          'timers',
+          'cluster',
+          'dns',
+          'domain',
+          'inspector',
+          'perf_hooks',
+          'punycode',
+          'readline',
+          'repl',
+          'string_decoder',
+          'tty',
+          'v8',
+          'vm',
+          'worker_threads',
+          'async_hooks',
+          'diagnostics_channel',
         ],
         output: {
           manualChunks: (id) => {
-            if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) {
+            if (
+              id.includes('node_modules/react/') ||
+              id.includes('node_modules/react-dom/')
+            ) {
               return 'react-core'
             }
             if (id.includes('node_modules/@radix-ui/')) {
@@ -234,4 +292,4 @@ export default defineConfig({
   build: {
     inlineStylesheets: 'auto',
   },
-}) 
+})
