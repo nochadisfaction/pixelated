@@ -1,2 +1,0 @@
-mem0>=0.1.0 # Install mem0 package
-mem0ai>=0.1.0 # Alternative package, if mem0 fails to install

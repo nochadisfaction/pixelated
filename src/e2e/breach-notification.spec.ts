@@ -35,7 +35,7 @@ const mockBreachDetails = {
 // Create a test fixture for the breach notification tests
 const breachTest = test.extend<BreachTestFixtures>({
   // Setup services before tests
-  redis: async (_: {}, use: (r: RedisService) => Promise<void>) => {
+  redis: async (_: unknown, use: (r: RedisService) => Promise<void>) => {
     // Initialize services
     const redis = new RedisService({
       url: process.env.REDIS_URL || 'redis://localhost:6379',
