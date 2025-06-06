@@ -135,7 +135,6 @@ node_modules/
 .DS_Store
 # Task files
 tasks.json
-
-src/lib/ai/bias-detection
+src/lib/ai/bias-detection/bias_detection_env/Lib/site-packages/
 .sentryclirc
 .pnpm-store/
