@@ -1,0 +1,91 @@
+# Gitpod Configuration to preserve Cursor setup
+image:
+  file: .gitpod.Dockerfile
+
+# Initialize the workspace with required tools and setup
+tasks:
+  - name: Environment Setup
+    init: |
+      # Install Node.js via nvm to match Cursor setup
+      nvm install 22.16.0
+      nvm use 22.16.0
+      nvm alias default 22.16.0
+      
+      # Install pnpm globally to match Cursor setup
+      npm install -g pnpm@latest
+      
+      # Install project dependencies
+      pnpm install
+      
+      # Run the environment setup script
+      ./.gitpod/setup-env.sh
+      
+    command: |
+      # Activate environment and start development server
+      source /home/gitpod/miniconda/etc/profile.d/conda.sh
+      conda activate pixel 2>/dev/null || true
+      nvm use 22.16.0
+      pnpm dev
+
+  - name: MCP Services
+    init: |
+      # Pre-install MCP dependencies to speed up startup
+      pnpm exec cursor-mcp-installer-free /workspace/pixelated || true
+      pnpm dlx shadcn@canary registry:mcp || true
+    command: |
+      echo "MCP services ready"
+
+# Open the workspace with the same structure as Cursor
+workspaceLocation: /workspace/pixelated
+
+# Port configurations for development
+ports:
+  - port: 4321
+    onOpen: open-preview
+    description: Astro dev server
+  - port: 3000
+    onOpen: ignore
+    description: Alternative dev port
+  - port: 8080
+    onOpen: ignore
+    description: Additional services
+  - port: 6080
+    onOpen: ignore
+    description: VNC port (if needed)
+
+# VS Code extensions that match your Cursor setup
+vscode:
+  extensions:
+    # Core development extensions
+    - astro-build.astro-vscode
+    - bradlc.vscode-tailwindcss
+    - ms-vscode.vscode-typescript-next
+    - esbenp.prettier-vscode
+    - ms-python.python
+    - ms-python.pylint
+    
+    # Testing and quality
+    - vitest.explorer
+    - ms-playwright.playwright
+    - usernamehw.errorlens
+    
+    # Utility extensions
+    - ms-vscode.vscode-json
+    - redhat.vscode-yaml
+    - ms-vscode.vscode-eslint
+    
+    # Git and collaboration
+    - eamodio.gitlens
+    - github.vscode-pull-request-github
+
+# GitHub integration
+github:
+  prebuilds:
+    # Enable prebuilds for faster startup
+    master: true
+    branches: true
+    pullRequests: true
+    pullRequestsFromForks: true
+    addCheck: true
+    addComment: true
+    addBadge: true 
