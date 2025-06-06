@@ -20,7 +20,6 @@ import Analytics from '@vercel/analytics/astro'
 
 import { SITE, UI, FEATURES } from '@/config'
 import { getUrl } from '@/utils/common'
-import { getCSP } from '@/config/security'
 
 import type { BgType } from '@/types'
 
@@ -28,7 +27,7 @@ import type { BgType } from '@/types'
 const cspNonce = (Astro.locals as any).cspNonce || '';
 
 // Get Sentry DSN from environment variables
-const sentryDsn = import.meta.env.PUBLIC_SENTRY_DSN || '';
+const sentryDsn = import.meta.env['PUBLIC_SENTRY_DSN'] || '';
 
 interface Props {
   title?: string
@@ -39,7 +38,6 @@ interface Props {
   lastModDate?: string
   showNavBar?: boolean
   showFooter?: boolean
-  bgPattern?: boolean
   usePlumAnimation?: boolean
   centered?: boolean
   containerClass?: string
@@ -55,7 +53,6 @@ const {
   showNavBar = true,
   showFooter = true,
   // bgPattern is currently unused but kept for future implementation
-  bgPattern = true,
   usePlumAnimation = false,
   centered = true,
   containerClass = 'mx-auto w-full',
@@ -119,12 +116,12 @@ const isAuthPage = isLoginPage ||
     <link rel="preload" href="/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin fetchpriority="high">
 
     <Head
-      title={title}
-      description={description}
-      ogImage={ogImage}
-      pubDate={pubDate}
-      lastModDate={lastModDate}
-      transitionMode={transitionMode}
+      title={title ?? undefined}
+      description={description ?? undefined}
+      ogImage={ogImage ?? undefined}
+      pubDate={pubDate ?? undefined}
+      lastModDate={lastModDate ?? undefined}
+      transitionMode={transitionMode ?? undefined}
     />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
     <link rel="manifest" href="/manifest.webmanifest">

@@ -8,6 +8,12 @@
 /* Import mobile form validation styles */
 @import './mobile-form-validation.css';
 
+/* Import enhanced responsive utilities */
+@import './responsive-utilities.css';
+
+/* Import advanced animation sequences */
+@import './advanced-animations.css';
+
 :root {
   --c-bg: #fff;
   --c-scrollbar: #eee;

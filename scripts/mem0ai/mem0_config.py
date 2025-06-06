@@ -65,7 +65,7 @@ def delete_memory(memory_id):
         print(f"Error deleting memory: {e}")
         return None
 
-
+# Initialize memory base with some example data
 def initialize_memory_base():
     """Initialize the memory base with some example data"""
     example_memories = [

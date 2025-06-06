@@ -150,18 +150,13 @@ export default defineConfig({
       mode: 'global',
       safelist: ['font-sans', 'font-mono', 'font-condensed'],
       configFile: './uno.config.vitesse.ts',
-      presets: {
-        web: {
-          timeout: isProduction ? 10000 : 30000,
-          disable: disableWebFonts || isProduction,
-        },
-      },
       content: {
         filesystem: [
           'src/**/*.{astro,js,ts,jsx,tsx,vue,mdx}',
           'components/**/*.{astro,js,ts,jsx,tsx,vue}',
         ],
       },
+
       transformers: [
         {
           name: 'unocss:reset',
