@@ -29,6 +29,5 @@
       }
     }
   },
-  "remoteUser": "chad",
   "postCreateCommand": "conda init bash && . /opt/conda/etc/profile.d/conda.sh && conda activate base"
 }
