@@ -1,0 +1,119 @@
+{
+    "mcpServers": {
+        "MCP Installer": {
+            "command": "pnpm",
+            "type": "stdio",
+            "args": [
+                "exec",
+                "cursor-mcp-installer-free",
+                "/workspace/pixelated"
+            ],
+            "cwd": "/workspace/pixelated"
+        },
+        "shadcn": {
+            "command": "pnpm",
+            "args": [
+                "dlx",
+                "shadcn@canary",
+                "registry:mcp"
+            ],
+            "cwd": "/workspace/pixelated",
+            "env": {
+                "REGISTRY_URL": "https://tweakcn.com/r/themes/registry.json"
+            }
+        },
+        "perplexity-search": {
+            "command": "pnpm",
+            "args": [
+                "exec",
+                "@smithery/cli",
+                "run",
+                "@arjunkmrm/perplexity-search",
+                "--key",
+                "ab351ddc-26d1-4448-a316-d9ad9c5df416"
+            ],
+            "cwd": "/workspace/pixelated"
+        },
+        "@21st-dev/magic": {
+            "command": "pnpm",
+            "args": [
+                "exec",
+                "@21st-dev/magic",
+                "API_KEY=\"${MAGIC_API_KEY}\""
+            ],
+            "cwd": "/workspace/pixelated"
+        },
+        "github": {
+            "command": "pnpm",
+            "args": [
+                "exec",
+                "@smithery/cli",
+                "run",
+                "@smithery-ai/github",
+                "--key",
+                "ab351ddc-26d1-4448-a316-d9ad9c5df416"
+            ],
+            "cwd": "/workspace/pixelated"
+        },
+        "server-sequential-thinking": {
+            "command": "/home/gitpod/.nvm/versions/node/v22.16.0/bin/pnpm",
+            "args": [
+                "dlx",
+                "@smithery/cli@latest",
+                "run",
+                "@smithery-ai/server-sequential-thinking",
+                "--key",
+                "ab351ddc-26d1-4448-a316-d9ad9c5df416"
+            ],
+            "env": {
+                "PATH": "/home/gitpod/.nvm/versions/node/v22.16.0/bin:${PATH}",
+                "NODE_PATH": "/home/gitpod/.nvm/versions/node/v22.16.0/lib/node_modules"
+            }
+        },
+        "gitingest-mcp": {
+            "command": "/home/gitpod/.nvm/versions/node/v22.16.0/bin/pnpm",
+            "args": [
+                "dlx",
+                "@smithery/cli@latest",
+                "run",
+                "@puravparab/gitingest-mcp",
+                "--key",
+                "2027c5a9-0f31-4895-80c9-82bbfddb4287"
+            ],
+            "env": {
+                "PATH": "/home/gitpod/.nvm/versions/node/v22.16.0/bin:${PATH}",
+                "NODE_PATH": "/home/gitpod/.nvm/versions/node/v22.16.0/lib/node_modules"
+            }
+        },
+        "think-mcp-server": {
+            "command": "/home/gitpod/.nvm/versions/node/v22.16.0/bin/pnpm",
+            "args": [
+                "dlx",
+                "@smithery/cli@latest",
+                "run",
+                "@PhillipRt/think-mcp-server",
+                "--key",
+                "ab351ddc-26d1-4448-a316-d9ad9c5df416"
+            ],
+            "env": {
+                "PATH": "/home/gitpod/.nvm/versions/node/v22.16.0/bin:${PATH}",
+                "NODE_PATH": "/home/gitpod/.nvm/versions/node/v22.16.0/lib/node_modules"
+            }
+        },
+        "playwright-mcp": {
+            "command": "/home/gitpod/.nvm/versions/node/v22.16.0/bin/pnpm",
+            "args": [
+                "dlx",
+                "@smithery/cli@latest",
+                "run",
+                "@microsoft/playwright-mcp",
+                "--key",
+                "2027c5a9-0f31-4895-80c9-82bbfddb4287"
+            ],
+            "env": {
+                "PATH": "/home/gitpod/.nvm/versions/node/v22.16.0/bin:${PATH}",
+                "NODE_PATH": "/home/gitpod/.nvm/versions/node/v22.16.0/lib/node_modules"
+            }
+        }
+    }
+} 
