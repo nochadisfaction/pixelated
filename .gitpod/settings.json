@@ -1,0 +1,43 @@
+{
+  "workbench.editor.enablePreview": false,
+  "workbench.colorTheme": "Default Dark+",
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "files.associations": {
+    "*.astro": "astro",
+    "*.mdc": "markdown"
+  },
+  "eslint.workingDirectories": [
+    "."
+  ],
+  "typescript.preferences.includePackageJsonAutoImports": "on",
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "astro.typescript.enabled": true,
+  "astro.typescript.allowArbitraryAttributes": true,
+  "tailwindCSS.includeLanguages": {
+    "astro": "html"
+  },
+  "tailwindCSS.classAttributes": [
+    "class",
+    "className",
+    "class:list"
+  ],
+  "emmet.includeLanguages": {
+    "astro": "html"
+  },
+  "terminal.integrated.defaultProfile.linux": "bash",
+  "terminal.integrated.profiles.linux": {
+    "bash": {
+      "path": "/bin/bash",
+      "args": ["-l"]
+    }
+  },
+  "python.defaultInterpreterPath": "/home/gitpod/miniconda/envs/pixel/bin/python",
+  "python.terminal.activateEnvironment": true,
+  "python.terminal.activateEnvInCurrentTerminal": true
+} 
