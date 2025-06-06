@@ -16,14 +16,37 @@
       "@components/*": ["./src/components/*"],
       "@layouts/*": ["./src/layouts/*"],
       "@utils/*": ["./src/utils/*"],
-      "@lib/*": ["./src/lib/*"]
+      "@lib/*": ["./src/lib/*"],
+      "@types/*": ["./src/types/*"]
     },
-    "types": ["astro/client"],
-    "typeRoots": ["./node_modules/@types", "./src/types"],
-    "skipLibCheck": true,
+    "types": ["astro/client", "vite/client"],
+    "typeRoots": ["./node_modules/@types", "./src/types", "./types"],
+    "skipLibCheck": false,
     "allowJs": true,
-    "noImplicitAny": false,
-    "strictNullChecks": false
+
+    /* Enhanced Strict Type-Checking for Astro */
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "noImplicitThis": true,
+    "useUnknownInCatchVariables": true,
+    "alwaysStrict": true,
+
+    /* Additional Checks for Astro Components */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+
+    /* Astro-specific optimizations */
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "preserveConstEnums": true
   },
   "include": ["src/**/*.astro"],
   "exclude": [

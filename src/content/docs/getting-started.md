@@ -43,7 +43,7 @@ cp .env.example .env
 
 Edit your `.env` file with the required API keys:
 
-```env
+```bash
 # AI Services
 ANTHROPIC_API_KEY=your_anthropic_key
 OPENAI_API_KEY=your_openai_key

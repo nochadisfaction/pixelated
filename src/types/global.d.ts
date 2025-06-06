@@ -49,6 +49,11 @@ declare global {
   type DeepPartial<T> = {
     [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P]
   }
+
+  // Enhanced global type utilities for strict typing
+  type StrictNonNullable<T> = T extends null | undefined ? never : T
+  type Exact<T> = T & Record<Exclude<keyof T, keyof T>, never>
+  type RequiredKeys<T, K extends keyof T> = T & Required<Pick<T, K>>
 }
 
 export {}
