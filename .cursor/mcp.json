@@ -1,6 +1,5 @@
 {
     "mcpServers": {
-
               "perplexity-search": {
                 "command": "npx",
                 "args": [
