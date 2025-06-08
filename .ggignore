@@ -1,0 +1,2 @@
+# Ignore environment variable references in MCP configuration
+.cursor/mcp.json:${HUGGINGFACE_API_KEY} 

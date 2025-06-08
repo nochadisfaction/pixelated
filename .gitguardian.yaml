@@ -1,0 +1,5 @@
+secret:
+  ignored_matches:
+  - match: ec06cecc619866072de26a99e1978347aa0ed3764c621d8a08bc2d6b23aa1643
+    name: Hugging Face user access token - .cursor/mcp.json:l.5
+version: 2
