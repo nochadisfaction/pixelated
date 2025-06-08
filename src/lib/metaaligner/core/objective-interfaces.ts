@@ -3,7 +3,7 @@
  * Provides extensible framework for defining and managing alignment objectives
  */
 
-import { ObjectiveDefinition, ObjectiveCriteria, AlignmentContext } from './objectives';
+import type { ObjectiveDefinition, ObjectiveCriteria, AlignmentContext } from './objectives';
 
 /**
  * Interface for creating new objective definitions
@@ -164,6 +164,18 @@ export interface AlignmentEvaluationResult {
 }
 
 /**
+ * Configuration schema type for objective templates
+ */
+export interface ObjectiveConfigSchema {
+  [key: string]: {
+    type: string;
+    description?: string;
+    default?: unknown;
+    required?: boolean;
+  };
+}
+
+/**
  * Objective template for creating new objectives
  */
 export interface ObjectiveTemplate {
@@ -174,7 +186,7 @@ export interface ObjectiveTemplate {
   defaultWeight: number;
   criteriaTemplates: CriterionTemplate[];
   evaluationTemplate: string; // Template for evaluation function
-  configurationSchema: Record<string, any>; // JSON schema for configuration
+  configurationSchema: ObjectiveConfigSchema; // JSON schema for configuration
 }
 
 export interface CriterionTemplate {
@@ -227,67 +239,61 @@ export class StandardObjectiveBuilder implements ObjectiveBuilder {
 
     // Required field validation
     if (!this.objective.id) {
-      errors.push({
-        field: 'id',
-        message: 'Objective ID is required',
-        code: 'MISSING_ID'
-      });
+      errors.push({ field: 'id', message: 'Objective ID is required', code: 'MISSING_ID' });
     }
-
     if (!this.objective.name) {
-      errors.push({
-        field: 'name',
-        message: 'Objective name is required',
-        code: 'MISSING_NAME'
-      });
+      errors.push({ field: 'name', message: 'Objective name is required', code: 'MISSING_NAME' });
     }
-
     if (!this.objective.description) {
-      errors.push({
-        field: 'description',
-        message: 'Objective description is required',
-        code: 'MISSING_DESCRIPTION'
-      });
+      errors.push({ field: 'description', message: 'Objective description is required', code: 'MISSING_DESCRIPTION' });
     }
-
     if (this.objective.weight === undefined) {
-      errors.push({
-        field: 'weight',
-        message: 'Objective weight is required',
-        code: 'MISSING_WEIGHT'
-      });
-    } else if (this.objective.weight < 0 || this.objective.weight > 1) {
-      errors.push({
-        field: 'weight',
-        message: 'Objective weight must be between 0 and 1',
-        code: 'INVALID_WEIGHT_RANGE'
-      });
+      errors.push({ field: 'weight', message: 'Objective weight is required', code: 'MISSING_WEIGHT' });
     }
-
     if (!this.objective.evaluationFunction) {
-      errors.push({
-        field: 'evaluationFunction',
-        message: 'Evaluation function is required',
-        code: 'MISSING_EVALUATION_FUNCTION'
-      });
+      errors.push({ field: 'evaluationFunction', message: 'Evaluation function is required', code: 'MISSING_EVALUATION_FUNCTION' });
     }
 
+    // Weight validation
+    if (this.objective.weight !== undefined && (this.objective.weight <= 0 || this.objective.weight > 1)) {
+      errors.push({ field: 'weight', message: 'Weight must be between 0 and 1', code: 'INVALID_WEIGHT' });
+    }
+
+    // Criteria validation
     if (this.criteria.length === 0) {
+      warnings.push({ field: 'criteria', message: 'No criteria defined for objective', code: 'NO_CRITERIA' });
+    }
+
+    // Validate criteria weights sum
+    const totalCriteriaWeight = this.criteria.reduce((sum, criterion) => sum + criterion.weight, 0);
+    if (this.criteria.length > 0 && Math.abs(totalCriteriaWeight - 1.0) > 0.001) {
       warnings.push({
         field: 'criteria',
-        message: 'No criteria defined for objective',
-        code: 'NO_CRITERIA'
+        message: `Criteria weights sum to ${totalCriteriaWeight}, should sum to 1.0`,
+        code: 'CRITERIA_WEIGHT_SUM'
       });
-    } else {
-      // Validate criteria weights sum to 1
-      const totalCriteriaWeight = this.criteria.reduce((sum, c) => sum + c.weight, 0);
-      if (Math.abs(totalCriteriaWeight - 1.0) > 0.001) {
-        errors.push({
-          field: 'criteria',
-          message: `Criteria weights must sum to 1.0, current sum: ${totalCriteriaWeight}`,
-          code: 'INVALID_CRITERIA_WEIGHTS'
-        });
+    }
+
+    // Validate individual criteria
+    for (const criterion of this.criteria) {
+      if (!criterion.criterion) {
+        errors.push({ field: 'criteria', message: 'Criterion name is required', code: 'MISSING_CRITERION_NAME' });
       }
+      if (!criterion.description) {
+        errors.push({ field: 'criteria', message: 'Criterion description is required', code: 'MISSING_CRITERION_DESCRIPTION' });
+      }
+      if (criterion.weight <= 0 || criterion.weight > 1) {
+        errors.push({ field: 'criteria', message: 'Criterion weight must be between 0 and 1', code: 'INVALID_CRITERION_WEIGHT' });
+      }
+    }
+
+    // ID format validation
+    if (this.objective.id && !/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(this.objective.id)) {
+      errors.push({
+        field: 'id',
+        message: 'ID must start with a letter and contain only letters, numbers, underscores, and hyphens',
+        code: 'INVALID_ID_FORMAT'
+      });
     }
 
     return {
@@ -303,13 +309,20 @@ export class StandardObjectiveBuilder implements ObjectiveBuilder {
       throw new Error(`Invalid objective definition: ${validation.errors.map(e => e.message).join(', ')}`);
     }
 
+    // Safe to assert non-null here since validation passed
+    const {id, name, description, weight, evaluationFunction} = this.objective;
+
+    if (!id || !name || !description || weight === undefined || !evaluationFunction) {
+      throw new Error('Missing required fields after validation');
+    }
+
     return {
-      id: this.objective.id!,
-      name: this.objective.name!,
-      description: this.objective.description!,
-      weight: this.objective.weight!,
+      id,
+      name,
+      description,
+      weight,
       criteria: [...this.criteria],
-      evaluationFunction: this.objective.evaluationFunction!
+      evaluationFunction
     };
   }
 }
@@ -329,7 +342,9 @@ export class StandardObjectiveRegistry implements ObjectiveRegistry {
       .setWeight(objective.weight)
       .setEvaluationFunction(objective.evaluationFunction);
 
-    objective.criteria.forEach(criterion => builder.addCriterion(criterion));
+    for (const criterion of objective.criteria) {
+      builder.addCriterion(criterion);
+    }
     
     const validation = builder.validate();
     if (!validation.isValid) {
@@ -351,7 +366,7 @@ export class StandardObjectiveRegistry implements ObjectiveRegistry {
     return Array.from(this.objectives.values());
   }
 
-  getByCategory(category: ObjectiveCategory): ObjectiveDefinition[] {
+  getByCategory(_category: ObjectiveCategory): ObjectiveDefinition[] {
     // For basic implementation, return all objectives
     // In extended version with metadata, filter by category
     return this.getAll();
@@ -391,7 +406,9 @@ export class StandardObjectiveRegistry implements ObjectiveRegistry {
         .setWeight(objective.weight)
         .setEvaluationFunction(objective.evaluationFunction);
 
-      objective.criteria.forEach(criterion => builder.addCriterion(criterion));
+      for (const criterion of objective.criteria) {
+        builder.addCriterion(criterion);
+      }
       
       const validation = builder.validate();
       errors.push(...validation.errors);
@@ -409,8 +426,8 @@ export class StandardObjectiveRegistry implements ObjectiveRegistry {
 /**
  * Factory functions for creating common objective structures
  */
-export class ObjectiveFactory {
-  static createCriterion(
+export const ObjectiveFactory = {
+  createCriterion(
     criterion: string,
     description: string,
     weight: number
@@ -424,9 +441,9 @@ export class ObjectiveFactory {
       description,
       weight
     };
-  }
+  },
 
-  static createBasicObjective(
+  createBasicObjective(
     id: string,
     name: string,
     description: string,
@@ -434,19 +451,23 @@ export class ObjectiveFactory {
     criteria: ObjectiveCriteria[],
     evaluationFunction: (response: string, context: AlignmentContext) => number
   ): ObjectiveDefinition {
-    return new StandardObjectiveBuilder()
+    const builder = new StandardObjectiveBuilder()
       .setId(id)
       .setName(name)
       .setDescription(description)
       .setWeight(weight)
-      .setEvaluationFunction(evaluationFunction)
-      .addCriterion(...criteria)
-      .build();
-  }
+      .setEvaluationFunction(evaluationFunction);
 
-  static createFromTemplate(
+    for (const criterion of criteria) {
+      builder.addCriterion(criterion);
+    }
+
+    return builder.build();
+  },
+
+  createFromTemplate(
     template: ObjectiveTemplate,
-    customConfig?: Record<string, any>
+    _customConfig?: Record<string, unknown>
   ): ObjectiveDefinition {
     const builder = new StandardObjectiveBuilder()
       .setId(template.id)
@@ -455,23 +476,23 @@ export class ObjectiveFactory {
       .setWeight(template.defaultWeight);
 
     // Add criteria from template
-    template.criteriaTemplates.forEach(criterionTemplate => {
+    for (const criterionTemplate of template.criteriaTemplates) {
       builder.addCriterion({
         criterion: criterionTemplate.criterion,
         description: criterionTemplate.description,
         weight: criterionTemplate.defaultWeight
       });
-    });
+    }
 
     // Create a basic evaluation function (would be more sophisticated in real implementation)
-    builder.setEvaluationFunction((response: string, context: AlignmentContext) => {
+    builder.setEvaluationFunction((_response: string, _context: AlignmentContext) => {
       // Placeholder implementation
       return Math.random(); // In real implementation, this would use the evaluation template
     });
 
     return builder.build();
   }
-}
+} as const;
 
 // Add multiple criteria to builder in one call
 declare module './objective-interfaces' {
@@ -484,10 +505,14 @@ declare module './objective-interfaces' {
 StandardObjectiveBuilder.prototype.addCriterion = function(
   ...criteria: ObjectiveCriteria[]
 ): ObjectiveBuilder {
-  if (criteria.length === 1) {
+  if (criteria.length === 1 && criteria[0] !== undefined) {
     this.criteria.push(criteria[0]);
   } else {
-    this.criteria.push(...criteria);
+    for (const criterion of criteria) {
+      if (criterion !== undefined) {
+        this.criteria.push(criterion);
+      }
+    }
   }
   return this;
 };

@@ -138,3 +138,4 @@ tasks.json
 
 .sentryclirc
 .pnpm-store/
+.cursor/mcp.json
