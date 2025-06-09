@@ -526,7 +526,11 @@ Consider this context in your assessment.`;
     ];
 
     const response = await this.aiService.createChatCompletion(messages, { model: this.model });
-    return this.parseAIResponse(response.content);
+    const content = response.choices?.[0]?.message?.content;
+    if (!content) {
+      throw new Error('No content received from AI service response');
+    }
+    return this.parseAIResponse(content);
   }
 
   /**
@@ -539,8 +543,16 @@ Consider this context in your assessment.`;
         content.match(/```\n([\s\S]*?)\n```/) ||
         content.match(/\{[\s\S]*?\}/);
 
-      const jsonStr = jsonMatch ? jsonMatch[0] : content;
-      const parsed = JSON.parse(jsonStr.replace(/```json\n?|```\n?/g, ''));
+      let jsonStr: string;
+      if (jsonMatch) {
+        // Use capturing group if available (jsonMatch[1]) for clean JSON content inside fences
+        // Otherwise fall back to full match (jsonMatch[0]) for raw JSON without fences
+        jsonStr = jsonMatch[1] ?? jsonMatch[0];
+      } else {
+        jsonStr = content;
+      }
+      
+      const parsed = JSON.parse(jsonStr);
 
       return {
         isSupport: Boolean(parsed.isSupport),

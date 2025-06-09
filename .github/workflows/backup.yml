@@ -39,7 +39,7 @@ jobs:
         run: |
           # Authenticate with Supabase using access token
           echo "Authenticating with Supabase..."
-          supabase login
+          supabase login --token "$SUPABASE_ACCESS_TOKEN"
 
       - name: Link Supabase project
         run: |

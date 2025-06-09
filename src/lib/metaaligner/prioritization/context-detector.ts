@@ -4,10 +4,10 @@
  * to enable dynamic objective prioritization
  */
 
-import type { ContextType, AlignmentContext } from '../core/objectives';
+import { ContextType, type AlignmentContext } from '../core/objectives';
 import { CrisisDetectionService } from '../../ai/services/crisis-detection';
 import { EducationalContextRecognizer } from './educational-context-recognizer';
-import type { AIService } from '../../ai/models/types';
+import type { AIService, AIRole } from '../../ai/models/types';
 import { getLogger } from '../../logging';
 
 const logger = getLogger({ prefix: 'context-detector' });
@@ -67,16 +67,16 @@ Be thorough in identifying indicators but prioritize safety - if there's any ind
  */
 export class ContextDetector {
   private aiService: AIService;
-  private crisisDetectionService?: CrisisDetectionService;
-  private educationalContextRecognizer?: EducationalContextRecognizer;
+  private crisisDetectionService: CrisisDetectionService | undefined;
+  private educationalContextRecognizer: EducationalContextRecognizer | undefined;
   private model: string;
   private enableCrisisIntegration: boolean;
   private enableEducationalRecognition: boolean;
 
   constructor(config: ContextDetectorConfig) {
     this.aiService = config.aiService;
-    this.crisisDetectionService = config.crisisDetectionService;
-    this.educationalContextRecognizer = config.educationalContextRecognizer;
+    this.crisisDetectionService = config.crisisDetectionService ?? undefined;
+    this.educationalContextRecognizer = config.educationalContextRecognizer ?? undefined;
     this.model = config.model || 'gpt-4';
     this.enableCrisisIntegration = config.enableCrisisIntegration ?? true;
     this.enableEducationalRecognition = config.enableEducationalRecognition ?? true;
@@ -94,9 +94,10 @@ export class ContextDetector {
       // First, check for crisis if integration is enabled
       let crisisResult = null;
       if (this.enableCrisisIntegration && this.crisisDetectionService) {
+        const crisisOptions = userId ? { userId, source: 'context-detection' } : { source: 'context-detection' };
         crisisResult = await this.crisisDetectionService.detectCrisis(
           userInput,
-          { userId, source: 'context-detection' }
+          crisisOptions
         );
 
         // If crisis is detected, immediately return crisis context
@@ -156,8 +157,8 @@ export class ContextDetector {
 
       // If no specific context detected, proceed with general context detection
       const messages = [
-        { role: 'system', content: CONTEXT_DETECTION_PROMPT, name: '' },
-        { role: 'user', content: this.formatInputForAnalysis(userInput, conversationHistory), name: '' }
+        { role: 'system' as AIRole, content: CONTEXT_DETECTION_PROMPT, name: '' },
+        { role: 'user' as AIRole, content: this.formatInputForAnalysis(userInput, conversationHistory), name: '' }
       ];
 
       const response = await this.aiService.createChatCompletion(messages, {
@@ -169,7 +170,7 @@ export class ContextDetector {
 
       // Merge crisis detection data if available
       if (crisisResult && !crisisResult.isCrisis) {
-        result.metadata.crisisAnalysis = {
+        result.metadata['crisisAnalysis'] = {
           confidence: crisisResult.confidence,
           severity: crisisResult.severity
         };
@@ -177,7 +178,7 @@ export class ContextDetector {
 
       // Merge educational analysis if available
       if (educationalResult && educationalResult.isEducational) {
-        result.metadata.educationalAnalysis = {
+        result.metadata['educationalAnalysis'] = {
           confidence: educationalResult.confidence,
           type: educationalResult.educationalType,
           complexity: educationalResult.complexity,
@@ -194,7 +195,7 @@ export class ContextDetector {
       return result;
 
     } catch (error) {
-      logger.error('Error detecting context:', error);
+      logger.error('Error detecting context:', error as Record<string, unknown>);
       
       // Fallback to general context with low confidence
       return {
@@ -239,7 +240,7 @@ export class ContextDetector {
   ): AlignmentContext {
     return {
       userQuery,
-      conversationHistory,
+      conversationHistory: conversationHistory || [],
       detectedContext: detectionResult.detectedContext,
       userProfile,
       sessionMetadata: {
@@ -269,14 +270,21 @@ export class ContextDetector {
    */
   private parseContextDetectionResponse(content: string): ContextDetectionResult {
     try {
-      // Extract JSON from response
-      const jsonMatch = 
-        content.match(/```json\n([\s\S]*?)\n```/) ||
-        content.match(/```\n([\s\S]*?)\n```/) ||
-        content.match(/\{[\s\S]*?\}/);
+      // Extract JSON from response using capturing groups to get content inside fences
+      const jsonFencedMatch = 
+        content.match(/```json\s*\n([\s\S]*?)\n\s*```/) ||
+        content.match(/```\s*\n([\s\S]*?)\n\s*```/);
+      
+      const jsonObjectMatch = content.match(/(\{[\s\S]*?\})/);
 
-      const jsonStr = jsonMatch ? jsonMatch[0] : content;
-      const parsed = JSON.parse(jsonStr.replace(/```json\n?|```\n?/g, ''));
+      // Use captured group directly - it contains only the JSON content without fences
+      const jsonStr = jsonFencedMatch?.[1] || jsonObjectMatch?.[1] || content.trim();
+        
+      if (!jsonStr) {
+        throw new Error('No JSON content found in response');
+      }
+      
+      const parsed = JSON.parse(jsonStr);
 
       return {
         detectedContext: this.validateContextType(parsed.detectedContext),
@@ -288,7 +296,7 @@ export class ContextDetector {
       };
 
     } catch (error) {
-      logger.error('Error parsing context detection response:', error);
+      logger.error('Error parsing context detection response:', error as Record<string, unknown>);
       
       // Fallback parsing
       return {
@@ -306,6 +314,11 @@ export class ContextDetector {
    * Validate and normalize context type
    */
   private validateContextType(contextType: string): ContextType {
+    // Guard against invalid input
+    if (!contextType || typeof contextType !== 'string' || contextType.trim() === '') {
+      return ContextType.GENERAL;
+    }
+
     if (Object.values(ContextType).includes(contextType as ContextType)) {
       return contextType as ContextType;
     }

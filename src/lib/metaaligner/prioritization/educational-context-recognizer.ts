@@ -350,8 +350,9 @@ Adapt complexity and resource recommendations accordingly.`;
         content.match(/```\n([\s\S]*?)\n```/) ||
         content.match(/\{[\s\S]*?\}/);
 
-      const jsonStr = jsonMatch ? jsonMatch[0] : content;
-      const parsed = JSON.parse(jsonStr.replace(/```json\n?|```\n?/g, ''));
+      // Use captured group when available to avoid backticks, fall back to full match
+      const jsonStr = jsonMatch ? (jsonMatch[1] || jsonMatch[0]) : content;
+      const parsed = JSON.parse(jsonStr);
 
       return {
         isEducational: Boolean(parsed.isEducational),
