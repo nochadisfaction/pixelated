@@ -1,5 +1,6 @@
 import path from 'node:path'
 import vercel from '@astrojs/vercel'
+import react from '@astrojs/react'
 import icon from 'astro-icon'
 import { defineConfig } from 'astro/config'
 
@@ -66,6 +67,10 @@ export default defineConfig({
   
   // Minimal integrations - only essential ones
   integrations: [
+    react({
+      include: ['**/components/**/*'],
+      experimentalReactChildren: false,
+    }),
     icon({
       include: {
         lucide: ['*'],
@@ -118,9 +123,8 @@ export default defineConfig({
           'node:string_decoder', 'node:tty', 'node:v8', 'node:vm', 'node:worker_threads',
           'node:async_hooks', 'node:diagnostics_channel', 'node:constants',
           
-          // ALL large third-party packages
-          'react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime',
-          '@astrojs/mdx', '@astrojs/react', '@unocss/astro',
+                     // ALL large third-party packages (except React which we need)
+           '@astrojs/mdx', '@unocss/astro',
           'flexsearch', 'flexsearch/dist/module/document',
           '@tensorflow/tfjs', '@tensorflow/tfjs-node', '@tensorflow/tfjs-layers',
           'sharp', 'canvas', 'puppeteer', 'playwright',
@@ -177,9 +181,8 @@ export default defineConfig({
         'node:string_decoder', 'node:tty', 'node:v8', 'node:vm', 'node:worker_threads',
         'node:async_hooks', 'node:diagnostics_channel', 'node:constants',
         
-        // ALL npm packages
-        'react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime',
-        '@astrojs/mdx', '@astrojs/react', '@unocss/astro',
+                 // ALL npm packages (except React which we need)
+         '@astrojs/mdx', '@unocss/astro',
         'flexsearch', 'three', 'framer-motion', 'chart.js',
         '@tensorflow/tfjs', '@supabase/supabase-js', 'convex',
         'openai', 'ai', 'sharp', 'canvas', 'zod', 'nanoid',
@@ -188,7 +191,10 @@ export default defineConfig({
          '@vercel/analytics', '@sentry/astro', 'axios',
          // And all others...
       ],
-      noExternal: [], // Don't bundle anything
+             noExternal: [
+         // Only include absolute essentials
+         'react', 'react-dom', '@astrojs/react',
+       ],
       target: 'node',
     },
     
