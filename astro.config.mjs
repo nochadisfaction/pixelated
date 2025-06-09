@@ -33,6 +33,308 @@ if (isVercel) {
 const disableWebFonts =
   process.env.DISABLE_WEB_FONTS === 'true' || process.env.CI === 'true'
 
+// Disable resource-intensive features on Vercel
+const vercelIntegrations = isVercel ? [
+  react(),
+  mdx(),
+  UnoCSS({
+    injectReset: true,
+    mode: 'global',
+    safelist: ['font-sans', 'font-mono', 'font-condensed'],
+    configFile: './uno.config.vitesse.ts',
+    content: {
+      filesystem: [
+        'src/**/*.{astro,js,ts,jsx,tsx,vue,mdx}',
+        'components/**/*.{astro,js,ts,jsx,tsx,vue}',
+      ],
+    },
+    transformers: [
+      {
+        name: 'unocss:reset',
+        transform(code) {
+          if (!code || typeof code !== 'string') {
+            return code
+          }
+          if (code.includes('@unocss/reset/reset.css')) {
+            return code.replace(
+              '@unocss/reset/reset.css',
+              '@unocss/reset/tailwind.css',
+            )
+          }
+          return code
+        },
+      },
+    ],
+  }),
+  icon({
+    include: {
+      lucide: ['*'],
+    },
+    svgdir: './src/icons',
+  }),
+] : [
+  vitesse({
+    title: 'Pixelated Empathy',
+    description: 'AI-Powered Mental Health Research & Innovation',
+    disable404Route: true,
+  }),
+  sentry({
+    dsn: process.env.SENTRY_DSN,
+    sendDefaultPii: true,
+    telemetry: false,
+    sourceMapsUploadOptions: {
+      project: 'pixelated',
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+    },
+  }),
+  expressiveCode({
+    themes: ['github-dark', 'github-light'],
+    styleOverrides: {
+      borderRadius: '0.5rem',
+      frames: {
+        frameBoxShadowCssValue: '0 0 10px rgba(0, 0, 0, 0.1)',
+      },
+    },
+  }),
+  react(),
+  mdx(),
+  UnoCSS({
+    injectReset: true,
+    mode: 'global',
+    safelist: ['font-sans', 'font-mono', 'font-condensed'],
+    configFile: './uno.config.vitesse.ts',
+    content: {
+      filesystem: [
+        'src/**/*.{astro,js,ts,jsx,tsx,vue,mdx}',
+        'components/**/*.{astro,js,ts,jsx,tsx,vue}',
+      ],
+    },
+
+    transformers: [
+      {
+        name: 'unocss:reset',
+        transform(code) {
+          if (!code || typeof code !== 'string') {
+            return code
+          }
+          if (code.includes('@unocss/reset/reset.css')) {
+            return code.replace(
+              '@unocss/reset/reset.css',
+              '@unocss/reset/tailwind.css',
+            )
+          }
+          return code
+        },
+      },
+    ],
+  }),
+  compress({
+    css: true,
+    html: true,
+    img: false,
+    js: true,
+    svg: false,
+  }),
+  flexsearchIntegration(),
+  icon({
+    include: {
+      lucide: ['*'],
+    },
+    svgdir: './src/icons',
+  }),
+]
+
+// Vercel-specific configuration to prevent hanging builds
+const vercelOptimizations = isVercel ? {
+  optimizeDeps: {
+    disabled: true, // Disable dependency optimization on Vercel
+  },
+  build: {
+    chunkSizeWarningLimit: 2000,
+    cssCodeSplit: false, // Reduce complexity
+    minify: false, // Disable minification to speed up build
+    cssMinify: false,
+    reportCompressedSize: false,
+    target: 'node18',
+    ssr: true,
+    sourcemap: false, // Disable sourcemaps to speed up build
+    rollupOptions: {
+      external: [
+        // Standard Node.js built-ins
+        'fs', 'fs/promises', 'path', 'crypto', 'http', 'https', 'zlib',
+        'child_process', 'os', 'util', 'net', 'tls', 'assert', 'buffer',
+        'stream', 'events', 'url', 'querystring', 'timers', 'cluster',
+        'dns', 'domain', 'inspector', 'perf_hooks', 'punycode', 'readline',
+        'repl', 'string_decoder', 'tty', 'v8', 'vm', 'worker_threads',
+        'async_hooks', 'diagnostics_channel',
+        // Node.js built-ins with node: prefix
+        'node:fs', 'node:fs/promises', 'node:path', 'node:crypto', 'node:process',
+        'node:http', 'node:https', 'node:zlib', 'node:child_process', 'node:os',
+        'node:util', 'node:net', 'node:tls', 'node:assert', 'node:buffer',
+        'node:stream', 'node:stream/web', 'node:events', 'node:url',
+        'node:querystring', 'node:timers', 'node:cluster', 'node:dns',
+        'node:domain', 'node:inspector', 'node:perf_hooks', 'node:punycode',
+        'node:readline', 'node:repl', 'node:string_decoder', 'node:tty',
+        'node:v8', 'node:vm', 'node:worker_threads', 'node:async_hooks',
+        'node:diagnostics_channel',
+        // Project specific externals
+        'flexsearch', 'flexsearch/dist/module/document',
+      ],
+      output: {
+        // Simplified chunking for Vercel
+        manualChunks: undefined
+      },
+    },
+  }
+} : {
+  // Normal development/production configuration
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'buffer'],
+    exclude: ['@unocss/astro', 'flexsearch'],
+    esbuildOptions: {
+      platform: 'node',
+      target: 'node18',
+      format: 'esm',
+      define: {
+        'global': 'globalThis',
+        'process.env.NODE_ENV': JSON.stringify(
+          process.env.NODE_ENV || 'production',
+        ),
+      },
+    },
+  },
+  build: {
+    chunkSizeWarningLimit: 1500,
+    cssCodeSplit: true,
+    minify: isProduction ? 'esbuild' : false,
+    cssMinify: isProduction,
+    reportCompressedSize: false,
+    target: 'node18',
+    ssr: true,
+    sourcemap: 'hidden',
+    rollupOptions: {
+      external: [
+        // Standard Node.js built-ins
+        'fs', 'fs/promises', 'path', 'crypto', 'http', 'https', 'zlib',
+        'child_process', 'os', 'util', 'net', 'tls', 'assert', 'buffer',
+        'stream', 'events', 'url', 'querystring', 'timers', 'cluster',
+        'dns', 'domain', 'inspector', 'perf_hooks', 'punycode', 'readline',
+        'repl', 'string_decoder', 'tty', 'v8', 'vm', 'worker_threads',
+        'async_hooks', 'diagnostics_channel',
+        // Node.js built-ins with node: prefix
+        'node:fs', 'node:fs/promises', 'node:path', 'node:crypto', 'node:process',
+        'node:http', 'node:https', 'node:zlib', 'node:child_process', 'node:os',
+        'node:util', 'node:net', 'node:tls', 'node:assert', 'node:buffer',
+        'node:stream', 'node:stream/web', 'node:events', 'node:url',
+        'node:querystring', 'node:timers', 'node:cluster', 'node:dns',
+        'node:domain', 'node:inspector', 'node:perf_hooks', 'node:punycode',
+        'node:readline', 'node:repl', 'node:string_decoder', 'node:tty',
+        'node:v8', 'node:vm', 'node:worker_threads', 'node:async_hooks',
+        'node:diagnostics_channel',
+        // Project specific externals
+        'flexsearch', 'flexsearch/dist/module/document',
+      ],
+      output: {
+        manualChunks: (id) => {
+          if (id.includes('/components/chat/AnalyticsDashboardReact.')) {
+            return 'analytics-dashboard'
+          }
+          if (id.includes('/components/MentalHealthChatDemoReact.')) {
+            return 'mental-health-chat'
+          }
+          if (id.includes('/components/chat/TherapyChatSystem.')) {
+            return 'therapy-chat-system'
+          }
+
+          if (
+            id.includes('node_modules/react/') ||
+            id.includes('node_modules/react-dom/') ||
+            id.includes('node_modules/scheduler/')
+          ) {
+            return 'react-core'
+          }
+          if (id.includes('node_modules/@radix-ui/')) {
+            return 'radix-ui'
+          }
+          if (id.includes('node_modules/framer-motion/')) {
+            return 'motion'
+          }
+          if (id.includes('node_modules/lucide-react/')) {
+            return 'icons'
+          }
+          if (
+            id.includes('node_modules/chart.js/') ||
+            id.includes('node_modules/react-chartjs-2/')
+          ) {
+            return 'chartjs'
+          }
+          if (id.includes('node_modules/@tensorflow/')) {
+            return 'tensorflow'
+          }
+          if (
+            id.includes('node_modules/@supabase/') ||
+            id.includes('node_modules/convex/') ||
+            id.includes('node_modules/postgres/') ||
+            id.includes('node_modules/redis/') ||
+            id.includes('node_modules/ioredis/') ||
+            id.includes('node_modules/@upstash/redis/')
+          ) {
+            return 'db-clients'
+          }
+          if (
+            id.includes('node_modules/openai/') ||
+            id.includes('node_modules/ai/') ||
+            id.includes('node_modules/@ai-sdk/') ||
+            id.includes('node_modules/@langchain/')
+          ) {
+            return 'ai-ml'
+          }
+          if (id.includes('node_modules/three/')) {
+            return 'three-js'
+          }
+          if (
+            id.includes('node_modules/remark/') ||
+            id.includes('node_modules/rehype/') ||
+            id.includes('node_modules/react-markdown/') ||
+            id.includes('node_modules/unified/')
+          ) {
+            return 'content-processing'
+          }
+          if (id.includes('node_modules/@unocss/')) {
+            return 'unocss'
+          }
+          if (
+            id.includes('node_modules/jotai/') ||
+            id.includes('node_modules/zustand/')
+          ) {
+            return 'state-management'
+          }
+          if (
+            id.includes('node_modules/zod/') ||
+            id.includes('node_modules/nanoid/') ||
+            id.includes('node_modules/uuid/') ||
+            id.includes('node_modules/clsx/') ||
+            id.includes('node_modules/tailwind-merge/')
+          ) {
+            return 'utilities'
+          }
+          if (
+            id.includes('node_modules/ws/') ||
+            id.includes('node_modules/web-streams-polyfill/')
+          ) {
+            return 'web-standards'
+          }
+          if (id.includes('node_modules/flexsearch/')) {
+            return 'flexsearch'
+          }
+
+          return undefined
+        },
+      },
+    },
+  }
+}
+
 export default defineConfig({
   site: 'https://pixelatedempathy.com',
   output: 'server',
@@ -119,77 +421,7 @@ export default defineConfig({
     port: process.env.PORT ? Number.parseInt(process.env.PORT) : 3000,
     host: process.env.HOST || 'localhost',
   },
-  integrations: [
-    vitesse({
-      title: 'Pixelated Empathy',
-      description: 'AI-Powered Mental Health Research & Innovation',
-      disable404Route: true,
-    }),
-    sentry({
-      dsn: process.env.SENTRY_DSN,
-      sendDefaultPii: true,
-      telemetry: false,
-      sourceMapsUploadOptions: {
-        project: 'pixelated',
-        authToken: process.env.SENTRY_AUTH_TOKEN,
-      },
-    }),
-    expressiveCode({
-      themes: ['github-dark', 'github-light'],
-      styleOverrides: {
-        borderRadius: '0.5rem',
-        frames: {
-          frameBoxShadowCssValue: '0 0 10px rgba(0, 0, 0, 0.1)',
-        },
-      },
-    }),
-    react(),
-    mdx(),
-    UnoCSS({
-      injectReset: true,
-      mode: 'global',
-      safelist: ['font-sans', 'font-mono', 'font-condensed'],
-      configFile: './uno.config.vitesse.ts',
-      content: {
-        filesystem: [
-          'src/**/*.{astro,js,ts,jsx,tsx,vue,mdx}',
-          'components/**/*.{astro,js,ts,jsx,tsx,vue}',
-        ],
-      },
-
-      transformers: [
-        {
-          name: 'unocss:reset',
-          transform(code) {
-            if (!code || typeof code !== 'string') {
-              return code
-            }
-            if (code.includes('@unocss/reset/reset.css')) {
-              return code.replace(
-                '@unocss/reset/reset.css',
-                '@unocss/reset/tailwind.css',
-              )
-            }
-            return code
-          },
-        },
-      ],
-    }),
-    compress({
-      css: true,
-      html: true,
-      img: false,
-      js: true,
-      svg: false,
-    }),
-    flexsearchIntegration(),
-    icon({
-      include: {
-        lucide: ['*'],
-      },
-      svgdir: './src/icons',
-    }),
-  ],
+  integrations: vercelIntegrations,
   vite: {
     resolve: {
       alias: {
@@ -295,207 +527,7 @@ export default defineConfig({
       ],
       target: 'node',
     },
-    build: {
-      chunkSizeWarningLimit: 1500,
-      cssCodeSplit: true,
-      minify: isProduction ? 'esbuild' : false,
-      cssMinify: isProduction,
-      reportCompressedSize: false,
-      target: 'node18',
-      ssr: true,
-      sourcemap: 'hidden',
-      rollupOptions: {
-        external: [
-          // Standard Node.js built-ins
-          'fs',
-          'fs/promises',
-          'path',
-          'crypto',
-          'http',
-          'https',
-          'zlib',
-          'child_process',
-          'os',
-          'util',
-          'net',
-          'tls',
-          'assert',
-          'buffer',
-          'stream',
-          'events',
-          'url',
-          'querystring',
-          'timers',
-          'cluster',
-          'dns',
-          'domain',
-          'inspector',
-          'perf_hooks',
-          'punycode',
-          'readline',
-          'repl',
-          'string_decoder',
-          'tty',
-          'v8',
-          'vm',
-          'worker_threads',
-          'async_hooks',
-          'diagnostics_channel',
-          // Node.js built-ins with node: prefix
-          'node:fs',
-          'node:fs/promises',
-          'node:path',
-          'node:crypto',
-          'node:process',
-          'node:http',
-          'node:https',
-          'node:zlib',
-          'node:child_process',
-          'node:os',
-          'node:util',
-          'node:net',
-          'node:tls',
-          'node:assert',
-          'node:buffer',
-          'node:stream',
-          'node:stream/web',
-          'node:events',
-          'node:url',
-          'node:querystring',
-          'node:timers',
-          'node:cluster',
-          'node:dns',
-          'node:domain',
-          'node:inspector',
-          'node:perf_hooks',
-          'node:punycode',
-          'node:readline',
-          'node:repl',
-          'node:string_decoder',
-          'node:tty',
-          'node:v8',
-          'node:vm',
-          'node:worker_threads',
-          'node:async_hooks',
-          'node:diagnostics_channel',
-          // Project specific externals
-          'flexsearch',
-          'flexsearch/dist/module/document',
-        ],
-        output: {
-          manualChunks: (id) => {
-            if (id.includes('/components/chat/AnalyticsDashboardReact.')) {
-              return 'analytics-dashboard'
-            }
-            if (id.includes('/components/MentalHealthChatDemoReact.')) {
-              return 'mental-health-chat'
-            }
-            if (id.includes('/components/chat/TherapyChatSystem.')) {
-              return 'therapy-chat-system'
-            }
-
-            if (
-              id.includes('node_modules/react/') ||
-              id.includes('node_modules/react-dom/') ||
-              id.includes('node_modules/scheduler/')
-            ) {
-              return 'react-core'
-            }
-            if (id.includes('node_modules/@radix-ui/')) {
-              return 'radix-ui'
-            }
-            if (id.includes('node_modules/framer-motion/')) {
-              return 'motion'
-            }
-            if (id.includes('node_modules/lucide-react/')) {
-              return 'icons'
-            }
-            if (
-              id.includes('node_modules/chart.js/') ||
-              id.includes('node_modules/react-chartjs-2/')
-            ) {
-              return 'chartjs'
-            }
-            if (id.includes('node_modules/@tensorflow/')) {
-              return 'tensorflow'
-            }
-            if (
-              id.includes('node_modules/@supabase/') ||
-              id.includes('node_modules/convex/') ||
-              id.includes('node_modules/postgres/') ||
-              id.includes('node_modules/redis/') ||
-              id.includes('node_modules/ioredis/') ||
-              id.includes('node_modules/@upstash/redis/')
-            ) {
-              return 'db-clients'
-            }
-            if (
-              id.includes('node_modules/openai/') ||
-              id.includes('node_modules/ai/') ||
-              id.includes('node_modules/@ai-sdk/') ||
-              id.includes('node_modules/@langchain/')
-            ) {
-              return 'ai-ml'
-            }
-            if (id.includes('node_modules/three/')) {
-              return 'three-js'
-            }
-            if (
-              id.includes('node_modules/remark/') ||
-              id.includes('node_modules/rehype/') ||
-              id.includes('node_modules/react-markdown/') ||
-              id.includes('node_modules/unified/')
-            ) {
-              return 'content-processing'
-            }
-            if (id.includes('node_modules/@unocss/')) {
-              return 'unocss'
-            }
-            if (
-              id.includes('node_modules/jotai/') ||
-              id.includes('node_modules/zustand/')
-            ) {
-              return 'state-management'
-            }
-            if (
-              id.includes('node_modules/zod/') ||
-              id.includes('node_modules/nanoid/') ||
-              id.includes('node_modules/uuid/') ||
-              id.includes('node_modules/clsx/') ||
-              id.includes('node_modules/tailwind-merge/')
-            ) {
-              return 'utilities'
-            }
-            if (
-              id.includes('node_modules/ws/') ||
-              id.includes('node_modules/web-streams-polyfill/')
-            ) {
-              return 'web-standards'
-            }
-            if (id.includes('node_modules/flexsearch/')) {
-              return 'flexsearch'
-            }
-
-            return undefined
-          },
-        },
-      },
-    },
-    optimizeDeps: {
-      include: ['react', 'react-dom', 'buffer'],
-      exclude: ['@unocss/astro', 'flexsearch'],
-      esbuildOptions: {
-        platform: 'node',
-        target: 'node18',
-        format: 'esm',
-        define: {
-          'global': 'globalThis',
-          'process.env.NODE_ENV': JSON.stringify(
-            process.env.NODE_ENV || 'production',
-          ),
-        },
-      },
-    },
+    ...vercelOptimizations,
     esbuild: {
       platform: 'node',
       target: 'node18',

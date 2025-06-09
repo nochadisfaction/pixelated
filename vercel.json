@@ -5,6 +5,14 @@
   "framework": "astro",
   "outputDirectory": "dist",
   "devCommand": "pnpm astro dev",
+  "build": {
+    "env": {
+      "VITE_LEGACY_DEP_OPTIMIZATION": "false",
+      "DISABLE_WEB_FONTS": "true",
+      "ASTRO_TELEMETRY_DISABLED": "1",
+      "NODE_OPTIONS": "--max-old-space-size=4096"
+    }
+  },
   "headers": [
     {
       "source": "/(.*)",
