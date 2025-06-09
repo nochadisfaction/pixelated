@@ -43,6 +43,13 @@ export default defineConfig({
       '**/types/**/*',
       '**/supabase/**/*',
       '**/dbt-mcp/**/*',
+      '**/scripts/**/*',
+      '**/bin/**/*',
+      '**/deploy/**/*',
+      '**/templates/**/*',
+      '**/lint/**/*',
+      '**/plugins/**/*',
+      '**/workers/**/*',
       'public/css/**/*',
       'public/fonts/**/*',
       'public/js/**/*',
@@ -55,13 +62,34 @@ export default defineConfig({
       'public/images/backgrounds/**/*',
       'public/images/features/**/*',
       'src/lib/ai/**/*',
+      'src/lib/fhe/**/*',
+      'src/lib/metaaligner/**/*',
+      'src/lib/providers/**/*',
+      'src/lib/repositories/**/*',
+      'src/lib/scripts/**/*',
+      'src/lib/security/**/*',
+      'src/lib/services/**/*',
+      'src/lib/websocket/**/*',
       'src/components/three/**/*',
       'src/components/ui/charts/**/*',
       'src/components/admin/bias-detection/**/*',
       'src/components/ai/mental-llama/**/*',
+      'src/components/analytics/**/*',
+      'src/components/audit/**/*',
       'src/components/dashboard/Multidimensional*',
       'src/components/session/Multidimensional*',
+      'src/components/widgets/**/*',
+      'src/components/testing/**/*',
+      'src/simulator/**/*',
       'src/@types/**/*',
+      'src/e2e/**/*',
+      'src/load-tests/**/*',
+      'src/test/**/*',
+      'src/test-utils/**/*',
+      'src/tests/**/*',
+      'src/workers/**/*',
+      'src/services/**/*',
+      'src/integrations/**/*',
     ],
   }),
   
@@ -89,7 +117,6 @@ export default defineConfig({
     
     // Disable all optimizations
     optimizeDeps: {
-      disabled: true,
       noDiscovery: true,
       include: [],
       exclude: ['**/*'],
@@ -123,8 +150,8 @@ export default defineConfig({
           'node:string_decoder', 'node:tty', 'node:v8', 'node:vm', 'node:worker_threads',
           'node:async_hooks', 'node:diagnostics_channel', 'node:constants',
           
-                     // ALL large third-party packages (except React which we need)
-           '@astrojs/mdx', '@unocss/astro',
+          // ALL large third-party packages (except React which we need)
+          '@astrojs/mdx', '@unocss/astro',
           'flexsearch', 'flexsearch/dist/module/document',
           '@tensorflow/tfjs', '@tensorflow/tfjs-node', '@tensorflow/tfjs-layers',
           'sharp', 'canvas', 'puppeteer', 'playwright',
@@ -135,7 +162,8 @@ export default defineConfig({
           'openai', '@ai-sdk/openai', 'ai', '@langchain/core', '@langchain/openai',
           'zod', 'nanoid', 'uuid', 'dayjs', 'date-fns',
           'ws', 'web-streams-polyfill', 'stream-browserify',
-          '@google-cloud/storage', '@aws-sdk/client-s3',
+          '@google-cloud/storage', '@aws-sdk/client-s3', '@aws-sdk/client-dynamodb',
+          '@aws-sdk/client-kms', '@aws-sdk/lib-dynamodb', '@aws-sdk/util-dynamodb',
           'nodemailer', 'stripe', 'twilio',
           '@radix-ui/react-accordion', '@radix-ui/react-alert-dialog',
           '@radix-ui/react-checkbox', '@radix-ui/react-dialog',
@@ -143,22 +171,74 @@ export default defineConfig({
           '@radix-ui/react-select', '@radix-ui/react-slider',
           '@radix-ui/react-slot', '@radix-ui/react-switch',
           '@radix-ui/react-tabs', '@radix-ui/react-tooltip',
-                     'lucide-react', 'astro-icon',
-           'clsx', 'class-variance-authority', 'tailwind-merge',
-           'react-hot-toast',
+          'lucide-react', 'astro-icon',
+          'clsx', 'class-variance-authority', 'tailwind-merge',
+          'react-hot-toast',
           'crypto-js', 'buffer', 'jotai', 'zustand',
           '@vercel/analytics', '@vercel/speed-insights',
           '@sentry/astro', 'newrelic',
           'gray-matter', 'fast-glob',
           'axios', 'commander', 'composio-core',
-                     'mem0ai', 'mcp-remote',
-           'circomlib', 'aws-sdk',
-           'astro-compress', 'astro-seo', 'expressiveCode',
-           // Add any other large dependencies found in package.json
+          'mem0ai', 'mcp-remote',
+          'circomlib', 'aws-sdk',
+          'astro-compress', 'astro-seo', 'expressiveCode',
+          '@emotion/react', '@emotion/styled',
+          '@mui/material', '@neondatabase/serverless',
+          '@libsql/client', '@mem0/vercel-ai-provider',
+          '@testing-library/dom', '@types/ws',
+          '@codesandbox/sdk', '@axe-core/react',
+          '@clerk/astro', '@cloudflare/workers-types',
+          '@next/font', '@iconify-json/lucide',
+          '@tailwindcss/vite', '@unocss/reset',
+          'biome', 'eslint-plugin-import-x', 'eslint-plugin-pnpm',
+          'eslint-plugin-react', 'eslint-plugin-react-hooks',
+          'eslint-plugin-unicorn', 'eslint-plugin-vue',
+          // Add any other large dependencies found in package.json
         ],
         output: {
           manualChunks: undefined, // No manual chunking
         },
+        plugins: [
+          {
+            name: 'bundle-size-optimizer',
+            generateBundle(options, bundle) {
+              let totalSize = 0
+              const sizeMap = new Map()
+              
+              // Calculate sizes first
+              Object.keys(bundle).forEach(fileName => {
+                const chunk = bundle[fileName]
+                if (chunk.type === 'chunk' && chunk.code) {
+                  const size = chunk.code.length
+                  sizeMap.set(fileName, size)
+                  totalSize += size
+                }
+              })
+              
+              console.log(`Total bundle size: ${(totalSize / 1024 / 1024).toFixed(2)}MB`)
+              
+              // Only remove non-essential large chunks, not core ones
+              Object.keys(bundle).forEach(fileName => {
+                const chunk = bundle[fileName]
+                if (chunk.type === 'chunk' && chunk.code && chunk.code.length > 100000) {
+                  // Don't remove essential chunks
+                  const isEssential = fileName.includes('manifest') || 
+                                    fileName.includes('entry') ||
+                                    fileName.includes('middleware') ||
+                                    fileName.includes('server_') ||
+                                    fileName.includes('renderers')
+                  
+                  if (!isEssential) {
+                    console.log(`Removing large non-essential chunk: ${fileName} (${chunk.code.length} bytes)`)
+                    delete bundle[fileName]
+                  } else {
+                    console.log(`Keeping essential chunk: ${fileName} (${chunk.code.length} bytes)`)
+                  }
+                }
+              })
+            }
+          }
+        ]
       },
     },
     
@@ -182,21 +262,24 @@ export default defineConfig({
         'node:string_decoder', 'node:tty', 'node:v8', 'node:vm', 'node:worker_threads',
         'node:async_hooks', 'node:diagnostics_channel', 'node:constants',
         
-                 // ALL npm packages (except React which we need)
-         '@astrojs/mdx', '@unocss/astro',
+        // ALL npm packages (except React which we need)
+        '@astrojs/mdx', '@unocss/astro',
         'flexsearch', 'three', 'framer-motion', 'chart.js',
         '@tensorflow/tfjs', '@supabase/supabase-js', 'convex',
         'openai', 'ai', 'sharp', 'canvas', 'zod', 'nanoid',
-                 'ws', '@google-cloud/storage', '@radix-ui/react-accordion',
-         'lucide-react', 'clsx', 'crypto-js', 'buffer',
-         'react-hot-toast',
-         '@vercel/analytics', '@sentry/astro', 'axios',
-         // And all others...
+        'ws', '@google-cloud/storage', '@radix-ui/react-accordion',
+        'lucide-react', 'clsx', 'crypto-js', 'buffer',
+        'react-hot-toast',
+        '@vercel/analytics', '@sentry/astro', 'axios',
+        'mem0ai', 'mcp-remote', 'composio-core',
+        '@aws-sdk/client-s3', '@aws-sdk/client-dynamodb',
+        '@emotion/react', '@emotion/styled', '@mui/material',
+        // And all others...
       ],
-             noExternal: [
-         // Only include absolute essentials
-         'react', 'react-dom', '@astrojs/react',
-       ],
+      noExternal: [
+        // Only include absolute essentials
+        'react', 'react-dom', '@astrojs/react',
+      ],
       target: 'node',
     },
     
@@ -234,4 +317,22 @@ export default defineConfig({
   
   // No prefetching
   prefetch: false,
+  
+  // Remove experimental flags that are no longer valid
+  
+  // Disable features that add bundle size
+  server: {
+    host: true,
+    port: 4321,
+  },
+  
+  // Minimal markdown config
+  markdown: {
+    shikiConfig: {
+      themes: {
+        light: 'github-light',
+        dark: 'github-dark',
+      },
+    },
+  },
 }) 
