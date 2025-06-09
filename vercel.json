@@ -1,10 +1,15 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "pnpm exec astro build --config astro.config.debug.mjs",
+  "buildCommand": "pnpm exec astro build --config astro.config.vercel-minimal.mjs",
   "installCommand": "pnpm install --frozen-lockfile --prefer-offline",
   "framework": "astro",
   "outputDirectory": "dist",
   "devCommand": "pnpm astro dev",
+  "functions": {
+    "_render": {
+      "maxDuration": 30
+    }
+  },
   "build": {
     "env": {
       "VITE_LEGACY_DEP_OPTIMIZATION": "false",
@@ -12,7 +17,9 @@
       "VITE_OPTIMIZE_DEPS": "false",
       "DISABLE_WEB_FONTS": "true",
       "ASTRO_TELEMETRY_DISABLED": "1",
-      "NODE_OPTIONS": "--max-old-space-size=4096"
+      "NODE_OPTIONS": "--max-old-space-size=4096",
+      "VERCEL": "1",
+      "VERCEL_BUILD": "1"
     }
   },
   "headers": [
