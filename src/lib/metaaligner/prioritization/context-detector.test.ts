@@ -11,21 +11,20 @@ import type { CrisisDetectionResult } from '../../ai/types';
 
 // Mock dependencies
 const mockAIService: AIService = {
+  getModelInfo: vi.fn(),
   createChatCompletion: vi.fn(),
-  createCompletion: vi.fn(),
-  createEmbedding: vi.fn(),
-  listModels: vi.fn(),
-  deleteModel: vi.fn(),
-  createFineTune: vi.fn(),
-  listFineTunes: vi.fn(),
-  cancelFineTune: vi.fn(),
-  retrieveFineTune: vi.fn(),
-  deleteFineTune: vi.fn()
+  createChatStream: vi.fn()
 };
 
 const mockCrisisDetectionService = {
   detectCrisis: vi.fn(),
-  detectBatch: vi.fn()
+  detectBatch: vi.fn(),
+  mapSeverityToScore: vi.fn(),
+  mapRiskLevelToSeverity: vi.fn(),
+  aiService: mockAIService,
+  model: 'gpt-4',
+  defaultPrompt: 'default crisis prompt',
+  sensitivityLevel: 'medium' as const
 };
 
 describe('ContextDetector', () => {
@@ -37,7 +36,7 @@ describe('ContextDetector', () => {
     
     config = {
       aiService: mockAIService,
-      crisisDetectionService: mockCrisisDetectionService,
+      crisisDetectionService: mockCrisisDetectionService as any,
       model: 'gpt-4',
       enableCrisisIntegration: true
     };
@@ -58,7 +57,7 @@ describe('ContextDetector', () => {
       expect(detector).toBeDefined();
     });
 
-    it('should disable crisis integration when specified', () => {
+    it('should disable crisis integration when specified', async () => {
       const configWithoutCrisis = {
         ...config,
         enableCrisisIntegration: false
@@ -66,6 +65,31 @@ describe('ContextDetector', () => {
       
       const detector = new ContextDetector(configWithoutCrisis);
       expect(detector).toBeDefined();
+
+      // Mock AI response for general context detection
+      const aiResponse = {
+        choices: [{
+          message: {
+            content: JSON.stringify({
+              detectedContext: 'general',
+              confidence: 0.5,
+              contextualIndicators: [],
+              needsSpecialHandling: false,
+              urgency: 'low',
+              metadata: {}
+            })
+          }
+        }]
+      };
+
+      (mockAIService.createChatCompletion as Mock).mockResolvedValue(aiResponse);
+
+      // Test that crisis detection service is not called when integration is disabled
+      const result = await detector.detectContext('I need help with something');
+
+      expect(result.detectedContext).toBe(ContextType.GENERAL);
+      expect(mockCrisisDetectionService.detectCrisis).not.toHaveBeenCalled();
+      expect(result.metadata.crisisAnalysis).toBeUndefined();
     });
   });
 
@@ -78,13 +102,7 @@ describe('ContextDetector', () => {
           category: 'self-harm',
           severity: 'high',
           recommendedAction: 'immediate-intervention',
-          content: 'I want to hurt myself',
-          hasCrisis: true,
-          crisisType: 'self-harm',
-          riskLevel: 'high',
-          riskScore: 0.9,
-          riskFactors: [],
-          requiresIntervention: true
+          content: 'I want to hurt myself'
         };
 
         mockCrisisDetectionService.detectCrisis.mockResolvedValue(crisisResult);
@@ -107,16 +125,10 @@ describe('ContextDetector', () => {
         const crisisResult: CrisisDetectionResult = {
           isCrisis: false,
           confidence: 0.2,
-          category: null,
+          category: undefined,
           severity: 'none',
-          recommendedAction: null,
-          content: 'What is anxiety?',
-          hasCrisis: false,
-          crisisType: null,
-          riskLevel: 'low',
-          riskScore: 0.2,
-          riskFactors: [],
-          requiresIntervention: false
+          recommendedAction: undefined,
+          content: 'What is anxiety?'
         };
 
         const aiResponse = {
@@ -198,7 +210,16 @@ describe('ContextDetector', () => {
           }]
         };
 
-        mockCrisisDetectionService.detectCrisis.mockResolvedValue({ isCrisis: false });
+        const crisisResult: CrisisDetectionResult = {
+          isCrisis: false,
+          confidence: 0.1,
+          category: undefined,
+          severity: 'none',
+          recommendedAction: undefined,
+          content: 'What are the symptoms of anxiety?'
+        };
+
+        mockCrisisDetectionService.detectCrisis.mockResolvedValue(crisisResult);
         (mockAIService.createChatCompletion as Mock).mockResolvedValue(aiResponse);
 
         const result = await contextDetector.detectContext('What are the symptoms of anxiety?');
@@ -226,7 +247,16 @@ describe('ContextDetector', () => {
           }]
         };
 
-        mockCrisisDetectionService.detectCrisis.mockResolvedValue({ isCrisis: false });
+        const crisisResult: CrisisDetectionResult = {
+          isCrisis: false,
+          confidence: 0.1,
+          category: undefined,
+          severity: 'none',
+          recommendedAction: undefined,
+          content: 'I\'ve been feeling really sad lately'
+        };
+
+        mockCrisisDetectionService.detectCrisis.mockResolvedValue(crisisResult);
         (mockAIService.createChatCompletion as Mock).mockResolvedValue(aiResponse);
 
         const result = await contextDetector.detectContext('I\'ve been feeling really sad lately');
@@ -254,7 +284,16 @@ describe('ContextDetector', () => {
           }]
         };
 
-        mockCrisisDetectionService.detectCrisis.mockResolvedValue({ isCrisis: false });
+        const crisisResult: CrisisDetectionResult = {
+          isCrisis: false,
+          confidence: 0.1,
+          category: undefined,
+          severity: 'none',
+          recommendedAction: undefined,
+          content: 'Do I have depression? I have these symptoms...'
+        };
+
+        mockCrisisDetectionService.detectCrisis.mockResolvedValue(crisisResult);
         (mockAIService.createChatCompletion as Mock).mockResolvedValue(aiResponse);
 
         const result = await contextDetector.detectContext('Do I have depression? I have these symptoms...');
@@ -283,7 +322,16 @@ describe('ContextDetector', () => {
           }]
         };
 
-        mockCrisisDetectionService.detectCrisis.mockResolvedValue({ isCrisis: false });
+        const crisisResult: CrisisDetectionResult = {
+          isCrisis: false,
+          confidence: 0.1,
+          category: undefined,
+          severity: 'none',
+          recommendedAction: undefined,
+          content: 'Where can I find affordable therapy?'
+        };
+
+        mockCrisisDetectionService.detectCrisis.mockResolvedValue(crisisResult);
         (mockAIService.createChatCompletion as Mock).mockResolvedValue(aiResponse);
 
         const result = await contextDetector.detectContext('Where can I find affordable therapy?');
@@ -311,7 +359,16 @@ describe('ContextDetector', () => {
           }]
         };
 
-        mockCrisisDetectionService.detectCrisis.mockResolvedValue({ isCrisis: false });
+        const crisisResult: CrisisDetectionResult = {
+          isCrisis: false,
+          confidence: 0.1,
+          category: undefined,
+          severity: 'none',
+          recommendedAction: undefined,
+          content: 'Can you help me?'
+        };
+
+        mockCrisisDetectionService.detectCrisis.mockResolvedValue(crisisResult);
         (mockAIService.createChatCompletion as Mock).mockResolvedValue(aiResponse);
 
         const conversationHistory = [
@@ -336,7 +393,14 @@ describe('ContextDetector', () => {
 
     describe('error handling', () => {
       it('should handle AI service errors gracefully', async () => {
-        mockCrisisDetectionService.detectCrisis.mockResolvedValue({ isCrisis: false });
+        mockCrisisDetectionService.detectCrisis.mockResolvedValue({ 
+          isCrisis: false,
+          confidence: 0.1,
+          category: undefined,
+          severity: 'none',
+          recommendedAction: undefined,
+          content: 'Test message'
+        });
         (mockAIService.createChatCompletion as Mock).mockRejectedValue(new Error('AI service error'));
 
         const result = await contextDetector.detectContext('Test message');
@@ -356,7 +420,14 @@ describe('ContextDetector', () => {
           }]
         };
 
-        mockCrisisDetectionService.detectCrisis.mockResolvedValue({ isCrisis: false });
+        mockCrisisDetectionService.detectCrisis.mockResolvedValue({ 
+          isCrisis: false,
+          confidence: 0.1,
+          category: undefined,
+          severity: 'none',
+          recommendedAction: undefined,
+          content: 'Test message'
+        });
         (mockAIService.createChatCompletion as Mock).mockResolvedValue(malformedResponse);
 
         const result = await contextDetector.detectContext('Test message');
@@ -410,7 +481,16 @@ describe('ContextDetector', () => {
           }]
         };
 
-        mockCrisisDetectionService.detectCrisis.mockResolvedValue({ isCrisis: false });
+        const crisisResult: CrisisDetectionResult = {
+          isCrisis: false,
+          confidence: 0.1,
+          category: undefined,
+          severity: 'none',
+          recommendedAction: undefined,
+          content: 'Test message'
+        };
+
+        mockCrisisDetectionService.detectCrisis.mockResolvedValue(crisisResult);
         (mockAIService.createChatCompletion as Mock).mockResolvedValue(aiResponse);
 
         const result = await contextDetector.detectContext('Test message');
@@ -434,7 +514,16 @@ describe('ContextDetector', () => {
           }]
         };
 
-        mockCrisisDetectionService.detectCrisis.mockResolvedValue({ isCrisis: false });
+        const crisisResult: CrisisDetectionResult = {
+          isCrisis: false,
+          confidence: 0.1,
+          category: undefined,
+          severity: 'none',
+          recommendedAction: undefined,
+          content: 'Test message'
+        };
+
+        mockCrisisDetectionService.detectCrisis.mockResolvedValue(crisisResult);
         (mockAIService.createChatCompletion as Mock).mockResolvedValue(aiResponse);
 
         const result = await contextDetector.detectContext('Test message');
@@ -458,7 +547,16 @@ describe('ContextDetector', () => {
           }]
         };
 
-        mockCrisisDetectionService.detectCrisis.mockResolvedValue({ isCrisis: false });
+        const crisisResult: CrisisDetectionResult = {
+          isCrisis: false,
+          confidence: 0.1,
+          category: undefined,
+          severity: 'none',
+          recommendedAction: undefined,
+          content: 'Test message'
+        };
+
+        mockCrisisDetectionService.detectCrisis.mockResolvedValue(crisisResult);
         (mockAIService.createChatCompletion as Mock).mockResolvedValue(aiResponse);
 
         const result = await contextDetector.detectContext('Test message');
@@ -476,13 +574,22 @@ describe('ContextDetector', () => {
         { text: 'Where can I find therapy?', userId: 'user3' }
       ];
 
-      mockCrisisDetectionService.detectCrisis.mockResolvedValue({ isCrisis: false });
+      const crisisResult: CrisisDetectionResult = {
+        isCrisis: false,
+        confidence: 0.1,
+        category: undefined,
+        severity: 'none',
+        recommendedAction: undefined,
+        content: 'batch processing'
+      };
+
+      mockCrisisDetectionService.detectCrisis.mockResolvedValue(crisisResult);
       
       const aiResponses = [
         { detectedContext: 'educational', confidence: 0.8 },
         { detectedContext: 'support', confidence: 0.7 },
         { detectedContext: 'informational', confidence: 0.9 }
-      ].map(ctx => ({
+      ].map((ctx, index) => ({
         choices: [{
           message: {
             content: JSON.stringify({

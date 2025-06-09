@@ -16,16 +16,9 @@ import type { AIService } from '../../ai/models/types';
 
 // Mock dependencies
 const mockAIService: AIService = {
+  getModelInfo: vi.fn(),
   createChatCompletion: vi.fn(),
-  createCompletion: vi.fn(),
-  createEmbedding: vi.fn(),
-  listModels: vi.fn(),
-  deleteModel: vi.fn(),
-  createFineTune: vi.fn(),
-  listFineTunes: vi.fn(),
-  cancelFineTune: vi.fn(),
-  retrieveFineTune: vi.fn(),
-  deleteFineTune: vi.fn()
+  createChatStream: vi.fn()
 };
 
 describe('EducationalContextRecognizer', () => {
@@ -178,6 +171,8 @@ describe('EducationalContextRecognizer', () => {
       });
 
       it('should skip AI analysis for low-confidence pattern matches', async () => {
+        vi.clearAllMocks(); // ensure clean slate before assertion
+        
         const result = await recognizer.recognizeEducationalContext('Hello there');
 
         expect(result.isEducational).toBe(false);
