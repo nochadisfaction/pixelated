@@ -1,5 +1,6 @@
 import path from 'node:path'
 import vercel from '@astrojs/vercel'
+import icon from 'astro-icon'
 import { defineConfig } from 'astro/config'
 
 // Ultra-minimal configuration for Vercel deployment
@@ -63,8 +64,15 @@ export default defineConfig({
     ],
   }),
   
-  // No integrations - keep it absolutely minimal
-  integrations: [],
+  // Minimal integrations - only essential ones
+  integrations: [
+    icon({
+      include: {
+        lucide: ['*'],
+      },
+      svgdir: './src/icons',
+    }),
+  ],
   
   vite: {
     resolve: {
@@ -138,10 +146,10 @@ export default defineConfig({
           '@sentry/astro', 'newrelic',
           'gray-matter', 'fast-glob',
           'axios', 'commander', 'composio-core',
-          'mem0ai', 'mcp-remote',
-          'circomlib', 'aws-sdk',
-          'astro-compress', 'astro-seo', 'expressiveCode',
-          // Add any other large dependencies found in package.json
+                     'mem0ai', 'mcp-remote',
+           'circomlib', 'aws-sdk',
+           'astro-compress', 'astro-seo', 'expressiveCode',
+           // Add any other large dependencies found in package.json
         ],
         output: {
           manualChunks: undefined, // No manual chunking
@@ -175,10 +183,10 @@ export default defineConfig({
         'flexsearch', 'three', 'framer-motion', 'chart.js',
         '@tensorflow/tfjs', '@supabase/supabase-js', 'convex',
         'openai', 'ai', 'sharp', 'canvas', 'zod', 'nanoid',
-        'ws', '@google-cloud/storage', '@radix-ui/react-accordion',
-        'lucide-react', 'clsx', 'crypto-js', 'buffer',
-        '@vercel/analytics', '@sentry/astro', 'axios',
-        // And all others...
+                 'ws', '@google-cloud/storage', '@radix-ui/react-accordion',
+         'lucide-react', 'clsx', 'crypto-js', 'buffer',
+         '@vercel/analytics', '@sentry/astro', 'axios',
+         // And all others...
       ],
       noExternal: [], // Don't bundle anything
       target: 'node',
