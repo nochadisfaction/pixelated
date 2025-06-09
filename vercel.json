@@ -8,6 +8,8 @@
   "build": {
     "env": {
       "VITE_LEGACY_DEP_OPTIMIZATION": "false",
+      "VITE_DISABLE_DEPS_OPTIMIZATION": "true",
+      "VITE_OPTIMIZE_DEPS": "false",
       "DISABLE_WEB_FONTS": "true",
       "ASTRO_TELEMETRY_DISABLED": "1",
       "NODE_OPTIONS": "--max-old-space-size=4096"
