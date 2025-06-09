@@ -5,8 +5,14 @@ import { Toast } from './toast'
 /**
  * ToastProvider component to provide toast notifications functionality.
  * This component should be placed near the root of your application.
+ * Only renders on the client side to avoid SSR issues.
  */
 export default function ToastProvider() {
+  // Only render on client side to prevent SSR issues with react-hot-toast
+  if (typeof window === 'undefined') {
+    return null
+  }
+
   return (
     <Toast
       position="bottom-right"
