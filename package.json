@@ -15,7 +15,7 @@
     "start": "astro dev",
     "check": "trunk check",
     "build": "cross-env NODE_OPTIONS=\"--max-old-space-size=4096\" astro build",
-    "build:vercel": "cross-env NODE_OPTIONS=\"--max-old-space-size=4096\" DISABLE_WEB_FONTS=true ASTRO_TELEMETRY_DISABLED=1 VITE_LEGACY_DEP_OPTIMIZATION=false astro build",
+    "build:vercel": "cross-env NODE_OPTIONS=\"--max-old-space-size=4096\" DISABLE_WEB_FONTS=true ASTRO_TELEMETRY_DISABLED=1 astro build --config astro.config.vercel.mjs",
     "clean:vercel": "node scripts/clean-vercel-cache.js",
     "build:fast": "cross-env NODE_OPTIONS=\"--max-old-space-size=4096\" DISABLE_WEB_FONTS=true ASTRO_TELEMETRY_DISABLED=1 VERCEL_BUILD_CACHE=1 astro build --config astro.config.cloudflare.mjs --experimental-ssr",
     "build:prod": "node scripts/build-optimizer.js production",

@@ -6,7 +6,7 @@
  */
 
 import type { APIRoute } from 'astro';
-import { performanceMonitor, type PerformanceSnapshot } from '../../../lib/ai/bias-detection/performance-monitor';
+import { performanceMonitor } from '../../../lib/ai/bias-detection/performance-monitor';
 import { createServerlessHandler } from '../../../lib/ai/bias-detection/serverless-handlers';
 import { z } from 'zod';
 

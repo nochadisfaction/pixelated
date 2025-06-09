@@ -1,5 +1,4 @@
 ---
-import { withConvex } from '@/lib/providers/ConvexProvider'
 
 // Define TypeScript interfaces for clarity
 interface Message {
@@ -144,14 +143,6 @@ const mockUsers: User[] = [
 </div>
 
 <script>
-  // Import the ConvexProvider and hooks
-  import {
-    ConvexProvider,
-    ConvexReactClient,
-  } from '@/lib/providers/ConvexProvider'
-
-  // Initialize Convex client
-  let convex = null
 
   // We'll add real-time functionality once the component is loaded in the browser
   document.addEventListener('DOMContentLoaded', async () => {
@@ -159,8 +150,6 @@ const mockUsers: User[] = [
       // Import modules dynamically to ensure they're only loaded client-side
       const { useMessages, useUsers } = await import('@/lib/hooks/useConvex')
 
-      // Initialize Convex client
-      convex = new ConvexReactClient(import.meta.env.PUBLIC_CONVEX_URL || '')
 
       // DOM elements
       const userNameInput = document.getElementById(
@@ -234,9 +223,21 @@ const mockUsers: User[] = [
         const { messages, deleteMessage } = useMessages()
         const { users } = useUsers()
 
+        // Example of how we would use usersContainer to render users in a real implementation
+        if (usersContainer) {
+          // This would update when the users data changes in real-time
+          console.log(`Ready to render ${users?.length || 0} users to the UI`)
+        }
+
+        // Example of how we would use messagesContainer to render messages in a real implementation
+        if (messagesContainer) {
+          // This would update when the messages data changes in real-time
+          console.log(`Ready to render ${messages?.length || 0} messages to the UI`)
+        }
+
         // Setup delete message handlers
         document.querySelectorAll('.delete-message-btn').forEach((btn) => {
-          btn.addEventListener('click', async (e) => {
+          btn.addEventListener('click', async () => {
             const messageId = btn.getAttribute('data-message-id')
             if (!messageId) return
 

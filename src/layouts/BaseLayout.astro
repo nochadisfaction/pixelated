@@ -13,7 +13,7 @@ import MainNav from '@/components/base/MainNav.astro'
 import Footer from '@/components/base/Footer.astro'
 import ToTopButton from '@/components/widgets/ToTopButton.astro'
 import Backdrop from '@/components/base/Backdrop.astro'
-import ToastProvider from '@/components/ui/ToastProvider'
+import ToastProvider from '@/components/ui/ToastProvider.tsx'
 import LiveRegionSystem from '@/components/accessibility/LiveRegionSystem.astro'
 import SpeedInsights from '@vercel/speed-insights/astro'
 import Analytics from '@vercel/analytics/astro'
@@ -27,7 +27,7 @@ import type { BgType } from '@/types'
 const cspNonce = (Astro.locals as any).cspNonce || '';
 
 // Get Sentry DSN from environment variables
-const sentryDsn = import.meta.env['PUBLIC_SENTRY_DSN'] || '';
+const sentryDsn = (import.meta.env['PUBLIC_SENTRY_DSN'] as string) || '';
 
 interface Props {
   title?: string
@@ -52,7 +52,6 @@ const {
   description = 'Pixelated Empathy - Secure AI Therapy Platform',
   showNavBar = true,
   showFooter = true,
-  // bgPattern is currently unused but kept for future implementation
   usePlumAnimation = false,
   centered = true,
   containerClass = 'mx-auto w-full',
@@ -96,19 +95,19 @@ const isAuthPage = isLoginPage ||
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-7ZF7M7306J"></script>
-    <script async src="/js/ga-init.js"></script>
+    <script async src="/js/ga-init.js" is:inline></script>
 
     <!-- Sentry Error Monitoring - Enabled for client-side error monitoring -->
-    <script id="sentry-dsn-script" data-dsn={sentryDsn} src="/js/sentry-inline-dsn.js"></script>
+    <script id="sentry-dsn-script" data-dsn={sentryDsn} src="/js/sentry-inline-dsn.js" is:inline></script>
     <script src="https://js.sentry-cdn.com/npm/@sentry/browser@7.64.0/build/bundle.min.js" crossorigin="anonymous"></script>
-    <script src="/js/sentry-globals.js"></script>
-    <script src="/js/sentry-init.js"></script>
+    <script src="/js/sentry-globals.js" is:inline></script>
+    <script src="/js/sentry-init.js" is:inline></script>
 
     <!-- Feature Detection and Polyfill Loader (load early to avoid dependency issues) -->
-    <script src="/js/feature-detector.js" nonce={cspNonce}></script>
+    <script src="/js/feature-detector.js" nonce={cspNonce} is:inline></script>
 
     <!-- Load CSS and JS directly instead of preloading -->
-    <script src="/js/force-dark-mode.js" nonce={cspNonce}></script>
+    <script src="/js/force-dark-mode.js" nonce={cspNonce} is:inline></script>
     <link rel="stylesheet" href="/css/layout-fixes.css">
     <link rel="stylesheet" href="/css/font-fix.css">
 
@@ -127,7 +126,7 @@ const isAuthPage = isLoginPage ||
     <link rel="manifest" href="/manifest.webmanifest">
 
     <!-- Disable source map errors -->
-    <script src="/js/suppress-sourcemap-errors.js"></script>
+    <script src="/js/suppress-sourcemap-errors.js" is:inline></script>
 
     <!-- Sentry is already initialized in the Astro integration -->
     <!--
@@ -138,11 +137,11 @@ const isAuthPage = isLoginPage ||
     -->
 
     <!-- Polyfill strategy: Use feature detection only -->
-    <script src="/js/polyfill-detector.js"></script>
+    <script src="/js/polyfill-detector.js" is:inline></script>
 
     <!-- Auth page optimizations -->
     {isAuthPage && (
-      <script src="/js/auth-page-optimizations.js"></script>
+      <script src="/js/auth-page-optimizations.js" is:inline></script>
     )}
 
     <Analytics />
@@ -196,22 +195,22 @@ const isAuthPage = isLoginPage ||
     <Backdrop />
 
     <!-- Mobile viewport fixes script -->
-    <script src="/js/mobile-viewport-fixes.js"></script>
+    <script src="/js/mobile-viewport-fixes.js" is:inline></script>
 
     <!-- Progress Bar & Image Zoom -->
-    <script src="/js/nprogress-and-zoom.js"></script>
+    <script src="/js/nprogress-and-zoom.js" is:inline></script>
 
     <!-- Image Optimization -->
     {optimizeImages && (
-      <script src="/js/image-optimization.js"></script>
+      <script src="/js/image-optimization.js" is:inline></script>
     )}
 
     <!-- Vercel Speed Insights with conflict prevention approach -->
-    <script src="/js/vercel-speed-insights.js"></script>
+    <script src="/js/vercel-speed-insights.js" is:inline></script>
 
     <!-- Plum animation script -->
     {usePlumAnimation && (
-      <script src="/js/plum-animation.js"></script>
+      <script src="/js/plum-animation.js" is:inline></script>
       <style>
         #plum-animation {
           z-index: -5;
@@ -249,8 +248,8 @@ const isAuthPage = isLoginPage ||
     )}
 
     <!-- Service Worker Registration -->
-    <script src="/js/service-worker-registration.js"></script>
-    <script src="/js/speed-insights-before-send.js"></script>
+    <script src="/js/service-worker-registration.js" is:inline></script>
+    <script src="/js/speed-insights-before-send.js" is:inline></script>
     <SpeedInsights />
   </body>
 </html>

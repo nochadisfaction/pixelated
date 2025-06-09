@@ -147,7 +147,14 @@ const vercelIntegrations = isVercel ? [
 // Vercel-specific configuration to prevent hanging builds
 const vercelOptimizations = isVercel ? {
   optimizeDeps: {
-    disabled: true, // Disable dependency optimization on Vercel
+    noDiscovery: true, // Disable dependency discovery on Vercel
+    include: [], // Don't include any dependencies for optimization
+    exclude: ['**/*'], // Exclude everything from optimization
+    force: false, // Don't force re-optimization
+    holdUntilCrawlEnd: false, // Don't wait for crawling to end
+  },
+  define: {
+    'import.meta.env.VITE_DISABLE_DEPS_OPTIMIZATION': 'true',
   },
   build: {
     chunkSizeWarningLimit: 2000,
@@ -189,6 +196,7 @@ const vercelOptimizations = isVercel ? {
 } : {
   // Normal development/production configuration
   optimizeDeps: {
+    noDiscovery: false, // Allow discovery in non-Vercel environments
     include: ['react', 'react-dom', 'buffer'],
     exclude: ['@unocss/astro', 'flexsearch'],
     esbuildOptions: {
