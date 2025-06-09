@@ -29,7 +29,10 @@ Share your update, and ask for permission to continue moving forward
      - **Exit code 0 (✅ APPROVED)**: Proceed to the next sub-task
      - **Exit code 2 (🛑 BLOCKED)**: Stop and address concerns before continuing
      - **Exit code 3 (⚠️ UNCLEAR)**: Manual review required - ask user for guidance
-  5. If improvements are suggested, evaluate each one and decide whether to add it as a new task
+  5. If improvements are suggested, add them to a running list located at .notes/tasks/tasks-proposed.md
+     - Place them in a grouping of the same name as that task you checked in with Ollama Overlord for.
+     - If any of them stand out as AWESOME suggestions for the project, denote them with **AWESOME** formatting.
+
 - The agent MUST NOT proceed to the next sub-task without receiving approval from the script.
 
 ### Script Usage Examples:
