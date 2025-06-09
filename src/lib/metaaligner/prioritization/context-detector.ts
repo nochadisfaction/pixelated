@@ -1,466 +1,395 @@
 /**
  * Context Detection System for MetaAligner
- * Identifies conversation context to enable dynamic objective prioritization
+ * Integrates with existing crisis detection and identifies different conversation contexts
+ * to enable dynamic objective prioritization
  */
 
-import type { AlignmentContext, ContextType } from '../core/objectives';
-import type { CrisisDetectionResult } from '../../ai/types';
+import type { ContextType, AlignmentContext } from '../core/objectives';
 import { CrisisDetectionService } from '../../ai/services/crisis-detection';
-import { CrisisRiskDetector } from '../../ai/crisis/CrisisRiskDetector';
+import { EducationalContextRecognizer } from './educational-context-recognizer';
 import type { AIService } from '../../ai/models/types';
 import { getLogger } from '../../logging';
 
 const logger = getLogger({ prefix: 'context-detector' });
 
-export interface ContextDetectionConfig {
-  aiService?: AIService;
-  crisisDetectionService?: CrisisDetectionService;
-  crisisRiskDetector?: CrisisRiskDetector;
-  sensitivityLevel?: 'low' | 'medium' | 'high';
-  enableAdvancedAnalysis?: boolean;
-}
-
 export interface ContextDetectionResult {
   detectedContext: ContextType;
   confidence: number;
-  alternativeContexts: Array<{ context: ContextType; confidence: number }>;
-  indicators: string[];
-  metadata: {
-    crisisAssessment?: CrisisDetectionResult;
-    processingTime: number;
-    analysisMethod: 'pattern-based' | 'ai-assisted' | 'hybrid';
-  };
+  contextualIndicators: ContextualIndicator[];
+  needsSpecialHandling: boolean;
+  urgency: 'low' | 'medium' | 'high' | 'critical';
+  metadata: Record<string, any>;
+}
+
+export interface ContextualIndicator {
+  type: string;
+  description: string;
+  confidence: number;
+  severity?: number;
+}
+
+export interface ContextDetectorConfig {
+  aiService: AIService;
+  crisisDetectionService?: CrisisDetectionService;
+  educationalContextRecognizer?: EducationalContextRecognizer;
+  model?: string;
+  enableCrisisIntegration?: boolean;
+  enableEducationalRecognition?: boolean;
 }
 
 /**
- * Advanced Context Detection Engine
+ * System prompt for context detection
+ */
+const CONTEXT_DETECTION_PROMPT = `You are a mental health context analysis system. Analyze the user's message to determine the primary context type and provide detailed indicators.
+
+Context Types:
+- CRISIS: Immediate safety concerns, self-harm, suicidal ideation, abuse, severe psychological distress
+- EDUCATIONAL: Learning about mental health concepts, conditions, treatments, or general information
+- SUPPORT: Seeking emotional support, validation, or coping strategies for ongoing challenges
+- CLINICAL_ASSESSMENT: Seeking professional evaluation, diagnosis, or clinical guidance
+- INFORMATIONAL: Requesting factual information about resources, services, or procedures
+- GENERAL: Casual conversation, check-ins, or unclear intent
+
+Respond in JSON format with:
+- detectedContext: one of the context types above
+- confidence: number from 0-1 indicating confidence in classification
+- contextualIndicators: array of objects with type, description, and confidence
+- needsSpecialHandling: boolean indicating if special protocols are needed
+- urgency: "low", "medium", "high", or "critical"
+- metadata: object with additional context-specific information
+
+Be thorough in identifying indicators but prioritize safety - if there's any indication of crisis, classify as CRISIS.`;
+
+/**
+ * Context Detection System
+ * 
+ * Analyzes conversation context to determine appropriate objective prioritization
  */
 export class ContextDetector {
+  private aiService: AIService;
   private crisisDetectionService?: CrisisDetectionService;
-  private crisisRiskDetector: CrisisRiskDetector;
-  private sensitivityLevel: 'low' | 'medium' | 'high';
-  private enableAdvancedAnalysis: boolean;
+  private educationalContextRecognizer?: EducationalContextRecognizer;
+  private model: string;
+  private enableCrisisIntegration: boolean;
+  private enableEducationalRecognition: boolean;
 
-  // Pattern-based detection rules for different contexts
-  private readonly contextPatterns = {
-    crisis: [
-      // Suicidal ideation indicators
-      /\b(?:suicide|suicidal|kill myself|end my life|not worth living|better off dead)\b/i,
-      /\b(?:want to die|wish I was dead|no point in living|tired of living)\b/i,
-      // Self-harm indicators
-      /\b(?:cut myself|hurt myself|self harm|self-harm|cutting|burning myself)\b/i,
-      // Crisis states
-      /\b(?:crisis|emergency|urgent help|can't cope|losing control|breaking down)\b/i,
-      // Hopelessness indicators
-      /\b(?:completely hopeless|nothing left|can't go on|giving up)\b/i,
-      // Immediate danger
-      /\b(?:about to|planning to|going to|ready to) (?:hurt|kill|harm)\b/i,
-    ],
-    
-    educational: [
-      /\b(?:what is|explain|define|tell me about|how does|why does)\b/i,
-      /\b(?:learn about|understand|definition|meaning|concept of)\b/i,
-      /\b(?:difference between|types of|symptoms of|causes of)\b/i,
-      /\b(?:research|study|information|facts|details about)\b/i,
-      /\b(?:how to recognize|signs of|warning signs|red flags)\b/i,
-      /\b(?:therapy|treatment|medication|diagnosis|condition)\b.*\b(?:works|helps|used for)\b/i,
-    ],
-    
-    support: [
-      /\b(?:feeling|I feel|I'm feeling|I've been feeling)\b.*\b(?:sad|depressed|anxious|worried|stressed|overwhelmed|lonely|scared|angry|frustrated)\b/i,
-      /\b(?:going through|dealing with|struggling with|coping with)\b/i,
-      /\b(?:need someone|need help|need support|feeling alone|need to talk)\b/i,
-      /\b(?:hard time|difficult time|tough time|rough patch|bad day)\b/i,
-      /\b(?:emotional support|someone to listen|understanding|empathy)\b/i,
-      /\b(?:comfort|reassurance|encouragement|hope|strength)\b/i,
-    ],
-    
-    clinical_assessment: [
-      /\b(?:diagnosed with|diagnosis|assessment|evaluation|screening)\b/i,
-      /\b(?:symptoms|symptom checker|do I have|might I have|could I have)\b/i,
-      /\b(?:mental health evaluation|psychological assessment|psychiatric evaluation)\b/i,
-      /\b(?:DSM|criteria|diagnostic criteria|clinical interview)\b/i,
-      /\b(?:depression|anxiety|PTSD|bipolar|ADHD|OCD|schizophrenia|eating disorder)\b.*\b(?:symptoms|signs|test|assessment|diagnosis)\b/i,
-      /\b(?:screening tool|questionnaire|mental health test|psychological test)\b/i,
-    ],
-    
-    informational: [
-      /\b(?:statistics|prevalence|how common|research shows|studies indicate)\b/i,
-      /\b(?:available treatments|treatment options|therapy options|medication options)\b/i,
-      /\b(?:mental health resources|where to find|how to access|referral)\b/i,
-      /\b(?:insurance|coverage|cost|affordable|free|low-cost)\b.*\b(?:therapy|treatment|counseling)\b/i,
-      /\b(?:therapist|counselor|psychiatrist|psychologist)\b.*\b(?:find|locate|search|directory)\b/i,
-      /\b(?:crisis hotline|emergency|helpline|support group|resources)\b/i,
-    ]
-  };
-
-  // Context keywords for additional scoring
-  private readonly contextKeywords = {
-    crisis: ['urgent', 'emergency', 'immediate', 'crisis', 'danger', 'life-threatening', 'critical'],
-    educational: ['learn', 'understand', 'explain', 'definition', 'information', 'knowledge', 'education'],
-    support: ['support', 'help', 'comfort', 'understanding', 'empathy', 'emotional', 'feelings'],
-    clinical_assessment: ['diagnosis', 'symptoms', 'assessment', 'evaluation', 'screening', 'clinical', 'medical'],
-    informational: ['resources', 'options', 'available', 'access', 'find', 'locate', 'directory', 'information']
-  };
-
-  constructor(config: ContextDetectionConfig = {}) {
-    if (config.crisisDetectionService) {
-      this.crisisDetectionService = config.crisisDetectionService;
-    }
-    
-    this.crisisRiskDetector = config.crisisRiskDetector || new CrisisRiskDetector();
-    this.sensitivityLevel = config.sensitivityLevel || 'medium';
-    this.enableAdvancedAnalysis = config.enableAdvancedAnalysis ?? true;
-
-    logger.info('ContextDetector initialized', {
-      hasCrisisDetectionService: !!this.crisisDetectionService,
-      sensitivityLevel: this.sensitivityLevel,
-      enableAdvancedAnalysis: this.enableAdvancedAnalysis
-    });
+  constructor(config: ContextDetectorConfig) {
+    this.aiService = config.aiService;
+    this.crisisDetectionService = config.crisisDetectionService;
+    this.educationalContextRecognizer = config.educationalContextRecognizer;
+    this.model = config.model || 'gpt-4';
+    this.enableCrisisIntegration = config.enableCrisisIntegration ?? true;
+    this.enableEducationalRecognition = config.enableEducationalRecognition ?? true;
   }
 
   /**
-   * Detect context for a given user query and conversation history
+   * Detect context from user input
    */
   async detectContext(
-    userQuery: string,
+    userInput: string,
     conversationHistory?: string[],
     userId?: string
   ): Promise<ContextDetectionResult> {
-    const startTime = Date.now();
-    
-    logger.info('Starting context detection', {
-      queryLength: userQuery.length,
-      historyLength: conversationHistory?.length || 0,
-      userId: userId ? 'provided' : 'not-provided'
-    });
-
     try {
-      // First, check for crisis indicators using existing services
-      const crisisAssessment = await this.performCrisisAssessment(userQuery, userId);
-      
-      // If crisis is detected with high confidence, prioritize it
-      if (crisisAssessment && this.isCriticalCrisis(crisisAssessment)) {
-        const processingTime = Date.now() - startTime;
-        
-        return {
-          detectedContext: 'crisis' as ContextType,
-          confidence: crisisAssessment.confidence,
-          alternativeContexts: [],
-          indicators: this.extractCrisisIndicators(crisisAssessment, userQuery),
-          metadata: {
-            crisisAssessment,
-            processingTime,
-            analysisMethod: 'ai-assisted'
-          }
-        };
+      // First, check for crisis if integration is enabled
+      let crisisResult = null;
+      if (this.enableCrisisIntegration && this.crisisDetectionService) {
+        crisisResult = await this.crisisDetectionService.detectCrisis(
+          userInput,
+          { userId, source: 'context-detection' }
+        );
+
+        // If crisis is detected, immediately return crisis context
+        if (crisisResult.isCrisis) {
+          return {
+            detectedContext: ContextType.CRISIS,
+            confidence: crisisResult.confidence,
+            contextualIndicators: [
+              {
+                type: 'crisis_detection',
+                description: crisisResult.category || 'Crisis detected',
+                confidence: crisisResult.confidence,
+                severity: this.mapSeverityToNumber(crisisResult.severity)
+              }
+            ],
+            needsSpecialHandling: true,
+            urgency: this.mapSeverityToUrgency(crisisResult.severity),
+            metadata: {
+              crisisResult,
+              recommendedAction: crisisResult.recommendedAction
+            }
+          };
+        }
       }
 
-      // Perform pattern-based context detection
-      const patternResults = this.performPatternBasedDetection(userQuery, conversationHistory);
-      
-      // Include crisis assessment in the overall analysis
-      if (crisisAssessment?.isCrisis) {
-        patternResults.crisis = Math.max(patternResults.crisis || 0, crisisAssessment.confidence);
+      // Check for educational context if recognizer is available
+      let educationalResult = null;
+      if (this.enableEducationalRecognition && this.educationalContextRecognizer) {
+        educationalResult = await this.educationalContextRecognizer.recognizeEducationalContext(
+          userInput,
+          undefined, // userProfile - would need to be passed through
+          conversationHistory
+        );
+
+        // If high confidence educational context, return it
+        if (educationalResult.isEducational && educationalResult.confidence > 0.8) {
+          return {
+            detectedContext: ContextType.EDUCATIONAL,
+            confidence: educationalResult.confidence,
+            contextualIndicators: [
+              {
+                type: 'educational_recognition',
+                description: `Educational ${educationalResult.educationalType} about ${educationalResult.topicArea}`,
+                confidence: educationalResult.confidence
+              }
+            ],
+            needsSpecialHandling: educationalResult.complexity === 'advanced',
+            urgency: 'low',
+            metadata: {
+              educationalResult,
+              learningObjectives: educationalResult.learningObjectives,
+              recommendedResources: educationalResult.recommendedResources
+            }
+          };
+        }
       }
 
-      // Advanced AI-assisted analysis if enabled and available
-      let advancedResults = patternResults;
-      let analysisMethod: 'pattern-based' | 'ai-assisted' | 'hybrid' = 'pattern-based';
-      
-      if (this.enableAdvancedAnalysis && this.crisisDetectionService) {
-        // For now, we rely on pattern-based detection with crisis integration
-        // Future: implement AI-assisted context classification
-        analysisMethod = 'hybrid';
-      }
+      // If no specific context detected, proceed with general context detection
+      const messages = [
+        { role: 'system', content: CONTEXT_DETECTION_PROMPT, name: '' },
+        { role: 'user', content: this.formatInputForAnalysis(userInput, conversationHistory), name: '' }
+      ];
 
-      // Determine primary context and alternatives
-      const contextScores = Object.entries(advancedResults) as [ContextType, number][];
-      contextScores.sort((a, b) => b[1] - a[1]);
-
-      const primaryContext = contextScores[0];
-      const alternatives = contextScores
-        .slice(1)
-        .filter(([, score]) => score > 0.3)
-        .map(([context, confidence]) => ({ context, confidence }));
-
-      const indicators = this.generateIndicators(primaryContext[0], userQuery, crisisAssessment);
-      const processingTime = Date.now() - startTime;
-
-      logger.info('Context detection completed', {
-        detectedContext: primaryContext[0],
-        confidence: primaryContext[1],
-        processingTime,
-        alternativeCount: alternatives.length
+      const response = await this.aiService.createChatCompletion(messages, {
+        model: this.model
       });
 
-      return {
-        detectedContext: primaryContext[0],
-        confidence: primaryContext[1],
-        alternativeContexts: alternatives,
-        indicators,
-        metadata: {
-          crisisAssessment: crisisAssessment || undefined,
-          processingTime,
-          analysisMethod
-        }
-      };
+      const content = response?.choices?.[0]?.message?.content || '';
+      const result = this.parseContextDetectionResponse(content);
 
-    } catch (error) {
-      logger.error('Context detection failed', { error: error instanceof Error ? error.message : 'Unknown error' });
-      
-      // Fallback to general context
-      const processingTime = Date.now() - startTime;
-      return {
-        detectedContext: 'general' as ContextType,
-        confidence: 0.5,
-        alternativeContexts: [],
-        indicators: ['fallback-general-context'],
-        metadata: {
-          processingTime,
-          analysisMethod: 'pattern-based'
-        }
-      };
-    }
-  }
-
-  /**
-   * Perform crisis assessment using existing services
-   */
-  private async performCrisisAssessment(
-    userQuery: string,
-    userId?: string
-  ): Promise<CrisisDetectionResult | null> {
-    try {
-      // Use AI-based crisis detection if available
-      if (this.crisisDetectionService) {
-        return await this.crisisDetectionService.detectCrisis(userQuery, {
-          sensitivityLevel: this.sensitivityLevel,
-          userId
-        });
-      }
-
-      // Fallback to pattern-based crisis detection
-      const riskAssessment = this.crisisRiskDetector.analyzeText(userQuery);
-      
-      // Convert risk assessment to crisis detection result format
-      if (riskAssessment.overallRiskScore > 0.3) {
-        return {
-          isCrisis: riskAssessment.immediateActionRequired || riskAssessment.overallRiskScore > 0.6,
-          confidence: riskAssessment.confidenceScore,
-          category: riskAssessment.primaryRisk,
-          severity: this.mapRiskScoreToSeverity(riskAssessment.overallRiskScore),
-          recommendedAction: riskAssessment.immediateActionRequired ? 'immediate-intervention' : 'monitor-closely',
-          content: userQuery,
-          hasCrisis: riskAssessment.immediateActionRequired,
-          crisisType: riskAssessment.primaryRisk,
-          riskLevel: this.mapRiskScoreToLevel(riskAssessment.overallRiskScore),
-          riskScore: riskAssessment.overallRiskScore,
-          requiresIntervention: riskAssessment.immediateActionRequired
+      // Merge crisis detection data if available
+      if (crisisResult && !crisisResult.isCrisis) {
+        result.metadata.crisisAnalysis = {
+          confidence: crisisResult.confidence,
+          severity: crisisResult.severity
         };
       }
 
-      return null;
+      // Merge educational analysis if available
+      if (educationalResult && educationalResult.isEducational) {
+        result.metadata.educationalAnalysis = {
+          confidence: educationalResult.confidence,
+          type: educationalResult.educationalType,
+          complexity: educationalResult.complexity,
+          topicArea: educationalResult.topicArea
+        };
+      }
+
+      logger.info('Context detected', {
+        context: result.detectedContext,
+        confidence: result.confidence,
+        urgency: result.urgency
+      });
+
+      return result;
+
     } catch (error) {
-      logger.warn('Crisis assessment failed, continuing with pattern detection', { error: error instanceof Error ? error.message : 'Unknown error' });
-      return null;
-    }
-  }
-
-  /**
-   * Perform pattern-based context detection
-   */
-  private performPatternBasedDetection(
-    userQuery: string,
-    conversationHistory?: string[]
-  ): Record<ContextType, number> {
-    const text = this.prepareTextForAnalysis(userQuery, conversationHistory);
-    const scores: Record<ContextType, number> = {
-      crisis: 0,
-      educational: 0,
-      support: 0,
-      clinical_assessment: 0,
-      informational: 0,
-      general: 0.1 // Default baseline for general context
-    };
-
-    // Pattern matching for each context type
-    for (const [contextType, patterns] of Object.entries(this.contextPatterns)) {
-      const context = contextType as keyof typeof this.contextPatterns;
-      let patternScore = 0;
-      let matchCount = 0;
-
-      for (const pattern of patterns) {
-        if (pattern.test(text)) {
-          matchCount++;
-          patternScore += 0.2; // Base score per pattern match
-        }
-      }
-
-      // Keyword scoring
-      const keywords = this.contextKeywords[context] || [];
-      let keywordScore = 0;
+      logger.error('Error detecting context:', error);
       
-      for (const keyword of keywords) {
-        const keywordRegex = new RegExp(`\\b${keyword}\\b`, 'gi');
-        const matches = text.match(keywordRegex);
-        if (matches) {
-          keywordScore += matches.length * 0.1;
-        }
-      }
-
-      // Combine scores with pattern matches having higher weight
-      scores[context as ContextType] = Math.min(patternScore * 1.5 + keywordScore, 1.0);
+      // Fallback to general context with low confidence
+      return {
+        detectedContext: ContextType.GENERAL,
+        confidence: 0.1,
+        contextualIndicators: [
+          {
+            type: 'error_fallback',
+            description: 'Context detection failed, using general fallback',
+            confidence: 0.1
+          }
+        ],
+        needsSpecialHandling: false,
+        urgency: 'low',
+        metadata: { error: error instanceof Error ? error.message : 'Unknown error' }
+      };
     }
-
-    return scores;
   }
 
   /**
-   * Check if crisis assessment indicates critical crisis requiring immediate intervention
+   * Batch context detection for multiple inputs
    */
-  private isCriticalCrisis(assessment: CrisisDetectionResult): boolean {
-    return assessment.isCrisis && (
-      assessment.confidence > 0.8 ||
-      assessment.severity === 'severe' ||
-      assessment.requiresIntervention === true ||
-      assessment.riskLevel === 'critical'
+  async detectContextBatch(
+    inputs: Array<{ text: string; conversationHistory?: string[]; userId?: string }>
+  ): Promise<ContextDetectionResult[]> {
+    return Promise.all(
+      inputs.map(input => 
+        this.detectContext(input.text, input.conversationHistory, input.userId)
+      )
     );
   }
 
   /**
-   * Extract crisis indicators from assessment and query
+   * Create alignment context from detection result
    */
-  private extractCrisisIndicators(
-    assessment: CrisisDetectionResult,
-    userQuery: string
-  ): string[] {
-    const indicators: string[] = [];
-
-    if (assessment.category) {
-      indicators.push(`crisis-type-${assessment.category}`);
-    }
-
-    if (assessment.severity) {
-      indicators.push(`severity-${assessment.severity}`);
-    }
-
-    if (assessment.requiresIntervention) {
-      indicators.push('requires-immediate-intervention');
-    }
-
-    // Extract risk terms if available
-    if (this.crisisRiskDetector) {
-      try {
-        const riskAssessment = this.crisisRiskDetector.analyzeText(userQuery);
-        const riskTerms = this.crisisRiskDetector.extractRiskTerms(userQuery, riskAssessment);
-        indicators.push(...riskTerms.map(term => `risk-term-${term}`));
-      } catch (error) {
-        logger.warn('Failed to extract risk terms', { error: error instanceof Error ? error.message : 'Unknown error' });
-      }
-    }
-
-    return indicators.length > 0 ? indicators : ['crisis-detected'];
-  }
-
-  /**
-   * Generate context indicators based on detected context
-   */
-  private generateIndicators(
-    context: ContextType,
+  createAlignmentContext(
     userQuery: string,
-    crisisAssessment?: CrisisDetectionResult | null
-  ): string[] {
-    const indicators: string[] = [];
-
-    // Add crisis indicators if present
-    if (crisisAssessment?.isCrisis) {
-      indicators.push(...this.extractCrisisIndicators(crisisAssessment, userQuery));
-    }
-
-    // Add context-specific indicators
-    const contextPatterns = this.contextPatterns[context as keyof typeof this.contextPatterns] || [];
-    for (const pattern of contextPatterns) {
-      if (pattern.test(userQuery)) {
-        indicators.push(`pattern-match-${context}`);
-        break; // Only add once per context
+    detectionResult: ContextDetectionResult,
+    conversationHistory?: string[],
+    userProfile?: any,
+    sessionMetadata?: Record<string, any>
+  ): AlignmentContext {
+    return {
+      userQuery,
+      conversationHistory,
+      detectedContext: detectionResult.detectedContext,
+      userProfile,
+      sessionMetadata: {
+        ...sessionMetadata,
+        contextDetection: detectionResult,
+        urgency: detectionResult.urgency,
+        needsSpecialHandling: detectionResult.needsSpecialHandling
       }
-    }
-
-    // Add keyword indicators
-    const keywords = this.contextKeywords[context as keyof typeof this.contextKeywords] || [];
-    for (const keyword of keywords) {
-      if (new RegExp(`\\b${keyword}\\b`, 'i').test(userQuery)) {
-        indicators.push(`keyword-${keyword}`);
-      }
-    }
-
-    return indicators.length > 0 ? indicators : [`detected-${context}`];
+    };
   }
 
   /**
-   * Prepare text for analysis by combining query and history
+   * Format input for analysis
    */
-  private prepareTextForAnalysis(userQuery: string, conversationHistory?: string[]): string {
-    let text = userQuery;
+  private formatInputForAnalysis(userInput: string, conversationHistory?: string[]): string {
+    let formatted = `Current message: ${userInput}`;
     
-    // Include recent conversation history for context
     if (conversationHistory && conversationHistory.length > 0) {
-      // Take last 3 messages for context
-      const recentHistory = conversationHistory.slice(-3).join(' ');
-      text = `${recentHistory} ${userQuery}`;
+      formatted += `\n\nRecent conversation context:\n${conversationHistory.slice(-3).join('\n')}`;
     }
 
-    return text.toLowerCase();
+    return formatted;
   }
 
   /**
-   * Map risk score to severity level
+   * Parse context detection response
    */
-  private mapRiskScoreToSeverity(score: number): 'none' | 'low' | 'medium' | 'high' | 'severe' {
-    if (score >= 0.8) return 'severe';
-    if (score >= 0.6) return 'high';
-    if (score >= 0.4) return 'medium';
-    if (score >= 0.2) return 'low';
-    return 'none';
+  private parseContextDetectionResponse(content: string): ContextDetectionResult {
+    try {
+      // Extract JSON from response
+      const jsonMatch = 
+        content.match(/```json\n([\s\S]*?)\n```/) ||
+        content.match(/```\n([\s\S]*?)\n```/) ||
+        content.match(/\{[\s\S]*?\}/);
+
+      const jsonStr = jsonMatch ? jsonMatch[0] : content;
+      const parsed = JSON.parse(jsonStr.replace(/```json\n?|```\n?/g, ''));
+
+      return {
+        detectedContext: this.validateContextType(parsed.detectedContext),
+        confidence: Math.max(0, Math.min(1, parsed.confidence || 0.5)),
+        contextualIndicators: parsed.contextualIndicators || [],
+        needsSpecialHandling: Boolean(parsed.needsSpecialHandling),
+        urgency: this.validateUrgency(parsed.urgency),
+        metadata: parsed.metadata || {}
+      };
+
+    } catch (error) {
+      logger.error('Error parsing context detection response:', error);
+      
+      // Fallback parsing
+      return {
+        detectedContext: ContextType.GENERAL,
+        confidence: 0.3,
+        contextualIndicators: [],
+        needsSpecialHandling: false,
+        urgency: 'low',
+        metadata: { parseError: true }
+      };
+    }
   }
 
   /**
-   * Map risk score to risk level
+   * Validate and normalize context type
    */
-  private mapRiskScoreToLevel(score: number): 'low' | 'medium' | 'high' | 'critical' {
-    if (score >= 0.8) return 'critical';
-    if (score >= 0.6) return 'high';
-    if (score >= 0.4) return 'medium';
-    return 'low';
-  }
-
-  /**
-   * Update configuration
-   */
-  updateConfig(config: Partial<ContextDetectionConfig>): void {
-    if (config.sensitivityLevel) {
-      this.sensitivityLevel = config.sensitivityLevel;
+  private validateContextType(contextType: string): ContextType {
+    if (Object.values(ContextType).includes(contextType as ContextType)) {
+      return contextType as ContextType;
     }
     
-    if (config.enableAdvancedAnalysis !== undefined) {
-      this.enableAdvancedAnalysis = config.enableAdvancedAnalysis;
+    // Attempt to map common variations
+    const normalized = contextType.toLowerCase().replace(/[_\s]/g, '');
+    switch (normalized) {
+      case 'crisis':
+      case 'emergency':
+      case 'urgent':
+        return ContextType.CRISIS;
+      case 'educational':
+      case 'education':
+      case 'learning':
+        return ContextType.EDUCATIONAL;
+      case 'support':
+      case 'emotional':
+      case 'help':
+        return ContextType.SUPPORT;
+      case 'clinical':
+      case 'assessment':
+      case 'diagnosis':
+        return ContextType.CLINICAL_ASSESSMENT;
+      case 'informational':
+      case 'information':
+      case 'info':
+        return ContextType.INFORMATIONAL;
+      default:
+        return ContextType.GENERAL;
     }
+  }
 
-    if (config.crisisDetectionService) {
-      this.crisisDetectionService = config.crisisDetectionService;
+  /**
+   * Validate and normalize urgency level
+   */
+  private validateUrgency(urgency: string): 'low' | 'medium' | 'high' | 'critical' {
+    const validUrgencies = ['low', 'medium', 'high', 'critical'];
+    return validUrgencies.includes(urgency) ? urgency as 'low' | 'medium' | 'high' | 'critical' : 'low';
+  }
+
+  /**
+   * Map severity to numeric value
+   */
+  private mapSeverityToNumber(severity: string): number {
+    switch (severity) {
+      case 'severe': return 1.0;
+      case 'high': return 0.8;
+      case 'medium': return 0.6;
+      case 'low': return 0.4;
+      case 'none': return 0.2;
+      default: return 0.5;
     }
+  }
 
-    logger.info('ContextDetector configuration updated', {
-      sensitivityLevel: this.sensitivityLevel,
-      enableAdvancedAnalysis: this.enableAdvancedAnalysis
-    });
+  /**
+   * Map severity to urgency level
+   */
+  private mapSeverityToUrgency(severity: string): 'low' | 'medium' | 'high' | 'critical' {
+    switch (severity) {
+      case 'severe': return 'critical';
+      case 'high': return 'high';
+      case 'medium': return 'medium';
+      case 'low': return 'low';
+      case 'none': return 'low';
+      default: return 'medium';
+    }
   }
 }
 
-// Export default instance creator
-export function createContextDetector(config?: ContextDetectionConfig): ContextDetector {
+/**
+ * Factory function to create a context detector
+ */
+export function createContextDetector(config: ContextDetectorConfig): ContextDetector {
   return new ContextDetector(config);
 }
 
-export default ContextDetector; 
+/**
+ * Default context detector configuration
+ */
+export function getDefaultContextDetectorConfig(aiService: AIService): ContextDetectorConfig {
+  return {
+    aiService,
+    model: 'gpt-4',
+    enableCrisisIntegration: true,
+    enableEducationalRecognition: true
+  };
+} 
