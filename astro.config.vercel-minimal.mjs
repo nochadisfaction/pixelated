@@ -13,6 +13,8 @@ export default defineConfig({
     isr: false,
     edgeMiddleware: false,
     includeFiles: [],
+    functionPerRoute: false,
+    maxDuration: 30,
     excludeFiles: [
       // Exclude everything that's not absolutely essential
       '**/*.md',
