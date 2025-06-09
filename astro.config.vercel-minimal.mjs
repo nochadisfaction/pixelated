@@ -119,7 +119,6 @@ export default defineConfig({
     optimizeDeps: {
       noDiscovery: true,
       include: [],
-      exclude: ['**/*'],
     },
     
     build: {
@@ -198,47 +197,7 @@ export default defineConfig({
         output: {
           manualChunks: undefined, // No manual chunking
         },
-        plugins: [
-          {
-            name: 'bundle-size-optimizer',
-            generateBundle(options, bundle) {
-              let totalSize = 0
-              const sizeMap = new Map()
-              
-              // Calculate sizes first
-              Object.keys(bundle).forEach(fileName => {
-                const chunk = bundle[fileName]
-                if (chunk.type === 'chunk' && chunk.code) {
-                  const size = chunk.code.length
-                  sizeMap.set(fileName, size)
-                  totalSize += size
-                }
-              })
-              
-              console.log(`Total bundle size: ${(totalSize / 1024 / 1024).toFixed(2)}MB`)
-              
-              // Only remove non-essential large chunks, not core ones
-              Object.keys(bundle).forEach(fileName => {
-                const chunk = bundle[fileName]
-                if (chunk.type === 'chunk' && chunk.code && chunk.code.length > 100000) {
-                  // Don't remove essential chunks
-                  const isEssential = fileName.includes('manifest') || 
-                                    fileName.includes('entry') ||
-                                    fileName.includes('middleware') ||
-                                    fileName.includes('server_') ||
-                                    fileName.includes('renderers')
-                  
-                  if (!isEssential) {
-                    console.log(`Removing large non-essential chunk: ${fileName} (${chunk.code.length} bytes)`)
-                    delete bundle[fileName]
-                  } else {
-                    console.log(`Keeping essential chunk: ${fileName} (${chunk.code.length} bytes)`)
-                  }
-                }
-              })
-            }
-          }
-        ]
+        // No plugins for now - let's focus on externalization
       },
     },
     
