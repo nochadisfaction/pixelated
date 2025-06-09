@@ -5,11 +5,6 @@
   "framework": "astro",
   "outputDirectory": "dist",
   "devCommand": "pnpm astro dev",
-  "functions": {
-    "_render": {
-      "maxDuration": 30
-    }
-  },
   "build": {
     "env": {
       "VITE_LEGACY_DEP_OPTIMIZATION": "false",
