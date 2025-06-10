@@ -139,3 +139,4 @@ tasks.json
 .sentryclirc
 .pnpm-store/
 .cursor/mcp.json
+src/lib/ai/bias-detection/
