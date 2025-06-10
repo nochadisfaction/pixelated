@@ -1,5 +1,5 @@
 import { defineConfig } from 'vitest/config'
-import path from 'path'
+import path from 'node:path'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
 export default defineConfig({
@@ -40,6 +40,7 @@ export default defineConfig({
         'vitest.config.ts',
       ],
     },
+    reporters: [["junit", { outputFile: "./junit.xml" }]],
   },
 
   resolve: {

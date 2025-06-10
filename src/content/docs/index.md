@@ -1,35 +1,17 @@
 ---
-title: 'Documentation Index'
-subtitle: 'Tutorial with the Platform'
-description: 'Main documentation index for the platform'
-author: 'Pixelated Team'
+title: "Documentation"
+description: "Documentation is temporarily unavailable during deployment"
 pubDate: 2024-01-15
-lastModDate: 2024-01-15
-toc: true
-share: false
-ogImage: false
+author: "System"
+tags: []
 draft: false
+toc: false
+share: false
 ---
 
-Welcome to the platform documentation. This section contains guides, tutorials, 
-and reference materials to help you get the most out of the platform.
+# Documentation
 
-## Tutorial
+Documentation is being updated and will be available shortly.
 
-- Quick Start Guide
-- Installation
-- Configuration
-
-## API Documentation
-
-- API Overview
-- Authentication
-- Endpoints
-
-## Guides
-
-- User Guide
-- Developer Guide
-- Security Best Practices
-
-This is a placeholder file to prevent collection warnings during build.
+This is a temporary placeholder during the Azure deployment process.
+The full documentation will be restored after deployment.

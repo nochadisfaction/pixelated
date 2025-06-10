@@ -14,21 +14,21 @@ def check_in_with_overlord(task_summary):
             "stream": False
         }
         headers = {"Content-Type": "application/json"}
-        
-        print(f"🔄 Checking in with Ollama Overlord...")
+
+        print("🔄 Checking in with Ollama Overlord...")
         print(f"📋 Task Summary: {task_summary}")
-        
+
         response = requests.post(url, headers=headers, json=payload, timeout=30)
         response.raise_for_status()
-        
+
         result = response.json()
         ollama_response = result.get('response', '').strip()
         print(f"🤖 Ollama Overlord Response: {ollama_response}")
-        
+
         approval_keywords = ['yes', 'continue', 'proceed', 'approved', 'go ahead', 'next']
         blocking_keywords = ['no', 'stop', 'wait', 'blocked', 'hold']
         response_lower = ollama_response.lower()
-        
+
         if any(keyword in response_lower for keyword in approval_keywords):
             print("✅ APPROVED: Continue to next task")
             return 0
@@ -38,7 +38,7 @@ def check_in_with_overlord(task_summary):
         else:
             print("⚠️ UNCLEAR: Manual review required")
             return 3
-            
+
     except Exception as e:
         print(f"❌ Error: {e}")
         return 1

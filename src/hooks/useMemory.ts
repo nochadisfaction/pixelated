@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { memoryManager, type MemoryEntry, type SearchOptions, type MemoryStats } from '@/lib/memory/mem0-manager';
+import { clientMemoryService, type MemoryEntry, type SearchOptions, type MemoryStats } from '@/lib/memory/client-memory-service';
 
 interface UseMemoryOptions {
   userId?: string;
@@ -58,15 +58,15 @@ export function useMemory(options: UseMemoryOptions = {}): UseMemoryReturn {
       let fetchedMemories: MemoryEntry[];
       
       if (category) {
-        fetchedMemories = await memoryManager.searchByCategory(category, userId);
+        fetchedMemories = await clientMemoryService.searchByCategory(category, userId);
       } else {
-        fetchedMemories = await memoryManager.getAllMemories(userId);
+        fetchedMemories = await clientMemoryService.getAllMemories(userId);
       }
       
       setMemories(fetchedMemories);
       
       // Update stats
-      const memoryStats = await memoryManager.getMemoryStats(userId);
+      const memoryStats = await clientMemoryService.getMemoryStats(userId);
       setStats(memoryStats);
     } catch (err) {
       handleError(err);
@@ -79,7 +79,7 @@ export function useMemory(options: UseMemoryOptions = {}): UseMemoryReturn {
     setError(null);
     
     try {
-      const memoryId = await memoryManager.addMemory({
+      const memoryId = await clientMemoryService.addMemory({
         content,
         metadata: {
           ...metadata,
@@ -102,7 +102,7 @@ export function useMemory(options: UseMemoryOptions = {}): UseMemoryReturn {
     setError(null);
     
     try {
-      const results = await memoryManager.searchMemories({
+      const results = await clientMemoryService.searchMemories({
         query,
         userId,
         category,
@@ -121,7 +121,7 @@ export function useMemory(options: UseMemoryOptions = {}): UseMemoryReturn {
     setError(null);
     
     try {
-      await memoryManager.updateMemory(memoryId, content, userId);
+      await clientMemoryService.updateMemory(memoryId, content, userId);
       await refreshMemories();
     } catch (err) {
       handleError(err);
@@ -133,7 +133,7 @@ export function useMemory(options: UseMemoryOptions = {}): UseMemoryReturn {
     setError(null);
     
     try {
-      await memoryManager.deleteMemory(memoryId, userId);
+      await clientMemoryService.deleteMemory(memoryId, userId);
       await refreshMemories();
     } catch (err) {
       handleError(err);
@@ -142,23 +142,23 @@ export function useMemory(options: UseMemoryOptions = {}): UseMemoryReturn {
   }, [userId, refreshMemories, handleError]);
 
   const addUserPreference = useCallback(async (preference: string, value: any): Promise<void> => {
-    await memoryManager.addUserPreference(userId, preference, value);
+    await clientMemoryService.addUserPreference(userId, preference, value);
     await refreshMemories();
   }, [userId, refreshMemories]);
 
   const addConversationContext = useCallback(async (context: string, sessionId?: string): Promise<void> => {
-    await memoryManager.addConversationContext(userId, context, sessionId);
+    await clientMemoryService.addConversationContext(userId, context, sessionId);
     await refreshMemories();
   }, [userId, refreshMemories]);
 
   const addProjectInfo = useCallback(async (projectInfo: string, projectId?: string): Promise<void> => {
-    await memoryManager.addProjectInfo(userId, projectInfo, projectId);
+    await clientMemoryService.addProjectInfo(userId, projectInfo, projectId);
     await refreshMemories();
   }, [userId, refreshMemories]);
 
   const searchByCategory = useCallback(async (searchCategory: string): Promise<MemoryEntry[]> => {
     try {
-      return await memoryManager.searchByCategory(searchCategory, userId);
+      return await clientMemoryService.searchByCategory(searchCategory, userId);
     } catch (err) {
       handleError(err);
       return [];
@@ -167,7 +167,7 @@ export function useMemory(options: UseMemoryOptions = {}): UseMemoryReturn {
 
   const searchByTags = useCallback(async (tags: string[]): Promise<MemoryEntry[]> => {
     try {
-      return await memoryManager.searchByTags(tags, userId);
+      return await clientMemoryService.searchByTags(tags, userId);
     } catch (err) {
       handleError(err);
       return [];
@@ -182,7 +182,7 @@ export function useMemory(options: UseMemoryOptions = {}): UseMemoryReturn {
 
   const getMemoryHistory = useCallback(async (): Promise<any[]> => {
     try {
-      return await memoryManager.getMemoryHistory(userId);
+      return await clientMemoryService.getMemoryHistory(userId);
     } catch (err) {
       handleError(err);
       return [];

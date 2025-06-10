@@ -21,7 +21,7 @@ const metricsQuerySchema = z.object({
 type MetricsQuery = z.infer<typeof metricsQuerySchema>;
 
 // Main handler for metrics endpoint
-const handleMetricsRequest = async (req: any) => {
+const handleMetricsRequest = async (req: { method: string; query: any; headers: any; body: any; path: string; }) => {
   const startTime = Date.now();
 
   try {
@@ -84,7 +84,7 @@ const handleMetricsRequest = async (req: any) => {
       }),
       meta: {
         totalMetrics: filteredMetrics.length,
-        metricsTypes: [...new Set(filteredMetrics.map(m => m.name))],
+        metricsTypes: Array.from(new Set(filteredMetrics.map(m => m.name))),
         requestDuration: Date.now() - startTime,
       },
     };
@@ -138,7 +138,7 @@ export const GET: APIRoute = async ({ request, url }) => {
   
   const mockRequest = {
     method: 'GET',
-    headers: Object.fromEntries(request.headers.entries()),
+    headers: {},
     query: queryParams,
     body: null,
     path: '/api/bias-detection/metrics',

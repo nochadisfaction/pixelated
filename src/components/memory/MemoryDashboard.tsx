@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useMemory, useUserPreferences } from '@/hooks/useMemory';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,7 +30,7 @@ import {
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { Search, Plus, Trash2, Edit, BarChart3, Brain, Clock, Tag, User } from 'lucide-react';
-import type { MemoryEntry } from '@/lib/memory/mem0-manager';
+import type { MemoryEntry } from '@/lib/memory/client-memory-service';
 
 interface MemoryDashboardProps {
   userId?: string;
@@ -56,7 +56,6 @@ export function MemoryDashboard({ userId = 'default_user', showUserSelector = fa
   const [isSearching, setIsSearching] = useState(false);
   
   // New memory form
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newMemoryContent, setNewMemoryContent] = useState('');
   const [newMemoryCategory, setNewMemoryCategory] = useState('general');
   const [newMemoryTags, setNewMemoryTags] = useState('');
@@ -69,7 +68,7 @@ export function MemoryDashboard({ userId = 'default_user', showUserSelector = fa
     userId: currentUserId, 
     autoLoad: true,
     category: selectedCategory === 'all' ? undefined : selectedCategory 
-  });
+  } as const);
 
   const userPrefs = useUserPreferences(currentUserId);
 
@@ -84,7 +83,7 @@ export function MemoryDashboard({ userId = 'default_user', showUserSelector = fa
       const results = await memory.searchMemories(searchQuery, {
         category: selectedCategory === 'all' ? undefined : selectedCategory,
         limit: 20,
-      });
+      } as const);
       setSearchResults(results);
     } catch (error) {
       toast.error('Search failed');

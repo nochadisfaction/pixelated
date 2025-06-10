@@ -1,7 +1,7 @@
 # syntax = docker/dockerfile:1
 
 # Adjust NODE_VERSION as desired
-ARG NODE_VERSION=22.x
+ARG NODE_VERSION=22.16.0
 FROM node:${NODE_VERSION}-slim AS base
 
 LABEL org.opencontainers.image.description="Astro"
