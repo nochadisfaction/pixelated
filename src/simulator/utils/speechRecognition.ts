@@ -6,12 +6,38 @@
  * with privacy-first approaches and enhanced therapeutic features.
  */
 
+// Define proper types for Web Speech API
+interface SpeechRecognitionInterface {
+  lang: string
+  continuous: boolean
+  interimResults: boolean
+  maxAlternatives: number
+  grammars?: SpeechGrammarListInterface
+  start(): void
+  stop(): void
+  abort(): void
+  addEventListener(type: string, listener: EventListener): void
+  removeEventListener(type: string, listener: EventListener): void
+}
+
+interface SpeechGrammarListInterface {
+  addFromString(string: string, weight: number): void
+}
+
+interface SpeechRecognitionConstructor {
+  new (): SpeechRecognitionInterface
+}
+
+interface SpeechGrammarListConstructor {
+  new (): SpeechGrammarListInterface
+}
+
 // Define the speech recognition window interface
 declare global {
   interface Window {
-    SpeechRecognition: any
-    webkitSpeechRecognition: any
-    SpeechGrammarList: any
+    SpeechRecognition: SpeechRecognitionConstructor
+    webkitSpeechRecognition: SpeechRecognitionConstructor
+    SpeechGrammarList: SpeechGrammarListConstructor
   }
 }
 
@@ -41,7 +67,7 @@ export const DEFAULT_SPEECH_CONFIG: SpeechRecognitionConfig = {
  */
 export function createSpeechRecognition(
   config: SpeechRecognitionConfig = DEFAULT_SPEECH_CONFIG,
-): any | null {
+): SpeechRecognitionInterface | null {
   // Check if browser supports the Web Speech API
   if (
     typeof window === 'undefined' ||
@@ -52,7 +78,7 @@ export function createSpeechRecognition(
 
   // Initialize speech recognition with the appropriate constructor
   const SpeechRecognitionConstructor =
-    (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    (window as unknown as Window).SpeechRecognition || (window as unknown as Window).webkitSpeechRecognition
 
   const recognition = new SpeechRecognitionConstructor()
 
@@ -67,9 +93,9 @@ export function createSpeechRecognition(
   // Add grammar list if specified and supported
   if (config.grammarList && window.SpeechGrammarList) {
     const speechGrammarList = new window.SpeechGrammarList()
-    config.grammarList.forEach((grammar) => {
+    for (const grammar of config.grammarList) {
       speechGrammarList.addFromString(grammar, 1)
-    })
+    }
     recognition.grammars = speechGrammarList
   }
 
@@ -204,7 +230,8 @@ export function getKeywordPatterns(domain: string): RegExp[] {
     ],
   }
 
-  return patterns[domain] || patterns['general']
+  // biome-ignore lint/complexity/useLiteralKeys: <explanation>
+  return patterns[domain] || patterns['general'] || []
 }
 
 /**
@@ -213,14 +240,14 @@ export function getKeywordPatterns(domain: string): RegExp[] {
  */
 export function processRecognizedSpeech(
   text: string,
-  domain: string = 'general',
+  domain = 'general',
 ): {
   processedText: string
   detectedKeywords: string[]
   confidenceScores: Record<string, number>
 } {
   // Basic text cleanup
-  let processedText = text
+  const processedText = text
     .trim()
     .replace(/(\s{2,})/g, ' ')
     .replace(/^\s*um\s+|^\s*uh\s+|^\s*er\s+/gi, '')
@@ -229,25 +256,25 @@ export function processRecognizedSpeech(
   const patterns = getKeywordPatterns(domain)
   const detectedKeywords: string[] = []
 
-  patterns.forEach((pattern) => {
+  for (const pattern of patterns) {
     const matches = processedText.match(pattern)
     if (matches) {
-      matches.forEach((match) => {
+      for (const match of matches) {
         if (!detectedKeywords.includes(match)) {
           detectedKeywords.push(match)
         }
-      })
+      }
     }
-  })
+  }
 
   // Very simple confidence scoring for demonstration
   // In a real implementation, this would be more sophisticated
   const confidenceScores: Record<string, number> = {}
 
-  detectedKeywords.forEach((keyword) => {
+  for (const keyword of detectedKeywords) {
     // Assign higher confidence to keywords that appear in the domain's patterns
     confidenceScores[keyword] = 0.7 + Math.random() * 0.3
-  })
+  }
 
   return {
     processedText,
@@ -261,7 +288,7 @@ export function processRecognizedSpeech(
  */
 export function getTherapeuticPrompts(
   detectedKeywords: string[],
-  domain: string = 'general',
+  domain = 'general',
 ): string[] {
   // Map of keywords to potential therapeutic follow-up prompts
   const promptMap: Record<string, string[]> = {
@@ -311,26 +338,36 @@ export function getTherapeuticPrompts(
   // Collect relevant prompts based on detected keywords
   const prompts: string[] = []
 
-  detectedKeywords.forEach((keyword) => {
+  for (const keyword of detectedKeywords) {
     const keywordLower = keyword.toLowerCase()
     // Try to find exact match first
     if (promptMap[keywordLower]) {
       // Add a random prompt for this keyword
-      const randomIndex = Math.floor(
-        Math.random() * promptMap[keywordLower].length,
-      )
-      prompts.push(promptMap[keywordLower][randomIndex])
+      const keywordPrompts = promptMap[keywordLower]
+      if (keywordPrompts) {
+        const randomIndex = Math.floor(Math.random() * keywordPrompts.length)
+        const selectedPrompt = keywordPrompts[randomIndex]
+        if (selectedPrompt) {
+          prompts.push(selectedPrompt)
+        }
+      }
     } else {
       // Check for partial matches
       for (const key in promptMap) {
         if (keywordLower.includes(key) || key.includes(keywordLower)) {
-          const randomIndex = Math.floor(Math.random() * promptMap[key].length)
-          prompts.push(promptMap[key][randomIndex])
+          const keyPrompts = promptMap[key]
+          if (keyPrompts) {
+            const randomIndex = Math.floor(Math.random() * keyPrompts.length)
+            const selectedPrompt = keyPrompts[randomIndex]
+            if (selectedPrompt) {
+              prompts.push(selectedPrompt)
+            }
+          }
           break // Only add one prompt per keyword
         }
       }
     }
-  })
+  }
 
   // Add domain-specific general prompts if we don't have enough
   if (prompts.length === 0) {
@@ -357,10 +394,14 @@ export function getTherapeuticPrompts(
       ],
     }
 
+    // biome-ignore lint/complexity/useLiteralKeys: <explanation>
     const domainPrompts = generalPrompts[domain] || generalPrompts['general']
-    prompts.push(
-      domainPrompts[Math.floor(Math.random() * domainPrompts.length)],
-    )
+    if (domainPrompts) {
+      const selectedPrompt = domainPrompts[Math.floor(Math.random() * domainPrompts.length)]
+      if (selectedPrompt) {
+        prompts.push(selectedPrompt)
+      }
+    }
   }
 
   // Limit to a maximum of 2 prompts
@@ -411,15 +452,15 @@ export function analyzeTherapeuticTechniques(
   const detectedTechniques: Record<string, number> = {}
 
   // Check for each technique
-  Object.entries(techniquePatterns).forEach(([technique, patterns]) => {
+  for (const [technique, patterns] of Object.entries(techniquePatterns)) {
     // Calculate a confidence score based on how many patterns match
     let matchCount = 0
 
-    patterns.forEach((pattern) => {
+    for (const pattern of patterns) {
       if (pattern.test(text)) {
         matchCount++
       }
-    })
+    }
 
     // Only record techniques with at least one match
     if (matchCount > 0) {
@@ -428,7 +469,7 @@ export function analyzeTherapeuticTechniques(
       const patternBonus = (matchCount / patterns.length) * 0.3
       detectedTechniques[technique] = baseConfidence + patternBonus
     }
-  })
+  }
 
   return detectedTechniques
 }
