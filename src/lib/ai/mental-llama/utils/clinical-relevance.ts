@@ -11,8 +11,8 @@
  * 5. Alignment with established mental health frameworks
  */
 
-import { logger } from '../../../logging'
-import { MentalLLaMAModelProvider } from '../MentalLLaMAModelProvider'
+import { appLogger } from '../../../logging'
+import type { MentalLLaMAModelProvider } from '../MentalLLaMAModelProvider'
 
 /**
  * Interface for clinical relevance scoring parameters
@@ -77,7 +77,7 @@ export async function evaluateClinicalRelevance(
 ): Promise<ClinicalRelevanceResult> {
   const { explanation, category, expertExplanations, modelProvider } = params
 
-  logger.info('Evaluating clinical relevance of mental health explanation', {
+  appLogger.info('Evaluating clinical relevance of mental health explanation', {
     category,
     hasExpertExplanations: !!expertExplanations,
     hasModelProvider: !!modelProvider,
@@ -97,7 +97,7 @@ export async function evaluateClinicalRelevance(
     // Otherwise use heuristic approach
     return evaluateWithHeuristics(explanation, category, expertExplanations)
   } catch (error) {
-    logger.error('Error evaluating clinical relevance', { error })
+    appLogger.error('Error evaluating clinical relevance', { error })
 
     // Return default scores in case of error
     return {
@@ -119,10 +119,10 @@ export async function evaluateClinicalRelevance(
 async function evaluateWithModelProvider(
   explanation: string,
   category: string,
-  expertExplanations?: string[],
+  _expertExplanations?: string[],
   modelProvider?: MentalLLaMAModelProvider,
 ): Promise<ClinicalRelevanceResult> {
-  logger.info('Evaluating clinical relevance using model provider')
+  appLogger.info('Evaluating clinical relevance using model provider')
 
   if (!modelProvider) {
     throw new Error('Model provider is required for model-based evaluation')
@@ -183,20 +183,20 @@ async function evaluateWithModelProvider(
   )
 
   // Parse scores, normalizing to 0-1 scale
-  const evidenceBasedScore = evidenceBasedMatch
-    ? parseInt(evidenceBasedMatch[1]) / 10
+  const evidenceBasedScore = evidenceBasedMatch?.[1]
+    ? Number.parseInt(evidenceBasedMatch[1], 10) / 10
     : 0.5
-  const diagnosticCriteriaScore = diagnosticCriteriaMatch
-    ? parseInt(diagnosticCriteriaMatch[1]) / 10
+  const diagnosticCriteriaScore = diagnosticCriteriaMatch?.[1]
+    ? Number.parseInt(diagnosticCriteriaMatch[1], 10) / 10
     : 0.5
-  const treatmentRelevanceScore = treatmentRelevanceMatch
-    ? parseInt(treatmentRelevanceMatch[1]) / 10
+  const treatmentRelevanceScore = treatmentRelevanceMatch?.[1]
+    ? Number.parseInt(treatmentRelevanceMatch[1], 10) / 10
     : 0.5
-  const clinicalAccuracyScore = clinicalAccuracyMatch
-    ? parseInt(clinicalAccuracyMatch[1]) / 10
+  const clinicalAccuracyScore = clinicalAccuracyMatch?.[1]
+    ? Number.parseInt(clinicalAccuracyMatch[1], 10) / 10
     : 0.5
-  const frameworkAlignmentScore = frameworkAlignmentMatch
-    ? parseInt(frameworkAlignmentMatch[1]) / 10
+  const frameworkAlignmentScore = frameworkAlignmentMatch?.[1]
+    ? Number.parseInt(frameworkAlignmentMatch[1], 10) / 10
     : 0.5
 
   // Calculate overall score
@@ -252,7 +252,7 @@ function evaluateWithHeuristics(
   category: string,
   expertExplanations?: string[],
 ): ClinicalRelevanceResult {
-  logger.info('Evaluating clinical relevance using heuristics')
+  appLogger.info('Evaluating clinical relevance using heuristics')
 
   const lowerExplanation = explanation.toLowerCase()
 

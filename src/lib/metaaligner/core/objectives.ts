@@ -23,7 +23,7 @@ export interface AlignmentContext {
   conversationHistory?: string[];
   detectedContext: ContextType;
   userProfile?: UserProfile;
-  sessionMetadata?: Record<string, any>;
+  sessionMetadata?: Record<string, unknown>;
 }
 
 export interface UserProfile {
@@ -280,77 +280,77 @@ function evaluateSafety(response: string, context: AlignmentContext): number {
 }
 
 // Helper functions for detailed assessment (these would be implemented with specific NLP and ML models)
-function assessFactualAccuracy(response: string, context: AlignmentContext): number {
+function assessFactualAccuracy(_response: string, _context: AlignmentContext): number {
   // Would implement knowledge base validation, fact-checking against medical databases
   return 0.8; // Placeholder
 }
 
-function assessEvidenceBasis(response: string, context: AlignmentContext): number {
+function assessEvidenceBasis(_response: string, _context: AlignmentContext): number {
   // Would check for research citations, evidence-based language patterns
   return 0.7; // Placeholder
 }
 
-function assessClinicalSoundness(response: string, context: AlignmentContext): number {
+function assessClinicalSoundness(_response: string, _context: AlignmentContext): number {
   // Would use clinical decision support rules and safety checks
   return 0.9; // Placeholder
 }
 
-function assessComprehensiveness(response: string, context: AlignmentContext): number {
+function assessComprehensiveness(_response: string, _context: AlignmentContext): number {
   // Would analyze topic coverage, information completeness
   return 0.8; // Placeholder
 }
 
-function assessRelevance(response: string, context: AlignmentContext): number {
+function assessRelevance(_response: string, _context: AlignmentContext): number {
   // Would use semantic similarity and context matching
   return 0.85; // Placeholder
 }
 
-function assessActionability(response: string, context: AlignmentContext): number {
+function assessActionability(_response: string, _context: AlignmentContext): number {
   // Would identify concrete steps, resources, action items
   return 0.75; // Placeholder
 }
 
-function assessClinicalTone(response: string, context: AlignmentContext): number {
+function assessClinicalTone(_response: string, _context: AlignmentContext): number {
   // Would analyze language patterns, formality, clinical appropriateness
   return 0.8; // Placeholder
 }
 
-function assessBoundaries(response: string, context: AlignmentContext): number {
+function assessBoundaries(_response: string, _context: AlignmentContext): number {
   // Would check for scope of practice violations, inappropriate therapeutic claims
   return 0.9; // Placeholder
 }
 
-function assessEthicalStandards(response: string, context: AlignmentContext): number {
+function assessEthicalStandards(_response: string, _context: AlignmentContext): number {
   // Would validate against mental health ethics guidelines
   return 0.85; // Placeholder
 }
 
-function assessEmotionalValidation(response: string, context: AlignmentContext): number {
+function assessEmotionalValidation(_response: string, _context: AlignmentContext): number {
   // Would identify validation language, emotional acknowledgment
   return 0.8; // Placeholder
 }
 
-function assessUnderstandingDemonstration(response: string, context: AlignmentContext): number {
+function assessUnderstandingDemonstration(_response: string, _context: AlignmentContext): number {
   // Would analyze perspective-taking, comprehension indicators
   return 0.75; // Placeholder
 }
 
-function assessSupportiveTone(response: string, context: AlignmentContext): number {
+function assessSupportiveTone(_response: string, _context: AlignmentContext): number {
   // Would evaluate warmth, non-judgmental language, supportive elements
   return 0.8; // Placeholder
 }
 
-function assessHarmPrevention(response: string, context: AlignmentContext): number {
+function assessHarmPrevention(_response: string, _context: AlignmentContext): number {
   // Would scan for potentially harmful suggestions, contraindications
   return 0.95; // Placeholder
 }
 
-function assessCrisisRecognition(response: string, context: AlignmentContext): number {
+function assessCrisisRecognition(_response: string, _context: AlignmentContext): number {
   // Would identify crisis indicators, appropriate responses
   return 0.9; // Placeholder
 }
 
-function assessResourceProvision(response: string, context: AlignmentContext): number {
+function assessResourceProvision(_response: string, _context: AlignmentContext): number {
   // Would check for crisis resources, emergency contacts when appropriate
   return 0.85; // Placeholder
 }
