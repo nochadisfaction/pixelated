@@ -172,7 +172,7 @@ export interface InsightGenerationOptions {
  */
 export class PatientPsiInsightsService {
   private cachedInsights: Map<string, DatasetInsights> = new Map()
-  private lastAnalysisTime: number = 0
+  private lastAnalysisTime = 0
   private cacheExpiry: number = 24 * 60 * 60 * 1000 // 24 hours
 
   constructor() {
@@ -274,9 +274,9 @@ export class PatientPsiInsightsService {
         }
         beliefCounts[beliefText].count++
         beliefCounts[beliefText].totalStrength += belief.strength
-        belief.relatedDomains.forEach((domain) =>
-          beliefCounts[beliefText].domains.add(domain),
-        )
+        for (const domain of belief.relatedDomains) {
+          beliefCounts[beliefText].domains.add(domain)
+        }
       }
     }
 
@@ -348,7 +348,10 @@ export class PatientPsiInsightsService {
     // Calculate average intensities
     const averageIntensity: Record<string, number> = {}
     for (const [emotion, total] of Object.entries(emotionIntensitySum)) {
-      averageIntensity[emotion] = total / emotionFrequency[emotion]
+      const frequency = emotionFrequency[emotion]
+      if (frequency && frequency > 0) {
+        averageIntensity[emotion] = total / frequency
+      }
     }
 
     // Generate common triggers
@@ -364,11 +367,14 @@ export class PatientPsiInsightsService {
     // Generate emotional chains with correlations
     const emotionalChainsArray = Object.entries(emotionalChains)
       .flatMap(([primaryEmotion, chains]) =>
-        Object.entries(chains).map(([secondaryEmotion, count]) => ({
-          primaryEmotion,
-          secondaryEmotions: [secondaryEmotion],
-          correlation: count / emotionFrequency[primaryEmotion],
-        })),
+        Object.entries(chains).map(([secondaryEmotion, count]) => {
+          const primaryFrequency = emotionFrequency[primaryEmotion]
+          return {
+            primaryEmotion,
+            secondaryEmotions: [secondaryEmotion],
+            correlation: primaryFrequency && primaryFrequency > 0 ? count / primaryFrequency : 0,
+          }
+        }),
       )
       .sort((a, b) => b.correlation - a.correlation)
       .slice(0, 20)
@@ -420,15 +426,15 @@ export class PatientPsiInsightsService {
         }
       }
 
-      model.coreBeliefs.forEach((belief) => {
-        belief.relatedDomains.forEach((domain) => {
+      for (const belief of model.coreBeliefs) {
+        for (const domain of belief.relatedDomains) {
           styleCorrelations[primaryStyle].beliefs.add(domain)
-        })
-      })
+        }
+      }
 
-      model.emotionalPatterns.forEach((pattern) => {
+      for (const pattern of model.emotionalPatterns) {
         styleCorrelations[primaryStyle].emotions.add(pattern.emotion)
-      })
+      }
 
       // Note: Style transitions could be tracked in the future if response patterns data becomes available
     }
@@ -505,11 +511,11 @@ export class PatientPsiInsightsService {
         distortionCombinations[combinationKey].frequency++
 
         // Add related belief domains
-        model.coreBeliefs.forEach((belief) => {
-          belief.relatedDomains.forEach((domain) => {
+        for (const belief of model.coreBeliefs) {
+          for (const domain of belief.relatedDomains) {
             distortionCombinations[combinationKey].relatedBeliefs.add(domain)
-          })
-        })
+          }
+        }
       }
     }
 
@@ -914,6 +920,12 @@ export class PatientPsiInsightsService {
       return interventions
     }
 
+    // Define intervention type constants to avoid string literal issues
+    const COGNITIVE_RESTRUCTURING = 'cognitive_restructuring'
+    const BEHAVIORAL_ACTIVATION = 'behavioral_activation'
+    const MINDFULNESS_TRAINING = 'mindfulness_training'
+    const EXPOSURE_THERAPY = 'exposure_therapy'
+
     // Analyze cognitive restructuring effectiveness
     const cognitiveRestructuringCandidates = models.filter(
       (m) =>
@@ -941,7 +953,7 @@ export class PatientPsiInsightsService {
         0.5,
         0.9 - (cognitiveRestructuringContraindicated / models.length) * 0.4,
       )
-      interventions.cognitive_restructuring = {
+      interventions[COGNITIVE_RESTRUCTURING] = {
         successRate: Math.round(successRate * 100) / 100,
         averageSessionsToImprovement: 6.2,
         bestCandidates: [
@@ -974,7 +986,7 @@ export class PatientPsiInsightsService {
         0.7 + (candidateCount / models.length) * 0.25,
       )
 
-      interventions.behavioral_activation = {
+      interventions[BEHAVIORAL_ACTIVATION] = {
         successRate: Math.round(successRate * 100) / 100,
         averageSessionsToImprovement: 4.8,
         bestCandidates: [
@@ -1019,7 +1031,7 @@ export class PatientPsiInsightsService {
           (contraindicationCount / models.length) * 0.3,
       )
 
-      interventions.mindfulness_training = {
+      interventions[MINDFULNESS_TRAINING] = {
         successRate: Math.round(successRate * 100) / 100,
         averageSessionsToImprovement: 8.1,
         bestCandidates: [
@@ -1041,7 +1053,7 @@ export class PatientPsiInsightsService {
     ).length
 
     if (anxietyCases > 0) {
-      interventions.exposure_therapy = {
+      interventions[EXPOSURE_THERAPY] = {
         successRate:
           Math.round((0.75 + (anxietyCases / models.length) * 0.15) * 100) /
           100,
@@ -1081,19 +1093,19 @@ export class PatientPsiInsightsService {
     const uniqueEmotions = new Set()
     const uniqueDistortions = new Set()
 
-    models.forEach((model) => {
-      model.coreBeliefs.forEach((belief) => {
-        belief.relatedDomains.forEach((domain) =>
-          uniqueBeliefDomains.add(domain),
-        )
-      })
-      model.emotionalPatterns.forEach((pattern) =>
-        uniqueEmotions.add(pattern.emotion),
-      )
-      model.distortionPatterns.forEach((distortion) =>
-        uniqueDistortions.add(distortion.type),
-      )
-    })
+    for (const model of models) {
+      for (const belief of model.coreBeliefs) {
+        for (const domain of belief.relatedDomains) {
+          uniqueBeliefDomains.add(domain)
+        }
+      }
+      for (const pattern of model.emotionalPatterns) {
+        uniqueEmotions.add(pattern.emotion)
+      }
+      for (const distortion of model.distortionPatterns) {
+        uniqueDistortions.add(distortion.type)
+      }
+    }
 
     const totalUnique =
       uniqueBeliefDomains.size + uniqueEmotions.size + uniqueDistortions.size
@@ -1108,7 +1120,7 @@ export class PatientPsiInsightsService {
 
     let totalQuality = 0
 
-    models.forEach((model) => {
+    for (const model of models) {
       let modelQuality = 0
 
       // Check completeness
@@ -1126,7 +1138,7 @@ export class PatientPsiInsightsService {
       }
 
       totalQuality += modelQuality
-    })
+    }
 
     return totalQuality / models.length
   }
