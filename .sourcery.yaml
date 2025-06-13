@@ -38,7 +38,6 @@ rule_settings:
     - suggestion
     - comment
   python_version: '3.10'
-
 # rules:  # A list of custom rules Sourcery will include in its analysis.
 # - id: no-print-statements
 #   description: Do not use print statements in the test directory.

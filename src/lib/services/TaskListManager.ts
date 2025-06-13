@@ -1,7 +1,10 @@
 import { promises as fs } from 'fs'
-import { dirname, join } from 'path'
+import { dirname } from 'path'
 import { getLogger } from '../logging'
-import OllamaCheckInService, { type CheckInResult, type ImprovementSuggestion } from './OllamaCheckInService'
+import OllamaCheckInService, {
+  type CheckInResult,
+  type ImprovementSuggestion,
+} from './OllamaCheckInService'
 
 const logger = getLogger({ prefix: 'task-list-manager' })
 
@@ -65,13 +68,16 @@ export class TaskListManager {
           completed,
           children: [],
           metadata: {
-            addedBy: 'user'
-          }
+            addedBy: 'user',
+          },
         }
 
         // Find parent task based on indentation level
         let parentTask: TaskItem | null = null
-        while (taskStack.length > 0 && taskStack[taskStack.length - 1].level >= level) {
+        while (
+          taskStack.length > 0 &&
+          taskStack[taskStack.length - 1].level >= level
+        ) {
           taskStack.pop()
         }
 
@@ -100,7 +106,7 @@ export class TaskListManager {
     let markdown = ''
     const indent = '  '.repeat(level)
 
-    tasks.forEach(task => {
+    tasks.forEach((task) => {
       const checkbox = task.completed ? '[x]' : '[ ]'
       markdown += `${indent}- ${checkbox} ${task.content}\n`
 
@@ -130,13 +136,13 @@ export class TaskListManager {
         metadata: {
           lastUpdated: new Date().toISOString(),
           totalTasks,
-          completedTasks
-        }
+          completedTasks,
+        },
       }
     } catch (error) {
       logger.error('Failed to load task list', {
         filePath,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       })
       throw error
     }
@@ -152,15 +158,20 @@ export class TaskListManager {
 
       // Convert tasks back to markdown and merge with original content
       const taskMarkdown = this.tasksToMarkdown(taskList.tasks)
-      
+
       // For simplicity, replace the task section if it exists, otherwise append
       let updatedContent = taskList.content
-      
+
       // Look for existing task section and replace it
-      const taskSectionMatch = updatedContent.match(/(^|\n)(#+\s*Tasks?[\s\S]*?)(?=\n#+|\n---|\n```|$)/i)
+      const taskSectionMatch = updatedContent.match(
+        /(^|\n)(#+\s*Tasks?[\s\S]*?)(?=\n#+|\n---|\n```|$)/i,
+      )
       if (taskSectionMatch) {
         const newTaskSection = `## Tasks\n\n${taskMarkdown}`
-        updatedContent = updatedContent.replace(taskSectionMatch[0], `\n${newTaskSection}`)
+        updatedContent = updatedContent.replace(
+          taskSectionMatch[0],
+          `\n${newTaskSection}`,
+        )
       } else {
         // Append tasks section
         updatedContent += `\n\n## Tasks\n\n${taskMarkdown}`
@@ -171,12 +182,12 @@ export class TaskListManager {
       logger.info('Task list saved', {
         filePath: taskList.filePath,
         totalTasks: taskList.metadata?.totalTasks,
-        completedTasks: taskList.metadata?.completedTasks
+        completedTasks: taskList.metadata?.completedTasks,
       })
     } catch (error) {
       logger.error('Failed to save task list', {
         filePath: taskList.filePath,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       })
       throw error
     }
@@ -197,7 +208,9 @@ export class TaskListManager {
   private countCompletedTasks(tasks: TaskItem[]): number {
     return tasks.reduce((count, task) => {
       const currentCount = task.completed ? 1 : 0
-      const childrenCount = task.children ? this.countCompletedTasks(task.children) : 0
+      const childrenCount = task.children
+        ? this.countCompletedTasks(task.children)
+        : 0
       return count + currentCount + childrenCount
     }, 0)
   }
@@ -230,17 +243,17 @@ export class TaskListManager {
     for (const task of tasks) {
       if (task.id === taskId) {
         task.completed = true
-        
+
         // Check if parent task should also be marked complete
         this.checkParentCompletion(tasks, task)
         return true
       }
-      
+
       if (task.children) {
         const found = this.markTaskCompleted(task.children, taskId)
         if (found) {
           // Check if this parent should be marked complete
-          if (task.children.every(child => child.completed)) {
+          if (task.children.every((child) => child.completed)) {
             task.completed = true
           }
           return true
@@ -253,7 +266,10 @@ export class TaskListManager {
   /**
    * Check if parent task should be marked complete based on children
    */
-  private checkParentCompletion(tasks: TaskItem[], completedTask: TaskItem): void {
+  private checkParentCompletion(
+    tasks: TaskItem[],
+    completedTask: TaskItem,
+  ): void {
     // This is a simplified version - in a full implementation you'd track parent-child relationships
     // For now, we'll handle this in the markTaskCompleted method
   }
@@ -262,10 +278,10 @@ export class TaskListManager {
    * Add improvement suggestions as new tasks
    */
   addImprovementTasks(
-    tasks: TaskItem[], 
-    improvements: ImprovementSuggestion[], 
+    tasks: TaskItem[],
+    improvements: ImprovementSuggestion[],
     reasoningLog: string[],
-    parentTaskId?: string
+    parentTaskId?: string,
   ): TaskItem[] {
     const newTasks: TaskItem[] = []
 
@@ -281,8 +297,8 @@ export class TaskListManager {
             addedAt: new Date().toISOString(),
             improvementId: improvement.id,
             category: improvement.category,
-            priority: improvement.priority
-          }
+            priority: improvement.priority,
+          },
         }
 
         if (parentTaskId) {
@@ -327,37 +343,45 @@ export class TaskListManager {
   async performTaskCheckIn(
     taskList: TaskListFile,
     completedTaskId: string,
-    taskSummary: string
-  ): Promise<{ 
+    taskSummary: string,
+  ): Promise<{
     checkInResult: CheckInResult
     updatedTaskList: TaskListFile
-    shouldContinue: boolean 
+    shouldContinue: boolean
   }> {
-    logger.info('Performing task check-in', { 
-      completedTaskId, 
+    logger.info('Performing task check-in', {
+      completedTaskId,
       taskSummary,
-      filePath: taskList.filePath
+      filePath: taskList.filePath,
     })
 
     try {
       // Mark task as completed
-      const taskMarkSuccess = this.markTaskCompleted(taskList.tasks, completedTaskId)
+      const taskMarkSuccess = this.markTaskCompleted(
+        taskList.tasks,
+        completedTaskId,
+      )
       if (!taskMarkSuccess) {
-        logger.warn('Could not find task to mark as completed', { completedTaskId })
+        logger.warn('Could not find task to mark as completed', {
+          completedTaskId,
+        })
       }
 
       // Perform Ollama check-in
-      const checkInResult = await this.ollamaService.performCheckIn(taskSummary, taskSummary)
+      const checkInResult = await this.ollamaService.performCheckIn(
+        taskSummary,
+        taskSummary,
+      )
 
       // Log the check-in result
       logger.info('Check-in result', {
         shouldContinue: checkInResult.shouldContinue,
         improvementsCount: checkInResult.improvements.length,
-        decision: checkInResult.decision
+        decision: checkInResult.decision,
       })
 
       // Log reasoning for transparency
-      checkInResult.reasoningLog.forEach(reasoning => {
+      checkInResult.reasoningLog.forEach((reasoning) => {
         logger.info('Improvement reasoning', { reasoning })
       })
 
@@ -365,7 +389,7 @@ export class TaskListManager {
       const newTasks = this.addImprovementTasks(
         taskList.tasks,
         checkInResult.improvements,
-        checkInResult.reasoningLog
+        checkInResult.reasoningLog,
       )
 
       // Add new tasks to the main task list
@@ -377,7 +401,7 @@ export class TaskListManager {
         lastUpdated: new Date().toISOString(),
         lastCheckIn: new Date().toISOString(),
         totalTasks: this.countTasks(taskList.tasks),
-        completedTasks: this.countCompletedTasks(taskList.tasks)
+        completedTasks: this.countCompletedTasks(taskList.tasks),
       }
 
       // Save updated task list
@@ -386,14 +410,13 @@ export class TaskListManager {
       return {
         checkInResult,
         updatedTaskList: taskList,
-        shouldContinue: checkInResult.shouldContinue
+        shouldContinue: checkInResult.shouldContinue,
       }
-
     } catch (error) {
       logger.error('Task check-in failed', {
         error: error instanceof Error ? error.message : String(error),
         completedTaskId,
-        taskSummary
+        taskSummary,
       })
       throw error
     }
@@ -420,7 +443,7 @@ export class TaskListManager {
       completed,
       remaining,
       progress,
-      nextTask
+      nextTask,
     }
   }
 }

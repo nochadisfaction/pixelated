@@ -6,10 +6,10 @@
 set -e
 
 # Check if task summary is provided
-if [[ -z "$1" ]]; then
-    echo "Usage: $0 \"Task completion summary\""
-    echo "Example: $0 \"Fixed all typescript-eslint errors in 5 files\""
-    exit 1
+if [[ -z $1 ]]; then
+	echo "Usage: $0 \"Task completion summary\""
+	echo "Example: $0 \"Fixed all typescript-eslint errors in 5 files\""
+	exit 1
 fi
 
 TASK_SUMMARY="$1"
@@ -44,19 +44,19 @@ echo ""
 
 # Make the API call and capture the response
 if ! RESPONSE=$(curl -s -X POST "${API_URL}" \
-    -H "Content-Type: application/json" \
-    -d "{\"model\": \"${MODEL}\", \"prompt\": $(echo "${PROMPT}" | jq -R -s . || true), \"stream\": false}"); then
-    echo "❌ Failed to connect to Ollama API"
-    exit 1
+	-H "Content-Type: application/json" \
+	-d "{\"model\": \"${MODEL}\", \"prompt\": $(echo "${PROMPT}" | jq -R -s . || true), \"stream\": false}"); then
+	echo "❌ Failed to connect to Ollama API"
+	exit 1
 fi
 
 # Extract the response content
 RESPONSE_TEXT=$(echo "${RESPONSE}" | jq -r '.response // empty')
 
-if [[ -z "${RESPONSE_TEXT}" ]]; then
-    echo "❌ No response received from Ollama API"
-    echo "Raw response: ${RESPONSE}"
-    exit 1
+if [[ -z ${RESPONSE_TEXT} ]]; then
+	echo "❌ No response received from Ollama API"
+	echo "Raw response: ${RESPONSE}"
+	exit 1
 fi
 
 echo "📋 Ollama Overlord Response:"
@@ -71,10 +71,10 @@ IMPROVEMENTS=$(echo "${RESPONSE_TEXT}" | sed -n '/IMPROVEMENTS:/,/DECISION:/p' |
 DECISION=$(echo "${RESPONSE_TEXT}" | grep -i "DECISION:" | sed 's/.*DECISION: *//I' | tr '[:upper:]' '[:lower:]' | xargs || true)
 
 echo "💡 Improvements:"
-if [[ -n "${IMPROVEMENTS}" ]]; then
-    echo "${IMPROVEMENTS}"
+if [[ -n ${IMPROVEMENTS} ]]; then
+	echo "${IMPROVEMENTS}"
 else
-    echo "  (None specified)"
+	echo "  (None specified)"
 fi
 echo ""
 
@@ -83,18 +83,18 @@ echo ""
 
 # Check decision and provide guidance
 case "${DECISION}" in
-    "yes"|"y")
-        echo "✅ APPROVED: You may proceed to the next task"
-        exit 0
-        ;;
-    "no"|"n")
-        echo "🛑 BLOCKED: Do not proceed to the next task"
-        echo "   Address the concerns raised in the improvements section"
-        exit 2
-        ;;
-    *)
-        echo "⚠️  UNCLEAR: Decision was '${DECISION}' (expected yes/no)"
-        echo "   Manual review required"
-        exit 3
-        ;;
+"yes" | "y")
+	echo "✅ APPROVED: You may proceed to the next task"
+	exit 0
+	;;
+"no" | "n")
+	echo "🛑 BLOCKED: Do not proceed to the next task"
+	echo "   Address the concerns raised in the improvements section"
+	exit 2
+	;;
+*)
+	echo "⚠️  UNCLEAR: Decision was '${DECISION}' (expected yes/no)"
+	echo "   Manual review required"
+	exit 3
+	;;
 esac

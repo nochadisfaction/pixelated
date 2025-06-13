@@ -1,14 +1,26 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import { useMemory, useUserPreferences } from '@/hooks/useMemory';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import React, { useState, useEffect } from 'react'
+import { useMemory, useUserPreferences } from '@/hooks/useMemory'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Table,
   TableBody,
@@ -16,25 +28,45 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@/components/ui/table'
 
-import { 
+import {
   Dialog,
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
   DialogTitle,
-  DialogTrigger 
-} from '@/components/ui/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { toast } from 'sonner';
-import { Search, Plus, Trash2, Edit, BarChart3, Brain, Clock, Tag, User } from 'lucide-react';
-import type { MemoryEntry } from '@/lib/memory/mem0-manager';
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
+import { toast } from 'sonner'
+import {
+  Search,
+  Plus,
+  Trash2,
+  Edit,
+  BarChart3,
+  Brain,
+  Clock,
+  Tag,
+  User,
+} from 'lucide-react'
+import type { MemoryEntry } from '@/lib/memory/mem0-manager'
 
 interface MemoryDashboardProps {
-  userId?: string;
-  showUserSelector?: boolean;
+  userId?: string
+  showUserSelector?: boolean
 }
 
 const MEMORY_CATEGORIES = [
@@ -46,127 +78,136 @@ const MEMORY_CATEGORIES = [
   'feedback',
   'goal',
   'note',
-];
+]
 
-export function MemoryDashboard({ userId = 'default_user', showUserSelector = false }: MemoryDashboardProps) {
-  const [currentUserId, setCurrentUserId] = useState(userId);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [searchResults, setSearchResults] = useState<MemoryEntry[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  
+export function MemoryDashboard({
+  userId = 'default_user',
+  showUserSelector = false,
+}: MemoryDashboardProps) {
+  const [currentUserId, setCurrentUserId] = useState(userId)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState<string>('all')
+  const [searchResults, setSearchResults] = useState<MemoryEntry[]>([])
+  const [, setIsSearching] = useState(false)
+
   // New memory form
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [newMemoryContent, setNewMemoryContent] = useState('');
-  const [newMemoryCategory, setNewMemoryCategory] = useState('general');
-  const [newMemoryTags, setNewMemoryTags] = useState('');
-  
+  const [, setIsAddModalOpen] = useState(false)
+  const [newMemoryContent, setNewMemoryContent] = useState('')
+  const [newMemoryCategory, setNewMemoryCategory] = useState('general')
+  const [newMemoryTags, setNewMemoryTags] = useState('')
+
   // Edit memory
-  const [editingMemory, setEditingMemory] = useState<MemoryEntry | null>(null);
-  const [editContent, setEditContent] = useState('');
+  const [editingMemory, setEditingMemory] = useState<MemoryEntry | null>(null)
+  const [editContent, setEditContent] = useState('')
 
-  const memory = useMemory({ 
-    userId: currentUserId, 
+  const memory = useMemory({
+    userId: currentUserId,
     autoLoad: true,
-    category: selectedCategory === 'all' ? undefined : selectedCategory 
-  });
+    category: selectedCategory === 'all' ? undefined : selectedCategory,
+  })
 
-  const userPrefs = useUserPreferences(currentUserId);
+  const userPrefs = useUserPreferences(currentUserId)
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
-      setSearchResults([]);
-      return;
+      setSearchResults([])
+      return
     }
 
-    setIsSearching(true);
+    setIsSearching(true)
     try {
       const results = await memory.searchMemories(searchQuery, {
         category: selectedCategory === 'all' ? undefined : selectedCategory,
         limit: 20,
-      });
-      setSearchResults(results);
+      })
+      setSearchResults(results)
     } catch (error) {
-      toast.error('Search failed');
+      toast.error('Search failed')
     } finally {
-      setIsSearching(false);
+      setIsSearching(false)
     }
-  };
+  }
 
   const handleAddMemory = async () => {
     if (!newMemoryContent.trim()) {
-      toast.error('Memory content is required');
-      return;
+      toast.error('Memory content is required')
+      return
     }
 
     try {
-      const tags = newMemoryTags.split(',').map(tag => tag.trim()).filter(Boolean);
+      const tags = newMemoryTags
+        .split(',')
+        .map((tag) => tag.trim())
+        .filter(Boolean)
       await memory.addMemory(newMemoryContent, {
         category: newMemoryCategory,
         tags,
         importance: 1,
-      });
-      
-      setNewMemoryContent('');
-      setNewMemoryCategory('general');
-      setNewMemoryTags('');
-      setIsAddModalOpen(false);
-      toast.success('Memory added successfully');
+      })
+
+      setNewMemoryContent('')
+      setNewMemoryCategory('general')
+      setNewMemoryTags('')
+      setIsAddModalOpen(false)
+      toast.success('Memory added successfully')
     } catch (error) {
-      toast.error('Failed to add memory');
+      toast.error('Failed to add memory')
     }
-  };
+  }
 
   const handleEditMemory = async () => {
     if (!editingMemory?.id || !editContent.trim()) {
-      return;
+      return
     }
 
     try {
-      await memory.updateMemory(editingMemory.id, editContent);
-      setEditingMemory(null);
-      setEditContent('');
-      toast.success('Memory updated successfully');
+      await memory.updateMemory(editingMemory.id, editContent)
+      setEditingMemory(null)
+      setEditContent('')
+      toast.success('Memory updated successfully')
     } catch (error) {
-      toast.error('Failed to update memory');
+      toast.error('Failed to update memory')
     }
-  };
+  }
 
   const handleDeleteMemory = async (memoryId: string) => {
     try {
-      await memory.deleteMemory(memoryId);
-      toast.success('Memory deleted successfully');
+      await memory.deleteMemory(memoryId)
+      toast.success('Memory deleted successfully')
     } catch (error) {
-      toast.error('Failed to delete memory');
+      toast.error('Failed to delete memory')
     }
-  };
+  }
 
   const formatTimestamp = (timestamp?: string) => {
     if (!timestamp) {
-      return 'Unknown';
+      return 'Unknown'
     }
-    return new Date(timestamp).toLocaleString();
-  };
+    return new Date(timestamp).toLocaleString()
+  }
 
-  const filteredMemories = searchQuery && searchResults.length > 0 ? searchResults : memory.memories;
+  const filteredMemories =
+    searchQuery && searchResults.length > 0 ? searchResults : memory.memories
 
   useEffect(() => {
     if (searchQuery) {
-      const timeoutId = setTimeout(handleSearch, 300);
-      return () => clearTimeout(timeoutId);
+      const timeoutId = setTimeout(handleSearch, 300)
+      return () => clearTimeout(timeoutId)
     } else {
-      setSearchResults([]);
+      setSearchResults([])
     }
-  }, [searchQuery]);
+  }, [searchQuery])
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Memory Dashboard</h1>
-          <p className="text-muted-foreground">Manage and explore your AI memory system</p>
+          <p className="text-muted-foreground">
+            Manage and explore your AI memory system
+          </p>
         </div>
-        
+
         {showUserSelector && (
           <div className="flex items-center gap-2">
             <User className="h-4 w-4" />
@@ -214,13 +255,16 @@ export function MemoryDashboard({ userId = 'default_user', showUserSelector = fa
                     className="w-full"
                   />
                 </div>
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <Select
+                  value={selectedCategory}
+                  onValueChange={setSelectedCategory}
+                >
                   <SelectTrigger className="w-40">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Categories</SelectItem>
-                    {MEMORY_CATEGORIES.map(category => (
+                    {MEMORY_CATEGORIES.map((category) => (
                       <SelectItem key={category} value={category}>
                         {category.charAt(0).toUpperCase() + category.slice(1)}
                       </SelectItem>
@@ -250,22 +294,30 @@ export function MemoryDashboard({ userId = 'default_user', showUserSelector = fa
                       />
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="text-sm font-medium">Category</label>
-                          <Select value={newMemoryCategory} onValueChange={setNewMemoryCategory}>
+                          <label className="text-sm font-medium">
+                            Category
+                          </label>
+                          <Select
+                            value={newMemoryCategory}
+                            onValueChange={setNewMemoryCategory}
+                          >
                             <SelectTrigger>
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              {MEMORY_CATEGORIES.map(category => (
+                              {MEMORY_CATEGORIES.map((category) => (
                                 <SelectItem key={category} value={category}>
-                                  {category.charAt(0).toUpperCase() + category.slice(1)}
+                                  {category.charAt(0).toUpperCase() +
+                                    category.slice(1)}
                                 </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
                         </div>
                         <div>
-                          <label className="text-sm font-medium">Tags (comma-separated)</label>
+                          <label className="text-sm font-medium">
+                            Tags (comma-separated)
+                          </label>
                           <Input
                             placeholder="tag1, tag2, tag3"
                             value={newMemoryTags}
@@ -275,11 +327,14 @@ export function MemoryDashboard({ userId = 'default_user', showUserSelector = fa
                       </div>
                     </div>
                     <DialogFooter>
-                      <Button variant="outline" onClick={() => {
-                        setNewMemoryContent('');
-                        setNewMemoryCategory('general');
-                        setNewMemoryTags('');
-                      }}>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setNewMemoryContent('')
+                          setNewMemoryCategory('general')
+                          setNewMemoryTags('')
+                        }}
+                      >
                         Cancel
                       </Button>
                       <Button onClick={handleAddMemory}>Add Memory</Button>
@@ -298,7 +353,9 @@ export function MemoryDashboard({ userId = 'default_user', showUserSelector = fa
                   <Brain className="h-5 w-5" />
                   Memories ({filteredMemories.length})
                 </span>
-                {memory.isLoading && <Badge variant="secondary">Loading...</Badge>}
+                {memory.isLoading && (
+                  <Badge variant="secondary">Loading...</Badge>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -306,7 +363,9 @@ export function MemoryDashboard({ userId = 'default_user', showUserSelector = fa
                 <div className="text-center py-8">
                   <Brain className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                   <p className="text-muted-foreground">
-                    {searchQuery ? 'No memories found matching your search.' : 'No memories found. Add your first memory!'}
+                    {searchQuery
+                      ? 'No memories found matching your search.'
+                      : 'No memories found. Add your first memory!'}
                   </p>
                 </div>
               ) : (
@@ -336,7 +395,11 @@ export function MemoryDashboard({ userId = 'default_user', showUserSelector = fa
                         <TableCell>
                           <div className="flex flex-wrap gap-1">
                             {mem.metadata?.tags?.slice(0, 3).map((tag, idx) => (
-                              <Badge key={idx} variant="outline" className="text-xs">
+                              <Badge
+                                key={idx}
+                                variant="outline"
+                                className="text-xs"
+                              >
                                 {tag}
                               </Badge>
                             ))}
@@ -358,8 +421,8 @@ export function MemoryDashboard({ userId = 'default_user', showUserSelector = fa
                                   variant="ghost"
                                   size="icon"
                                   onClick={() => {
-                                    setEditingMemory(mem);
-                                    setEditContent(mem.content);
+                                    setEditingMemory(mem)
+                                    setEditContent(mem.content)
                                   }}
                                 >
                                   <Edit className="h-4 w-4" />
@@ -368,42 +431,60 @@ export function MemoryDashboard({ userId = 'default_user', showUserSelector = fa
                               <DialogContent>
                                 <DialogHeader>
                                   <DialogTitle>Edit Memory</DialogTitle>
-                                  <DialogDescription>Update the content of this memory.</DialogDescription>
+                                  <DialogDescription>
+                                    Update the content of this memory.
+                                  </DialogDescription>
                                 </DialogHeader>
                                 <Textarea
                                   value={editContent}
-                                  onChange={(e) => setEditContent(e.target.value)}
+                                  onChange={(e) =>
+                                    setEditContent(e.target.value)
+                                  }
                                   rows={4}
                                   placeholder="Memory content..."
                                 />
                                 <DialogFooter>
-                                  <Button variant="outline" onClick={() => {
-                                    setEditingMemory(null);
-                                    setEditContent('');
-                                  }}>
+                                  <Button
+                                    variant="outline"
+                                    onClick={() => {
+                                      setEditingMemory(null)
+                                      setEditContent('')
+                                    }}
+                                  >
                                     Cancel
                                   </Button>
-                                  <Button onClick={handleEditMemory}>Save Changes</Button>
+                                  <Button onClick={handleEditMemory}>
+                                    Save Changes
+                                  </Button>
                                 </DialogFooter>
                               </DialogContent>
                             </Dialog>
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
-                                <Button variant="ghost" size="icon" className="text-destructive">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="text-destructive"
+                                >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
                               </AlertDialogTrigger>
                               <AlertDialogContent>
                                 <AlertDialogHeader>
-                                  <AlertDialogTitle>Delete Memory</AlertDialogTitle>
+                                  <AlertDialogTitle>
+                                    Delete Memory
+                                  </AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    Are you sure you want to delete this memory? This action cannot be undone.
+                                    Are you sure you want to delete this memory?
+                                    This action cannot be undone.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                                   <AlertDialogAction
-                                    onClick={() => mem.id && handleDeleteMemory(mem.id)}
+                                    onClick={() =>
+                                      mem.id && handleDeleteMemory(mem.id)
+                                    }
                                     className="bg-destructive hover:bg-destructive/90"
                                   >
                                     Delete
@@ -427,17 +508,23 @@ export function MemoryDashboard({ userId = 'default_user', showUserSelector = fa
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Memories</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Total Memories
+                  </CardTitle>
                   <Brain className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{memory.stats.totalMemories}</div>
+                  <div className="text-2xl font-bold">
+                    {memory.stats.totalMemories}
+                  </div>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Categories</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Categories
+                  </CardTitle>
                   <Tag className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -449,7 +536,9 @@ export function MemoryDashboard({ userId = 'default_user', showUserSelector = fa
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Recent Activity</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Recent Activity
+                  </CardTitle>
                   <Clock className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -471,24 +560,29 @@ export function MemoryDashboard({ userId = 'default_user', showUserSelector = fa
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {Object.entries(memory.stats.categoryCounts).map(([category, count]) => (
-                    <div key={category} className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline">{category}</Badge>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-24 bg-secondary rounded-full h-2">
-                          <div
-                            className="bg-primary h-2 rounded-full"
-                            style={{
-                              width: `${(count / memory.stats!.totalMemories) * 100}%`,
-                            }}
-                          />
+                  {Object.entries(memory.stats.categoryCounts).map(
+                    ([category, count]) => (
+                      <div
+                        key={category}
+                        className="flex items-center justify-between"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline">{category}</Badge>
                         </div>
-                        <span className="text-sm font-medium">{count}</span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-24 bg-secondary rounded-full h-2">
+                            <div
+                              className="bg-primary h-2 rounded-full"
+                              style={{
+                                width: `${(count / memory.stats!.totalMemories) * 100}%`,
+                              }}
+                            />
+                          </div>
+                          <span className="text-sm font-medium">{count}</span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ),
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -509,12 +603,17 @@ export function MemoryDashboard({ userId = 'default_user', showUserSelector = fa
               ) : (
                 <div className="space-y-2">
                   {userPrefs.memories.map((pref, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-2 border rounded">
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between p-2 border rounded"
+                    >
                       <span className="font-mono text-sm">{pref.content}</span>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => pref.id && userPrefs.deleteMemory(pref.id)}
+                        onClick={() =>
+                          pref.id && userPrefs.deleteMemory(pref.id)
+                        }
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -527,5 +626,5 @@ export function MemoryDashboard({ userId = 'default_user', showUserSelector = fa
         </TabsContent>
       </Tabs>
     </div>
-  );
-} 
+  )
+}

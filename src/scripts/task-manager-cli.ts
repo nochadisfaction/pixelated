@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander'
-import { join } from 'path'
+
 import { existsSync } from 'fs'
 import TaskListManager from '../lib/services/TaskListManager'
 import OllamaCheckInService from '../lib/services/OllamaCheckInService'
@@ -68,11 +68,17 @@ program
       console.log(`   Progress: ${taskSummary.progress}%`)
 
       console.log('\n🔄 Performing Ollama check-in...')
-      const result = await taskManager.performTaskCheckIn(taskList, taskId, summary)
+      const result = await taskManager.performTaskCheckIn(
+        taskList,
+        taskId,
+        summary,
+      )
 
       console.log('\n✅ Check-in completed!')
       console.log(`Decision: ${result.checkInResult.decision.toUpperCase()}`)
-      console.log(`Should continue: ${result.shouldContinue ? '✅ YES' : '❌ NO'}`)
+      console.log(
+        `Should continue: ${result.shouldContinue ? '✅ YES' : '❌ NO'}`,
+      )
 
       if (result.checkInResult.improvements.length > 0) {
         console.log('\n💡 Improvement suggestions:')
@@ -102,9 +108,11 @@ program
         console.log('\n📝 Raw Ollama response:')
         console.log(result.checkInResult.rawResponse)
       }
-
     } catch (error) {
-      console.error('❌ Check-in failed:', error instanceof Error ? error.message : String(error))
+      console.error(
+        '❌ Check-in failed:',
+        error instanceof Error ? error.message : String(error),
+      )
       process.exit(1)
     }
   })
@@ -121,7 +129,7 @@ program
 
       console.log('🧪 Testing Ollama connection...')
       const ollamaService = new OllamaCheckInService()
-      
+
       if (verbose) {
         logger.info('Testing with', { summary, model })
       }
@@ -130,7 +138,9 @@ program
 
       console.log('\n✅ Ollama test completed!')
       console.log(`Decision: ${result.decision.toUpperCase()}`)
-      console.log(`Should continue: ${result.shouldContinue ? '✅ YES' : '❌ NO'}`)
+      console.log(
+        `Should continue: ${result.shouldContinue ? '✅ YES' : '❌ NO'}`,
+      )
 
       if (result.improvements.length > 0) {
         console.log('\n💡 Improvement suggestions:')
@@ -150,9 +160,11 @@ program
         console.log('\n📝 Raw Ollama response:')
         console.log(result.rawResponse)
       }
-
     } catch (error) {
-      console.error('❌ Ollama test failed:', error instanceof Error ? error.message : String(error))
+      console.error(
+        '❌ Ollama test failed:',
+        error instanceof Error ? error.message : String(error),
+      )
       process.exit(1)
     }
   })
@@ -185,18 +197,24 @@ program
       if (summary.nextTask) {
         console.log(`\n🎯 Next task: ${summary.nextTask.content}`)
         if (summary.nextTask.metadata?.addedBy === 'ollama') {
-          console.log(`   ↳ Added by Ollama (${summary.nextTask.metadata.category})`)
+          console.log(
+            `   ↳ Added by Ollama (${summary.nextTask.metadata.category})`,
+          )
         }
       } else {
         console.log('\n🎉 All tasks completed!')
       }
 
       if (taskList.metadata?.lastCheckIn) {
-        console.log(`\n⏰ Last check-in: ${new Date(taskList.metadata.lastCheckIn).toLocaleString()}`)
+        console.log(
+          `\n⏰ Last check-in: ${new Date(taskList.metadata.lastCheckIn).toLocaleString()}`,
+        )
       }
-
     } catch (error) {
-      console.error('❌ Failed to get status:', error instanceof Error ? error.message : String(error))
+      console.error(
+        '❌ Failed to get status:',
+        error instanceof Error ? error.message : String(error),
+      )
       process.exit(1)
     }
   })
@@ -248,10 +266,14 @@ alwaysApply: false
       console.log(`✅ Task list created: ${file}`)
       console.log('You can now use the following commands:')
       console.log(`  task-manager status -f ${file}`)
-      console.log(`  task-manager check-in -f ${file} -t <task-id> -s "<summary>"`)
-
+      console.log(
+        `  task-manager check-in -f ${file} -t <task-id> -s "<summary>"`,
+      )
     } catch (error) {
-      console.error('❌ Failed to create task list:', error instanceof Error ? error.message : String(error))
+      console.error(
+        '❌ Failed to create task list:',
+        error instanceof Error ? error.message : String(error),
+      )
       process.exit(1)
     }
   })

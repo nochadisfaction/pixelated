@@ -4,12 +4,17 @@ import { getAIServiceByProvider } from '../../../lib/ai/providers'
 import { getSession } from '../../../lib/auth/session'
 import type { SessionData } from '../../../lib/auth/session'
 import { getLogger } from '../../../lib/logging'
-import { createAuditLog, AuditEventType, AuditEventStatus, type AuditDetails } from '../../../lib/audit'
+import {
+  createAuditLog,
+  AuditEventType,
+  AuditEventStatus,
+  type AuditDetails,
+} from '../../../lib/audit'
 import type { AuditResource } from '../../../lib/audit/types'
-import { CrisisProtocol } from '../../../lib/ai/crisis/CrisisProtocol';
-import { recordCrisisEventToDb } from '../../../services/crisisEventDb';
-import type { CrisisEventData } from '../../../services/crisisEventDb';
-import type { AlertConfiguration } from '../../../lib/ai/crisis/types'; // Import AlertConfiguration
+import { CrisisProtocol } from '../../../lib/ai/crisis/CrisisProtocol'
+import { recordCrisisEventToDb } from '../../../services/crisisEventDb'
+
+import type { AlertConfiguration } from '../../../lib/ai/crisis/types' // Import AlertConfiguration
 
 // Initialize logger first
 const logger = getLogger({ prefix: 'api-crisis-detection' })
@@ -27,7 +32,8 @@ const alertConfigurations: AlertConfiguration[] = [
     triggerTerms: ['sad', 'lonely', 'worried', 'stressed'], // Terms that can trigger this alert
     autoEscalateAfterMs: 1000 * 60 * 60 * 2, // 2 hours
     requiredActions: ['Log event', 'Monitor user activity'],
-    responseTemplate: 'We notice you might be feeling {triggerTerms}. We are here to help.',
+    responseTemplate:
+      'We notice you might be feeling {triggerTerms}. We are here to help.',
     escalationTimeMs: 1000 * 60 * 30, // 30 minutes for escalation review if not addressed
   },
   {
@@ -37,8 +43,13 @@ const alertConfigurations: AlertConfiguration[] = [
     thresholdScore: 0.5, // Score threshold that triggers this alert level
     triggerTerms: ['depressed', 'hopeless', 'anxious', 'grief'], // Terms that can trigger this alert
     autoEscalateAfterMs: 1000 * 60 * 60 * 1, // 1 hour
-    requiredActions: ['Log event', 'Notify support staff', 'Review user history'],
-    responseTemplate: 'It sounds like you are going through a tough time with {triggerTerms}. A support member will reach out.',
+    requiredActions: [
+      'Log event',
+      'Notify support staff',
+      'Review user history',
+    ],
+    responseTemplate:
+      'It sounds like you are going through a tough time with {triggerTerms}. A support member will reach out.',
     escalationTimeMs: 1000 * 60 * 15, // 15 minutes
   },
   {
@@ -48,48 +59,63 @@ const alertConfigurations: AlertConfiguration[] = [
     thresholdScore: 0.7, // Score threshold that triggers this alert level
     triggerTerms: ['self-harm', 'suicidal thoughts', 'hurting myself'], // Terms that can trigger this alert
     autoEscalateAfterMs: 1000 * 60 * 30, // 30 minutes
-    requiredActions: ['Log event', 'Immediate notification to crisis team', 'Engage safety protocol'],
-    responseTemplate: 'We are very concerned about your safety regarding {triggerTerms}. Our crisis team is being notified immediately.',
+    requiredActions: [
+      'Log event',
+      'Immediate notification to crisis team',
+      'Engage safety protocol',
+    ],
+    responseTemplate:
+      'We are very concerned about your safety regarding {triggerTerms}. Our crisis team is being notified immediately.',
     escalationTimeMs: 1000 * 60 * 5, // 5 minutes
   },
   {
     level: 'emergency',
     name: 'Emergency Level Alert',
-    description: 'Emergency situation, requires immediate intervention and possibly external services.',
+    description:
+      'Emergency situation, requires immediate intervention and possibly external services.',
     thresholdScore: 0.9, // Score threshold that triggers this alert level
     triggerTerms: ['suicide plan', 'immediate danger', 'want to die'], // Terms that can trigger this alert
     autoEscalateAfterMs: 1000 * 60 * 10, // 10 minutes
-    requiredActions: ['Log event', 'Activate emergency response plan', 'Contact emergency services if necessary'],
-    responseTemplate: 'This is an emergency concerning {triggerTerms}. We are taking immediate action to ensure your safety.',
+    requiredActions: [
+      'Log event',
+      'Activate emergency response plan',
+      'Contact emergency services if necessary',
+    ],
+    responseTemplate:
+      'This is an emergency concerning {triggerTerms}. We are taking immediate action to ensure your safety.',
     escalationTimeMs: 0, // Immediate escalation
   },
-];
+]
 
 // Staff Channels - Using a special identifier for Slack.
 // Add other channels (email, SMS) as needed.
 const staffChannels = {
   concern: ['SLACK_WEBHOOK_CHANNEL'], // Send 'concern' level to Slack
   moderate: ['SLACK_WEBHOOK_CHANNEL'], // Send 'moderate' level to Slack
-  severe: ['SLACK_WEBHOOK_CHANNEL'],   // Send 'severe' level to Slack
+  severe: ['SLACK_WEBHOOK_CHANNEL'], // Send 'severe' level to Slack
   emergency: ['SLACK_WEBHOOK_CHANNEL'], // Send 'emergency' level to Slack
-};
+}
 
 // Retrieve Slack Webhook URL from environment variables
 // Make sure SLACK_WEBHOOK_URL is available in your deployment environment.
-const slackWebhookUrl = process.env.SLACK_WEBHOOK_URL;
+const slackWebhookUrl = process.env.SLACK_WEBHOOK_URL
 
 if (!slackWebhookUrl) {
-  logger.warn('SLACK_WEBHOOK_URL is not set in environment variables. Slack notifications for crisis alerts will be disabled.');
+  logger.warn(
+    'SLACK_WEBHOOK_URL is not set in environment variables. Slack notifications for crisis alerts will be disabled.',
+  )
 }
 
-const crisisProtocolInstance = CrisisProtocol.getInstance();
+const crisisProtocolInstance = CrisisProtocol.getInstance()
 crisisProtocolInstance.initialize({
   alertConfigurations: alertConfigurations,
   staffChannels: staffChannels,
-  crisisEventRecorder: recordCrisisEventToDb as unknown as (eventData: Record<string, any>) => Promise<void>,
+  crisisEventRecorder: recordCrisisEventToDb as unknown as (
+    eventData: Record<string, any>,
+  ) => Promise<void>,
   slackWebhookUrl: slackWebhookUrl, // Pass the retrieved URL
   // alertTimeoutMs: 300000, // Optional: 5 minutes default
-});
+})
 // --- END CrisisProtocol Initialization ---
 
 /**
@@ -187,17 +213,18 @@ export const POST: APIRoute = async ({ request }) => {
           try {
             await crisisProtocolInstance.handleCrisis(
               session.user.id,
-              session.session?.access_token?.substring(0, 8) || `batch-item-session-${crypto.randomUUID()}`, // Use part of access token or generate UUID
+              session.session?.access_token?.substring(0, 8) ||
+                `batch-item-session-${crypto.randomUUID()}`, // Use part of access token or generate UUID
               detection.content, // Text sample from CrisisDetectionResult
               detection.confidence, // Detection score from CrisisDetectionResult
-              detection.category ? [detection.category] : [] // Detected risks from CrisisDetectionResult
-            );
+              detection.category ? [detection.category] : [], // Detected risks from CrisisDetectionResult
+            )
           } catch (error) {
             logger.error('Error handling crisis event in batch:', {
               error: error instanceof Error ? error.message : String(error),
               stack: error instanceof Error ? error.stack : undefined,
               detection,
-            });
+            })
           }
         }
       }
@@ -215,17 +242,18 @@ export const POST: APIRoute = async ({ request }) => {
         try {
           await CrisisProtocol.getInstance().handleCrisis(
             session.user.id,
-            session.session?.access_token?.substring(0, 8) || `single-item-session-${crypto.randomUUID()}`, // Use part of access token or generate UUID
+            session.session?.access_token?.substring(0, 8) ||
+              `single-item-session-${crypto.randomUUID()}`, // Use part of access token or generate UUID
             result.content, // Text sample from CrisisDetectionResult
             result.confidence, // Detection score from CrisisDetectionResult
-            result.category ? [result.category] : [] // Detected risks from CrisisDetectionResult
-          );
+            result.category ? [result.category] : [], // Detected risks from CrisisDetectionResult
+          )
         } catch (error) {
           logger.error('Error handling single crisis event:', {
             error: error instanceof Error ? error.message : String(error),
             stack: error instanceof Error ? error.stack : undefined,
             result,
-          });
+          })
         }
       }
     }

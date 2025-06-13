@@ -372,7 +372,10 @@ export class PatientPsiInsightsService {
           return {
             primaryEmotion,
             secondaryEmotions: [secondaryEmotion],
-            correlation: primaryFrequency && primaryFrequency > 0 ? count / primaryFrequency : 0,
+            correlation:
+              primaryFrequency && primaryFrequency > 0
+                ? count / primaryFrequency
+                : 0,
           }
         }),
       )

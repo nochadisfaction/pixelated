@@ -7,12 +7,7 @@
  */
 
 import { createLogger } from '../../../utils/logger'
-import type {
-  Goal,
-  TreatmentPlan,
-  OutcomeForecast,
-  RiskAssessment,
-} from './TreatmentPlanningService'
+import type { Goal, TreatmentPlan } from './TreatmentPlanningService'
 import type { EmotionAnalysis } from '../../../types/emotion'
 import type { TherapySession } from '../../../types/therapy'
 

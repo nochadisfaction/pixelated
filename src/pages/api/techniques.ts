@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro'
 import { getCollection } from 'astro:content'
 import { techniqueSchema, type TechniqueSchema } from '@/content/schema'
 import { OutcomeRecommendationEngine } from '@/lib/ai/services/OutcomeRecommendationEngine'
-import type { ContextFactors } from '@/lib/ai/services/ContextualAwarenessService'
+
 import type { CollectionEntry } from 'astro:content'
 
 const ALLOWED_CATEGORIES = ['CBT', 'Mindfulness', 'DBT', 'ACT', 'EMDR', 'Other']
@@ -48,10 +48,14 @@ export const GET: APIRoute = async ({ request }) => {
 
     let filtered = validTechniques
     if (categoryFilter) {
-      filtered = filtered.filter((t: TechniqueSchema) => t.category === categoryFilter)
+      filtered = filtered.filter(
+        (t: TechniqueSchema) => t.category === categoryFilter,
+      )
     }
     if (evidenceFilter) {
-      filtered = filtered.filter((t: TechniqueSchema) => t.evidenceLevel === evidenceFilter)
+      filtered = filtered.filter(
+        (t: TechniqueSchema) => t.evidenceLevel === evidenceFilter,
+      )
     }
 
     return new Response(JSON.stringify(filtered), {

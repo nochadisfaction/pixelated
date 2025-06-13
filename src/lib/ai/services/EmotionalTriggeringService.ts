@@ -324,7 +324,6 @@ export class EmotionalTriggeringService {
     physicalSymptoms: string[]
   }> {
     const baseEmotions = this.getBaseEmotionsForBelief(belief)
-    const modelEmotions = emotionalPatterns.map((p) => p.emotion)
 
     const relevantEmotions: any[] = []
 

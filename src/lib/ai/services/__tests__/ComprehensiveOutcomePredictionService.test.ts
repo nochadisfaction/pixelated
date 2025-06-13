@@ -12,8 +12,6 @@ import {
   OutcomePredictionUtils,
   type PredictionConfiguration,
   type TreatmentOutcomePrediction,
-  type ChallengePrediction,
-  type PredictionReport,
   type OutcomeMetrics,
 } from '../ComprehensiveOutcomePredictionService'
 import type { Goal } from '../TreatmentPlanningService'

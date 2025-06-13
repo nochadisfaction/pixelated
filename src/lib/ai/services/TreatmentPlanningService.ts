@@ -12,7 +12,6 @@
 import { getLogger } from '../../logging'
 import type { KVStore } from '../../stores/types'
 import type { SessionDocumentation } from '../interfaces/therapy'
-import type { TreatmentRecommendation } from './RecommendationService'
 
 const logger = getLogger({ prefix: 'treatment-planning-service' })
 

@@ -477,7 +477,7 @@ export const useStore = create<StoreState>()(
           },
           clearDraft: (formId) =>
             set((state) => {
-              const { [formId]: removed, ...rest } = state.formDrafts
+              const { ...rest } = state.formDrafts
               return { formDrafts: rest }
             }),
           clearAllDrafts: () => set({ formDrafts: {} }),
