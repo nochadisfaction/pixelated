@@ -162,6 +162,18 @@ importers:
       '@supabase/supabase-js':
         specifier: ^2.49.8
         version: 2.49.8(bufferutil@4.0.9)
+      '@tailus/themer':
+        specifier: ^0.1.8
+        version: 0.1.8(tailwindcss@4.1.8)
+      '@tailus/themer-button':
+        specifier: ^0.0.7
+        version: 0.0.7
+      '@tailus/themer-card':
+        specifier: ^0.0.1
+        version: 0.0.1
+      '@tailus/themer-progress':
+        specifier: ^0.0.1
+        version: 0.0.1
       '@tailwindcss/vite':
         specifier: ^4.1.8
         version: 4.1.8(vite@6.3.5(@types/node@22.15.24)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.39.2)(tsx@4.19.4)(yaml@2.8.0))
@@ -198,6 +210,9 @@ importers:
       astro-compress:
         specifier: ^2.3.8
         version: 2.3.8(@capacitor/preferences@7.0.1(@capacitor/core@7.2.0))(@types/node@22.15.24)(@upstash/redis@1.34.9)(aws4fetch@1.0.20)(encoding@0.1.13)(ioredis@5.6.1)(jiti@2.4.2)(rollup@4.41.0)(tsx@4.19.4)(typescript@5.8.3)(yaml@2.8.0)
+      astro-font:
+        specifier: ^1.1.0
+        version: 1.1.0
       astro-icon:
         specifier: ^1.1.5
         version: 1.1.5
@@ -4548,6 +4563,21 @@ packages:
   '@swc/helpers@0.5.17':
     resolution: {integrity: sha512-5IKx/Y13RsYd+sauPb2x+U/xZikHjolzfuDgTAl/Tdf3Q8rslRvC19NKDLgAJQ6wsqADk10ntlv08nPFw/gO/A==}
 
+  '@tailus/themer-button@0.0.7':
+    resolution: {integrity: sha512-/dSDH3Vx7shXZYuccRBqFbddRw1lEj0fxUcGhqMDM3GcUb/vNPHdjTKA9tIz9rEigI6NyqeYDvNf60B/kKFzUA==}
+
+  '@tailus/themer-card@0.0.1':
+    resolution: {integrity: sha512-y1nc7kkDM4jVTxhGm5Xbya2RHP6JS8Kp8Oo5ED6o86D9OerJN+0yGxtsA43Jh+37IW6UbqKAQdd1RX/PZ1i97Q==}
+
+  '@tailus/themer-plugins@0.1.3':
+    resolution: {integrity: sha512-r+R0Q1IolPs74TH3+0ZjABqgqvQJXNMMQQQl7pZ7tNGsF2C0C5OpGzRmAC98+vIPYjpj0/rJTK1yq6894vQzRg==}
+
+  '@tailus/themer-progress@0.0.1':
+    resolution: {integrity: sha512-JMor6bJDNAmDQXilztjSeKS2C+ZLZX8cOVZNKHC4UJXDpTL7uqD4yEPnsY5WA88d7x3YAAZIdeRAj/HcODRj7Q==}
+
+  '@tailus/themer@0.1.8':
+    resolution: {integrity: sha512-p9rXKk4TYnUo9jzCHKLFohq7NBuUiBgWNmQSvqAG7ak0kWbpNffg9OS/WRmcGojmILBxaUFhbkxLoyY+UtVJSg==}
+
   '@tailwindcss/node@4.1.8':
     resolution: {integrity: sha512-OWwBsbC9BFAJelmnNcrKuf+bka2ZxCE2A4Ft53Tkg4uoiE67r/PMEYwCsourC26E+kmxfwE0hVzMdxqeW+xu7Q==}
 
@@ -5920,6 +5950,9 @@ packages:
     resolution: {integrity: sha512-HN0jWTnhr7mIV/2e6uu4PPRNNo/k4UEgTLZqbp3MrHU+caCARveG2yZxaZVBmxyiVdYqW5Pd3u3n2zjnshixbw==}
     peerDependencies:
       astro: ^4.0.0-beta || ^5.0.0-beta || ^3.3.0
+
+  astro-font@1.1.0:
+    resolution: {integrity: sha512-hj1A0MkaJTeaArBpf1m9s4Nxu1Bn9h0QiEPeR9Dfjle25pT4CH4higzuadWzCRSvhGO2SzbM11YwZEF+cmLDxg==}
 
   astro-icon@1.1.5:
     resolution: {integrity: sha512-CJYS5nWOw9jz4RpGWmzNQY7D0y2ZZacH7atL2K9DeJXJVaz7/5WrxeyIxO8KASk1jCM96Q4LjRx/F3R+InjJrw==}
@@ -12064,8 +12097,17 @@ packages:
     resolution: {integrity: sha512-2pR2ubZSV64f/vqm9eLPz/KOvR9Dm+Co/5ChLgeHl0yEDRc6h5hXHoxEQH8Y5Ljycozd3p1k5TTSVdzYGkPvLw==}
     engines: {node: ^14.18.0 || >=16.0.0}
 
+  tailwind-merge@2.6.0:
+    resolution: {integrity: sha512-P+Vu1qXfzediirmHOC3xKGAYeZtPcV9g76X+xg2FD4tYgR71ewMA35Y3sCz3zhiN/dwefRpJX0yBcgwi1fXNQA==}
+
   tailwind-merge@3.3.0:
     resolution: {integrity: sha512-fyW/pEfcQSiigd5SNn0nApUOxx0zB/dm6UDU/rEwc2c3sX2smWUNbapHv+QRqLGVp9GWX3THIa7MUGPo+YkDzQ==}
+
+  tailwind-variants@0.2.1:
+    resolution: {integrity: sha512-2xmhAf4UIc3PijOUcJPA1LP4AbxhpcHuHM2C26xM0k81r0maAO6uoUSHl3APmvHZcY5cZCY/bYuJdfFa4eGoaw==}
+    engines: {node: '>=16.x', pnpm: '>=7.x'}
+    peerDependencies:
+      tailwindcss: '*'
 
   tailwindcss@4.1.8:
     resolution: {integrity: sha512-kjeW8gjdxasbmFKpVGrGd5T4i40mV5J2Rasw48QARfYeQ8YS9x02ON9SFWax3Qf616rt4Cp3nVNIj6Hd1mP3og==}
@@ -18136,6 +18178,21 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
+  '@tailus/themer-button@0.0.7': {}
+
+  '@tailus/themer-card@0.0.1': {}
+
+  '@tailus/themer-plugins@0.1.3': {}
+
+  '@tailus/themer-progress@0.0.1': {}
+
+  '@tailus/themer@0.1.8(tailwindcss@4.1.8)':
+    dependencies:
+      '@tailus/themer-plugins': 0.1.3
+      tailwind-variants: 0.2.1(tailwindcss@4.1.8)
+    transitivePeerDependencies:
+      - tailwindcss
+
   '@tailwindcss/node@4.1.8':
     dependencies:
       '@ampproject/remapping': 2.3.0
@@ -19782,6 +19839,8 @@ snapshots:
     dependencies:
       astro: 5.8.0(@capacitor/preferences@7.0.1(@capacitor/core@7.2.0))(@types/node@22.15.24)(@upstash/redis@1.34.9)(aws4fetch@1.0.20)(encoding@0.1.13)(ioredis@5.6.1)(jiti@2.4.2)(lightningcss@1.30.1)(rollup@4.41.0)(terser@5.39.2)(tsx@4.19.4)(typescript@5.8.3)(yaml@2.8.0)
       rehype-expressive-code: 0.41.2
+
+  astro-font@1.1.0: {}
 
   astro-icon@1.1.5:
     dependencies:
@@ -27555,7 +27614,14 @@ snapshots:
     dependencies:
       '@pkgr/core': 0.2.4
 
+  tailwind-merge@2.6.0: {}
+
   tailwind-merge@3.3.0: {}
+
+  tailwind-variants@0.2.1(tailwindcss@4.1.8):
+    dependencies:
+      tailwind-merge: 2.6.0
+      tailwindcss: 4.1.8
 
   tailwindcss@4.1.8: {}
 

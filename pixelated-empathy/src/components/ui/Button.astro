@@ -1,0 +1,17 @@
+---
+const { Astro } = require('astro');
+
+const Button = ({ label, onClick, type = 'button', className = '' }) => {
+  return (
+    <button
+      type={type}
+      class={`px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600 ${className}`}
+      onClick={onClick}
+    >
+      {label}
+    </button>
+  );
+};
+
+export default Button;
+---

@@ -1,0 +1,26 @@
+{
+  "name": "pixelated-empathy",
+  "version": "1.0.0",
+  "description": "A project for Pixelated Empathy, showcasing features and content in a structured format.",
+  "main": "src/pages/index.astro",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "astro": "^1.0.0",
+    "tailwindcss": "^2.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^4.0.0"
+  },
+  "keywords": [
+    "astro",
+    "tailwindcss",
+    "pixelated",
+    "empathy"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
