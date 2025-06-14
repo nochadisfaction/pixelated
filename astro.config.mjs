@@ -12,6 +12,7 @@ import icon from 'astro-icon'
 import sentry from '@sentry/astro'
 import flexsearchSSRPlugin from './src/plugins/vite-plugin-flexsearch-ssr'
 import vitesse from 'astro-vitesse'
+import tailwind from '@astrojs/tailwind'
 
 import cloudflare from '@astrojs/cloudflare'
 
@@ -35,37 +36,38 @@ const disableWebFonts =
 
 // Disable resource-intensive features on Vercel
 const vercelIntegrations = isVercel ? [
+  tailwind(),
   react(),
   mdx(),
-  UnoCSS({
-    injectReset: true,
-    mode: 'global',
-    safelist: ['font-sans', 'font-mono', 'font-condensed'],
-    configFile: './uno.config.vitesse.ts',
-    content: {
-      filesystem: [
-        'src/**/*.{astro,js,ts,jsx,tsx,vue,mdx}',
-        'components/**/*.{astro,js,ts,jsx,tsx,vue}',
-      ],
-    },
-    transformers: [
-      {
-        name: 'unocss:reset',
-        transform(code) {
-          if (!code || typeof code !== 'string') {
-            return code
-          }
-          if (code.includes('@unocss/reset/reset.css')) {
-            return code.replace(
-              '@unocss/reset/reset.css',
-              '@unocss/reset/tailwind.css',
-            )
-          }
-          return code
-        },
-      },
-    ],
-  }),
+  // UnoCSS({
+  //   injectReset: true,
+  //   mode: 'global',
+  //   safelist: ['font-sans', 'font-mono', 'font-condensed'],
+  //   configFile: './uno.config.vitesse.ts',
+  //   content: {
+  //     filesystem: [
+  //       'src/**/*.{astro,js,ts,jsx,tsx,vue,mdx}',
+  //       'components/**/*.{astro,js,ts,jsx,tsx,vue}',
+  //     ],
+  //   },
+  //   transformers: [
+  //     {
+  //       name: 'unocss:reset',
+  //       transform(code) {
+  //         if (!code || typeof code !== 'string') {
+  //           return code
+  //         }
+  //         if (code.includes('@unocss/reset/reset.css')) {
+  //           return code.replace(
+  //             '@unocss/reset/reset.css',
+  //             '@unocss/reset/tailwind.css',
+  //           )
+  //         }
+  //         return code
+  //       },
+  //     },
+  //   ],
+  // }),
   icon({
     include: {
       lucide: ['*'],
@@ -73,6 +75,7 @@ const vercelIntegrations = isVercel ? [
     svgdir: './src/icons',
   }),
 ] : [
+  tailwind(),
   vitesse({
     title: 'Pixelated Empathy',
     description: 'AI-Powered Mental Health Research & Innovation',
@@ -98,44 +101,35 @@ const vercelIntegrations = isVercel ? [
   }),
   react(),
   mdx(),
-  UnoCSS({
-    injectReset: true,
-    mode: 'global',
-    safelist: ['font-sans', 'font-mono', 'font-condensed'],
-    configFile: './uno.config.vitesse.ts',
-    content: {
-      filesystem: [
-        'src/**/*.{astro,js,ts,jsx,tsx,vue,mdx}',
-        'components/**/*.{astro,js,ts,jsx,tsx,vue}',
-      ],
-    },
-
-    transformers: [
-      {
-        name: 'unocss:reset',
-        transform(code) {
-          if (!code || typeof code !== 'string') {
-            return code
-          }
-          if (code.includes('@unocss/reset/reset.css')) {
-            return code.replace(
-              '@unocss/reset/reset.css',
-              '@unocss/reset/tailwind.css',
-            )
-          }
-          return code
-        },
-      },
-    ],
-  }),
-  compress({
-    css: true,
-    html: true,
-    img: false,
-    js: true,
-    svg: false,
-  }),
-  flexsearchIntegration(),
+  // UnoCSS({
+  //   injectReset: true,
+  //   mode: 'global',
+  //   safelist: ['font-sans', 'font-mono', 'font-condensed'],
+  //   configFile: './uno.config.vitesse.ts',
+  //   content: {
+  //     filesystem: [
+  //       'src/**/*.{astro,js,ts,jsx,tsx,vue,mdx}',
+  //       'components/**/*.{astro,js,ts,jsx,tsx,vue}',
+  //     ],
+  //   },
+  //   transformers: [
+  //     {
+  //       name: 'unocss:reset',
+  //       transform(code) {
+  //         if (!code || typeof code !== 'string') {
+  //           return code
+  //         }
+  //         if (code.includes('@unocss/reset/reset.css')) {
+  //           return code.replace(
+  //             '@unocss/reset/reset.css',
+  //             '@unocss/reset/tailwind.css',
+  //           )
+  //         }
+  //         return code
+  //       },
+  //     },
+  //   ],
+  // }),
   icon({
     include: {
       lucide: ['*'],
@@ -348,11 +342,6 @@ export default defineConfig({
   output: 'server',
   logLevel: verboseOutput ? 'info' : 'error',
   adapter: isVercel ? vercel() : cloudflare(),
-  image: {
-    service: {
-      entrypoint: 'astro/assets/services/squoosh',
-    },
-  },
   prefetch: {
     defaultStrategy: 'hover',
     throttle: 3,
