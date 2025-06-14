@@ -14,8 +14,6 @@ import flexsearchSSRPlugin from './src/plugins/vite-plugin-flexsearch-ssr'
 import vitesse from 'astro-vitesse'
 import tailwind from '@astrojs/tailwind'
 
-import cloudflare from '@astrojs/cloudflare'
-
 // Check build environment
 const isProduction = process.env.NODE_ENV === 'production'
 const isVercel = process.env.VERCEL === '1'
@@ -341,7 +339,7 @@ export default defineConfig({
   site: 'https://pixelatedempathy.com',
   output: 'server',
   logLevel: verboseOutput ? 'info' : 'error',
-  adapter: isVercel ? vercel() : cloudflare(),
+  adapter: vercel(),
   prefetch: {
     defaultStrategy: 'hover',
     throttle: 3,
