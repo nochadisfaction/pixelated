@@ -1,21 +1,23 @@
-import {
+import { describe, test, beforeEach, expect } from 'vitest'
+import type {
   ObjectiveBuilder,
   ObjectiveRegistry,
   ValidationResult,
+  ObjectiveTemplate} from './objective-interfaces';
+import {
   ObjectiveCategory,
   StandardObjectiveBuilder,
   StandardObjectiveRegistry,
   ObjectiveFactory,
   NormalizationMethod,
-  AggregationMethod,
-  ObjectiveTemplate,
+  AggregationMethod
 } from './objective-interfaces'
-import { ObjectiveDefinition, AlignmentContext } from './objectives'
+import type { ObjectiveDefinition } from './objectives'
 
 // Mock evaluation function for testing
 const createMockEvaluationFunction =
-  (returnValue: number = 0.8) =>
-  (response: string, context: AlignmentContext): number =>
+  (returnValue = 0.8) =>
+  () =>
     returnValue
 
 describe('Objective Interfaces', () => {
@@ -395,14 +397,14 @@ describe('Objective Interfaces', () => {
       const builder = new StandardObjectiveBuilder()
       const validation = builder.validate()
 
-      validation.errors.forEach((error) => {
+      for (const error of validation.errors) {
         expect(error).toHaveProperty('field')
         expect(error).toHaveProperty('message')
         expect(error).toHaveProperty('code')
         expect(typeof error.field).toBe('string')
         expect(typeof error.message).toBe('string')
         expect(typeof error.code).toBe('string')
-      })
+      }
     })
   })
 

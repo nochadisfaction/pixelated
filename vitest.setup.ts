@@ -3,6 +3,9 @@
  * This file is automatically loaded by Vitest before tests are run
  */
 
+import '@testing-library/jest-dom'
+import { vi } from 'vitest'
+
 // Add TextEncoder/TextDecoder polyfills for Node.js environment
 // This prevents "TextEncoder is not a constructor" errors
 import { TextEncoder, TextDecoder } from 'util'
@@ -16,109 +19,94 @@ if (typeof global.TextDecoder === 'undefined') {
 
 // Mock Redis client
 export const mockRedisClient = {
-  // Basic operations
-  set: vi.fn().mockResolvedValue('OK'),
   get: vi.fn().mockResolvedValue(null),
+  set: vi.fn().mockResolvedValue('OK'),
   del: vi.fn().mockResolvedValue(1),
-  exists: vi.fn().mockResolvedValue(1),
+  exists: vi.fn().mockResolvedValue(0),
   expire: vi.fn().mockResolvedValue(1),
-  ttl: vi.fn().mockResolvedValue(60),
-
-  // List operations
-  lpush: vi.fn().mockResolvedValue(1),
-  rpush: vi.fn().mockResolvedValue(1),
-  lpop: vi.fn().mockResolvedValue(null),
-  rpop: vi.fn().mockResolvedValue(null),
-  lrange: vi.fn().mockResolvedValue([]),
-  rpoplpush: vi.fn().mockResolvedValue(null),
-
-  // Hash operations
-  hset: vi.fn().mockResolvedValue(1),
-  hget: vi.fn().mockResolvedValue(null),
-  hdel: vi.fn().mockResolvedValue(1),
-  hgetall: vi.fn().mockResolvedValue({}),
-  hmset: vi.fn().mockResolvedValue('OK'),
-
-  // Set operations
-  sadd: vi.fn().mockResolvedValue(1),
-  srem: vi.fn().mockResolvedValue(1),
-  smembers: vi.fn().mockResolvedValue([]),
-
-  // Sorted set operations
-  zadd: vi.fn().mockResolvedValue(1),
-  zrangebyscore: vi.fn().mockResolvedValue([]),
-  zremrangebyscore: vi.fn().mockResolvedValue(1),
-
-  // Other operations
-  incr: vi.fn().mockResolvedValue(1),
-  decr: vi.fn().mockResolvedValue(1),
+  ttl: vi.fn().mockResolvedValue(-1),
   keys: vi.fn().mockResolvedValue([]),
-
-  // Method chaining support
-  on: vi.fn(function (this: unknown) {
-    return this
-  }),
-
-  // Connection management
-  connect: vi.fn().mockResolvedValue(undefined),
-  disconnect: vi.fn().mockResolvedValue(undefined),
+  flushall: vi.fn().mockResolvedValue('OK'),
   quit: vi.fn().mockResolvedValue('OK'),
+  disconnect: vi.fn().mockResolvedValue(undefined),
 }
 
-// Define custom matchers for arrays
+// Mock WebSocket
+global.WebSocket = vi.fn().mockImplementation(() => ({
+  send: vi.fn(),
+  close: vi.fn(),
+  addEventListener: vi.fn(),
+  removeEventListener: vi.fn(),
+  readyState: 1, // OPEN
+  CONNECTING: 0,
+  OPEN: 1,
+  CLOSING: 2,
+  CLOSED: 3,
+})) as any
 
-// Define global expect type extensions
-declare module 'vitest' {
-  interface Assertion {
-    toBeNull(): void
-    toBe(expected: unknown): void
-    toEqual(expected: unknown): void
-    toBeInstanceOf(expected: unknown): void
-    toBeGreaterThanOrEqual(expected: number): void
-    toBeLessThanOrEqual(expected: number): void
-  }
-  interface AsymmetricMatchersContaining {
-    arrayContaining(expected: unknown[]): void
-  }
+// Mock fetch
+global.fetch = vi.fn()
+
+// Mock console methods to reduce noise in tests
+global.console = {
+  ...console,
+  log: vi.fn(),
+  warn: vi.fn(),
+  error: vi.fn(),
+  info: vi.fn(),
+  debug: vi.fn(),
 }
 
-// Extend expect with custom matchers
-expect.extend({
-  toBeNull: (received: unknown) => ({
-    pass: received === null,
-    message: () => `expected ${received} to be null`,
-  }),
-  toBe: (received: unknown, expected: unknown) => ({
-    pass: Object.is(received, expected),
-    message: () => `expected ${received} to be ${expected}`,
-  }),
-  toEqual: (received: unknown, expected: unknown) => ({
-    pass: JSON.stringify(received) === JSON.stringify(expected),
-    message: () => `expected ${received} to equal ${expected}`,
-  }),
-  toBeInstanceOf: (received: unknown, expected: unknown) => ({
-    pass: received instanceof (expected as new (...args: unknown[]) => unknown),
-    message: () => `expected ${received} to be an instance of ${expected}`,
-  }),
-  toBeGreaterThanOrEqual: (received: unknown, expected: unknown) => ({
-    pass: (received as number) >= (expected as number),
-    message: () =>
-      `expected ${received} to be greater than or equal to ${expected}`,
-  }),
-  toBeLessThanOrEqual: (received: unknown, expected: unknown) => ({
-    pass: (received as number) <= (expected as number),
-    message: () =>
-      `expected ${received} to be less than or equal to ${expected}`,
-  }),
+// Mock window.matchMedia
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: vi.fn().mockImplementation(query => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(), // deprecated
+    removeListener: vi.fn(), // deprecated
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
 })
 
-// Define arrayContaining helper for expect
-expect.arrayContaining = (arr: unknown[]) => ({
-  asymmetricMatch: (actual: unknown[]) => {
-    return Array.isArray(actual) && arr.every((item) => actual.includes(item))
-  },
-  toString: () => `ArrayContaining(${JSON.stringify(arr)})`,
+// Mock ResizeObserver
+global.ResizeObserver = vi.fn().mockImplementation(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
+}))
+
+// Mock IntersectionObserver
+global.IntersectionObserver = vi.fn().mockImplementation(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
+}))
+
+// Mock localStorage
+const localStorageMock = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn(),
+  length: 0,
+  key: vi.fn(),
+}
+Object.defineProperty(window, 'localStorage', {
+  value: localStorageMock,
 })
+
+// Mock sessionStorage
+Object.defineProperty(window, 'sessionStorage', {
+  value: localStorageMock,
+})
+
+// Mock URL.createObjectURL
+global.URL.createObjectURL = vi.fn()
+global.URL.revokeObjectURL = vi.fn()
 
 // Ensure we are in test environment
 if (process.env.NODE_ENV !== 'test') {
@@ -149,7 +137,7 @@ function setupCryptoMocks() {
   // Ensure our utility is properly loaded in tests
   vi.mock('src/lib/utils/ids', () => ({
     generateUUID: vi.fn(() => {
-      return 'mocked-test-uuid-' + Math.random().toString(36).substring(2, 9)
+      return `mocked-test-uuid-${Math.random().toString(36).substring(2, 9)}`
     }),
     generatePrefixedId: vi.fn((prefix: string) => {
       return `${prefix}-mocked-id-${Math.random().toString(36).substring(2, 9)}`
@@ -172,7 +160,7 @@ function setupFHEMocks() {
   }
 
   // Add to global scope if needed
-  ;(global as Record<string, unknown>).FHE = mockFHE
+  ;(global as Record<string, unknown>)['FHE'] = mockFHE
 
   return mockFHE
 }

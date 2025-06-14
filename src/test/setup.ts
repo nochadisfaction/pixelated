@@ -1,139 +1,102 @@
+/**
+ * Test setup for React Testing Library
+ * This file is automatically loaded by Vitest before tests are run
+ */
+
 import '@testing-library/dom'
 import {
-  TextEncoder as NodeTextEncoder,
-  TextDecoder as NodeTextDecoder,
-} from 'util'
+  type MatcherFunction,
+  type MatcherState,
+  type ExpectationResult,
+} from '@vitest/expect'
+import { expect, afterEach, vi, beforeEach } from 'vitest'
+import { cleanup } from '@testing-library/react'
+import '@testing-library/jest-dom'
 
 // Add type declarations for DOM testing matchers
-declare global {
-  namespace Vi {
-    interface Assertion<T = any> {
-      toBeInTheDocument(): T
-      toHaveAttribute(attr: string, value?: string): T
-      toHaveClass(...classNames: string[]): T
-    }
+declare module 'vitest' {
+  interface Assertion<T = unknown> {
+    toBeInTheDocument(): T
+    toHaveAttribute(attr: string, value?: string): T
+    toHaveClass(...classNames: string[]): T
+    toHaveValue(value?: string | number): T
+    toBeVisible(): T
+    toBeDisabled(): T
+    toBeEnabled(): T
+    toHaveTextContent(text: string | RegExp): T
+    toHaveDisplayValue(value: string | RegExp | Array<string | RegExp>): T
+    toBeChecked(): T
+    toHaveFocus(): T
+    toBeRequired(): T
+    toBeInvalid(): T
+    toBeValid(): T
+    toHaveStyle(css: string | Record<string, unknown>): T
+    toHaveAccessibleName(name?: string | RegExp): T
+    toHaveAccessibleDescription(description?: string | RegExp): T
   }
 }
 
-// Add custom DOM testing matchers
-expect.extend({
-  toBeInTheDocument(received: any) {
-    const pass = received !== null && received !== undefined
-    return {
-      pass,
-      message: () =>
-        pass
-          ? `Expected element not to be in the document`
-          : `Expected element to be in the document`,
-    }
-  },
-  toHaveAttribute(received: any, attr: string, value?: string) {
-    const hasAttr = received?.hasAttribute(attr)
-    const attrValue = received?.getAttribute(attr)
-    const pass = value !== undefined ? hasAttr && attrValue === value : hasAttr
-
-    return {
-      pass,
-      message: () =>
-        pass
-          ? `Expected element not to have attribute "${attr}"${value ? ` with value "${value}"` : ''}`
-          : `Expected element to have attribute "${attr}"${value ? ` with value "${value}"` : ''}`,
-    }
-  },
-  toHaveClass(received: any, ...classNames: string[]) {
-    const classList = received?.classList
-    const pass = classNames.every((className) => classList?.contains(className))
-
-    return {
-      pass,
-      message: () =>
-        pass
-          ? `Expected element not to have classes "${classNames.join(', ')}"`
-          : `Expected element to have classes "${classNames.join(', ')}"`,
-    }
-  },
+// Cleanup after each test case (e.g. clearing jsdom)
+afterEach(() => {
+  cleanup()
 })
-
-// Polyfill for TextEncoder/TextDecoder
-if (typeof global.TextEncoder === 'undefined') {
-  global.TextEncoder = NodeTextEncoder as typeof global.TextEncoder
-}
-if (typeof global.TextDecoder === 'undefined') {
-  global.TextDecoder = NodeTextDecoder as unknown as typeof global.TextDecoder
-}
-
-// Mock ResizeObserver
-class ResizeObserverMock {
-  observe(): void {}
-  unobserve(): void {}
-  disconnect(): void {}
-}
-
-// Mock IntersectionObserver
-class IntersectionObserverMock {
-  constructor(callback: IntersectionObserverCallback) {
-    this.callback = callback
-  }
-  callback: IntersectionObserverCallback
-  root: Element | Document | null = null
-  rootMargin: string = '0px'
-  thresholds: ReadonlyArray<number> = [0]
-  observe(): void {}
-  unobserve(): void {}
-  disconnect(): void {}
-  takeRecords(): IntersectionObserverEntry[] {
-    return []
-  }
-}
-
-// Setup global mocks
-global.ResizeObserver = ResizeObserverMock as unknown as typeof ResizeObserver
-global.IntersectionObserver =
-  IntersectionObserverMock as unknown as typeof IntersectionObserver
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: vi.fn().mockImplementation((query: string) => ({
+  value: (query: string) => ({
     matches: false,
     media: query,
     onchange: null,
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  })),
+    addListener: () => {},
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => {},
+  }),
 })
 
-// Mock requestAnimationFrame
-global.requestAnimationFrame = vi
-  .fn()
-  .mockImplementation((cb: FrameRequestCallback) => setTimeout(cb, 0))
-global.cancelAnimationFrame = vi
-  .fn()
-  .mockImplementation((id: number) => clearTimeout(id))
+// Mock ResizeObserver
+global.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
 
-// Mock crypto for FHE operations
-Object.defineProperty(global, 'crypto', {
-  value: {
-    getRandomValues: (arr: Uint8Array) => {
-      return arr.map(() => Math.floor(Math.random() * 256))
-    },
-    subtle: {
-      generateKey: vi.fn(),
-      encrypt: vi.fn(),
-      decrypt: vi.fn(),
-    },
-  },
+// Mock IntersectionObserver
+global.IntersectionObserver = class IntersectionObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
+// Mock localStorage
+const localStorageMock = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn(),
+  length: 0,
+  key: vi.fn(),
+}
+
+Object.defineProperty(window, 'localStorage', {
+  value: localStorageMock,
 })
 
-// Reset mocks between tests
+Object.defineProperty(window, 'sessionStorage', {
+  value: localStorageMock,
+})
+
+// Mock URL methods
+global.URL.createObjectURL = vi.fn()
+global.URL.revokeObjectURL = vi.fn()
+
+// Mock console methods to reduce noise in tests
 beforeEach(() => {
-  vi.clearAllMocks()
-})
-
-// Clean up after each test
-afterEach(() => {
-  vi.clearAllTimers()
+  vi.spyOn(console, 'log').mockImplementation(() => {})
+  vi.spyOn(console, 'warn').mockImplementation(() => {})
+  vi.spyOn(console, 'error').mockImplementation(() => {})
+  vi.spyOn(console, 'info').mockImplementation(() => {})
+  vi.spyOn(console, 'debug').mockImplementation(() => {})
 })
