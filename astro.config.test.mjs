@@ -1,5 +1,5 @@
 import { defineConfig } from 'astro/config'
-import tailwind from '@astrojs/tailwind'
+import mdx from '@astrojs/mdx'
 
 // Simple static configuration for testing the Tailus implementation
 export default defineConfig({
@@ -8,7 +8,7 @@ export default defineConfig({
   logLevel: 'info',
   
   integrations: [
-    tailwind()
+    mdx()
   ],
   
   build: {
