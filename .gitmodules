@@ -1,6 +1,6 @@
 [submodule "docs"]
 	path = docs
 	url = https://github.com/adrian-ub/astro-vitesse.git
-[submodule "dbt-mcp"]
-	path = dbt-mcp
-	url = https://github.com/dbt-labs/dbt-mcp
+[submodule "src/lib/ai/bias-detection"]
+	path = src/lib/ai/bias-detection
+	url = https://github.com/nochadisfaction/bias-detection
