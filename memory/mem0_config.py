@@ -10,7 +10,7 @@ client = MemoryClient(api_key=api_key)
 
 # Memory base configuration
 MEMORY_BASE = {
-    "user_id": chadisfaction,
+    "user_id": "chadisfaction",
     "max_results": 10,
     "similarity_threshold": 0.7,
     "include_metadata": True,

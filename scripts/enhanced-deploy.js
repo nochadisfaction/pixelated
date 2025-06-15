@@ -161,28 +161,9 @@ async function deployToEnvironment(environment, deploymentTag) {
       } else {
         console.log(chalk.yellow('⚠️ No VERCEL_TOKEN found, skipping Vercel deployment'))
       }
-      
-      // Cloudflare Pages deployment (if configured)
-      if (process.env.CLOUDFLARE_API_TOKEN || fs.existsSync(path.join(projectRoot, 'wrangler.toml'))) {
-        try {
-          runCommand('npx wrangler pages deploy dist --project-name=pixelated', 'Deploying to Cloudflare Pages')
-        } catch (error) {
-          console.log(chalk.yellow('⚠️ Cloudflare deployment failed, continuing...'))
-        }
-      }
-    } else {
+    } else if (process.env.VERCEL_TOKEN || process.env.CI) {
       // Staging deployment
-      if (process.env.VERCEL_TOKEN || process.env.CI) {
-        runCommand('vercel deploy --yes', 'Deploying to Vercel Staging')
-      }
-      
-      if (process.env.CLOUDFLARE_API_TOKEN) {
-        try {
-          runCommand('npx wrangler pages deploy dist --project-name=pixelated --branch=staging', 'Deploying to Cloudflare Pages Staging')
-        } catch (error) {
-          console.log(chalk.yellow('⚠️ Cloudflare staging deployment failed, continuing...'))
-        }
-      }
+      runCommand('vercel deploy --yes', 'Deploying to Vercel Staging')
     }
     
     console.log(chalk.green(`✅ Deployment to ${environment} completed`))

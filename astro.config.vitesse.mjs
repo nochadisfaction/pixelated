@@ -10,7 +10,7 @@ import icon from 'astro-icon'
 import sentry from '@sentry/astro'
 import vitesse from 'astro-vitesse'
 
-import cloudflare from '@astrojs/cloudflare'
+import vercel from '@astrojs/vercel/serverless'
 
 // Check build environment
 const isProduction = process.env.NODE_ENV === 'production'
@@ -34,7 +34,7 @@ export default defineConfig({
   site: 'https://pixelatedempathy.com',
   output: 'server',
   logLevel: verboseOutput ? 'info' : 'warn',
-  adapter: cloudflare(),
+  adapter: vercel(),
   prefetch: {
     defaultStrategy: 'hover',
     throttle: 3,

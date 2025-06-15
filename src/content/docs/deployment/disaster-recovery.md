@@ -25,7 +25,7 @@ This document outlines the disaster recovery procedures for the Pixelated Astro 
 
 2. **Verify Deployment Status**
 
-   - Check Cloudflare Pages deployment status
+   - Check Vercel deployment status
    - Verify DNS resolution is working properly
 
 3. **Initial Recovery Steps**
@@ -34,7 +34,7 @@ This document outlines the disaster recovery procedures for the Pixelated Astro 
      # Trigger rollback workflow in GitHub Actions
      gh workflow run rollback.yml -f environment=production
      ```
-   - If DNS issue, check Cloudflare DNS settings
+   - If DNS issue, check domain DNS settings
 
 ### Database Issues
 
@@ -177,8 +177,8 @@ If GitHub Actions is unavailable:
    # Build
    NODE_ENV=production pnpm build
 
-   # Deploy using Wrangler CLI
-   npx wrangler pages deploy dist --project-name=gradiant-astro --branch=main
+   # Deploy using Vercel CLI
+   npx vercel deploy --prod --yes
    ```
 
 ## Incident Response Protocol
@@ -232,7 +232,7 @@ If GitHub Actions is unavailable:
 
 ### External Services
 
-- **Cloudflare Support**: [Support Dashboard](https://dash.cloudflare.com/support)
+- **Vercel Support**: [Support Center](https://vercel.com/support)
 - **Supabase Support**: [Support Portal](https://supabase.com/support)
 - **AWS Support**: [Support Center](https://console.aws.amazon.com/support)
 
@@ -270,7 +270,7 @@ The disaster recovery plan should be tested quarterly:
 - GitHub repository access
 - AWS S3 access
 - Database credentials
-- Cloudflare access
+- Vercel access
 
 ### Recovery Checklists
 

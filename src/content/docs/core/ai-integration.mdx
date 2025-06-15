@@ -29,11 +29,141 @@ Pixelated leverages multiple AI models and providers to deliver intelligent feat
 ## AI Pipeline
 
 <Frame>
-  ```mermaid graph TD Input[User Input] --> Preprocess[Preprocessing] Preprocess
-  --> Router[Model Router] Router --> OpenAI[OpenAI Models] Router -->
-  Anthropic[Anthropic Models] Router --> GoogleAI[Google AI Models] OpenAI -->
-  Postprocess[Postprocessing] Anthropic --> Postprocess GoogleAI --> Postprocess
-  Postprocess --> Output[Response] ```
+```mermaid
+graph TD
+  I
+  n
+  p
+  u
+  t[User Input]
+  --> 
+  P
+  r
+  e
+  p
+  r
+  o
+  c
+  e
+  s
+  s[Preprocessing]
+  P
+  r
+  e
+  p
+  r
+  o
+  c
+  e
+  s
+  s
+  --> 
+  R
+  o
+  u
+  t
+  e
+  r[Model Router]
+  R
+  o
+  u
+  t
+  e
+  r
+  --> 
+  O
+  p
+  e
+  n
+  A
+  I[OpenAI Models]
+  R
+  o
+  u
+  t
+  e
+  r
+  --> 
+  A
+  n
+  t
+  h
+  r
+  o
+  p
+  i
+  c[Anthropic Models]
+  R
+  o
+  u
+  t
+  e
+  r
+  --> 
+  G
+  o
+  o
+  g
+  l
+  e
+  A
+  I[Google AI Models]
+  O
+  p
+  e
+  n
+  A
+  I
+  --> 
+  P
+  o
+  s
+  t
+  p
+  r
+  o
+  c
+  e
+  s
+  s[Postprocessing]
+  A
+  n
+  t
+  h
+  r
+  o
+  p
+  i
+  c
+  --> Postprocess
+  G
+  o
+  o
+  g
+  l
+  e
+  A
+  I
+  --> Postprocess
+  P
+  o
+  s
+  t
+  p
+  r
+  o
+  c
+  e
+  s
+  s
+  --> 
+  O
+  u
+  t
+  p
+  u
+  t[Response]
+```
 </Frame>
 
 ## Model Selection

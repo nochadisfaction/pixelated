@@ -186,7 +186,7 @@ export default defineConfig({
           '@libsql/client', '@mem0/vercel-ai-provider',
           '@testing-library/dom', '@types/ws',
           '@codesandbox/sdk', '@axe-core/react',
-          '@clerk/astro', '@cloudflare/workers-types',
+          '@clerk/astro',
           '@next/font', '@iconify-json/lucide',
           '@tailwindcss/vite', '@unocss/reset',
           'biome', 'eslint-plugin-import-x', 'eslint-plugin-pnpm',

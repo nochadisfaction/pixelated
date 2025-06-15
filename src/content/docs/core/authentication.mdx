@@ -17,11 +17,59 @@ experience.
 ## Authentication Flow
 
 <Frame>
-  ```mermaid sequenceDiagram participant User participant Client participant API
-  participant Supabase User->>Client: Enter Credentials Client->>Supabase: Sign
-  In Request Supabase-->>Client: JWT Token Client->>API: API Request + Token
-  API->>Supabase: Verify Token Supabase-->>API: Token Valid API-->>Client:
-  Response Client-->>User: Update UI ```
+```mermaid
+sequenceDiagram
+  participant User
+  participant Client
+  participant API
+  participant Supabase
+  U
+  s
+  e
+  r->>Client: Enter Credentials
+  C
+  l
+  i
+  e
+  n
+  t->>Supabase: Sign
+  In Request
+  S
+  u
+  p
+  a
+  b
+  a
+  s
+  e-->>Client: JWT Token
+  C
+  l
+  i
+  e
+  n
+  t->>API: API Request + Token
+  A
+  P
+  I->>Supabase: Verify Token
+  S
+  u
+  p
+  a
+  b
+  a
+  s
+  e-->>API: Token Valid
+  A
+  P
+  I-->>Client:
+  Response
+  C
+  l
+  i
+  e
+  n
+  t-->>User: Update UI
+```
 </Frame>
 
 ## Authentication Methods

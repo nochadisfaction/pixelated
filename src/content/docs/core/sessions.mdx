@@ -31,10 +31,17 @@ Pixelated Healths session management system handles real-time communication, sta
 ## Session Lifecycle
 
 <Frame>
-  ```mermaid stateDiagram-v2 [*] --> Created Created --> Active: Start Session
-  Active --> Paused: Pause Paused --> Active: Resume Active --> Completed: End
-  Session Active --> Cancelled: Cancel Paused --> Cancelled: Cancel Completed
-  --> [*] Cancelled --> [*] ```
+```mermaid
+  stateDiagram-v2 [*] --> Created
+  Created --> Active:
+  Start Session Active --> Paused:
+  Pause Paused --> Active:
+  Resume Active --> Completed:
+  End Session Active --> Cancelled:
+  Cancel Paused --> Cancelled:
+  Cancel Completed --> [*]
+  Cancelled --> [*]
+```
 </Frame>
 
 ## WebSocket Communication
@@ -161,11 +168,110 @@ class MessageQueue {
 ### Message Processing
 
 <Frame>
-  ```mermaid graph LR Message[New Message] --> Analysis[AI Analysis] Analysis
-  --> Sentiment[Sentiment Analysis] Analysis --> Topics[Topic Extraction]
-  Analysis --> Crisis[Crisis Detection] Sentiment --> Response[Response] Topics
-  --> Response Crisis --> Alert[Crisis Alert] Response --> Queue[Message Queue]
-  ```
+```mermaid
+graph LR
+  M
+  e
+  s
+  s
+  a
+  g
+  e[New Message]
+  --> 
+  A
+  n
+  a
+  l
+  y
+  s
+  i
+  s[AI Analysis] Analysis
+  --> 
+  S
+  e
+  n
+  t
+  i
+  m
+  e
+  n
+  t[Sentiment Analysis]
+  A
+  n
+  a
+  l
+  y
+  s
+  i
+  s
+  --> 
+  T
+  o
+  p
+  i
+  c
+  s[Topic Extraction]
+  A
+  n
+  a
+  l
+  y
+  s
+  i
+  s
+  --> 
+  C
+  r
+  i
+  s
+  i
+  s[Crisis Detection]
+  S
+  e
+  n
+  t
+  i
+  m
+  e
+  n
+  t
+  --> 
+  R
+  e
+  s
+  p
+  o
+  n
+  s
+  e[Response] Topics
+  --> Response
+  C
+  r
+  i
+  s
+  i
+  s
+  --> 
+  A
+  l
+  e
+  r
+  t[Crisis Alert]
+  R
+  e
+  s
+  p
+  o
+  n
+  s
+  e
+  --> 
+  Q
+  u
+  e
+  u
+  e[Message Queue]
+```
 </Frame>
 
 ### AI Features

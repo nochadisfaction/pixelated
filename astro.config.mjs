@@ -340,6 +340,11 @@ export default defineConfig({
   output: 'server',
   logLevel: verboseOutput ? 'info' : 'error',
   adapter: vercel(),
+  image: {
+    service: {
+      entrypoint: 'astro/assets/services/squoosh',
+    },
+  },
   prefetch: {
     defaultStrategy: 'hover',
     throttle: 3,

@@ -13,11 +13,112 @@ share: true
 Pixelated is built on a modern, scalable architecture that prioritizes security, real-time communication, and AI integration. The system consists of several key components working together to provide a seamless experience.
 
 <Frame>
-  ``` mermaid graph TD Client[Client Application] --> API[API Gateway] API -->
-  Auth[Authentication Service] API --> Session[Session Service] API --> AI[AI
-  Service] Session --> WebSocket[WebSocket Server] Session --> DB[(Supabase
-  Database)] AI --> LLM[Language Models] LLM --> OpenAI[OpenAI] LLM -->
-  Anthropic[Anthropic] LLM --> GoogleAI[Google AI] ```
+```mermaid
+graph TD
+  C
+  l
+  i
+  e
+  n
+  t[Client Application]
+  --> 
+  A
+  P
+  I[API Gateway]
+  A
+  P
+  I
+  --> 
+  A
+  u
+  t
+  h[Authentication Service]
+  A
+  P
+  I
+  --> 
+  S
+  e
+  s
+  s
+  i
+  o
+  n[Session Service]
+  A
+  P
+  I
+  --> 
+  A
+  I[AI Service]
+  S
+  e
+  s
+  s
+  i
+  o
+  n
+  --> 
+  W
+  e
+  b
+  S
+  o
+  c
+  k
+  e
+  t[WebSocket Server]
+  S
+  e
+  s
+  s
+  i
+  o
+  n
+  --> 
+  D
+  B[(Supabase Database)]
+  A
+  I
+  --> 
+  L
+  L
+  M[Language Models]
+  L
+  L
+  M
+  --> 
+  O
+  p
+  e
+  n
+  A
+  I[OpenAI]
+  L
+  L
+  M
+  --> 
+  A
+  n
+  t
+  h
+  r
+  o
+  p
+  i
+  c[Anthropic]
+  L
+  L
+  M
+  --> 
+  G
+  o
+  o
+  g
+  l
+  e
+  A
+  I[Google AI]
+```
 </Frame>
 
 ## Core Components
@@ -95,10 +196,35 @@ Uses Supabase (PostgreSQL) for:
 ### Authentication Flow
 
 <Frame>
-  ``` mermaid sequenceDiagram participant Client participant API participant
-  Auth participant DB Client->>API: Login Request API->>Auth: Validate
-  Credentials Auth->>DB: Check User DB-->>Auth: User Data Auth-->>API: JWT Token
-  API-->>Client: Session Token ```
+```mermaid
+sequenceDiagram
+  participant Client
+  participant API
+  participant Auth
+  participant DB
+  C
+  l
+  i
+  e
+  n
+  t->>API: Login Request
+  A
+  P
+  I->>Auth: Validate Credentials
+  A
+  u
+  t
+  h->>DB: Check User
+  D
+  B-->>Auth: User Data
+  A
+  u
+  t
+  h-->>API: JWT Token
+  A
+  P
+  I-->>Client: Session Token
+```
 </Frame>
 
 ### Data Security
@@ -127,9 +253,100 @@ Uses Supabase (PostgreSQL) for:
 ### Model Pipeline
 
 <Frame>
-  ``` mermaid graph LR Input[User Input] --> Preprocess[Preprocessing]
-  Preprocess --> Models[AI Models] Models --> Analysis[Analysis] Models -->
-  Generation[Generation] Analysis --> Output[Response] Generation --> Output ```
+```mermaid
+graph LR
+  I
+  n
+  p
+  u
+  t[User Input]
+  --> 
+  P
+  r
+  e
+  p
+  r
+  o
+  c
+  e
+  s
+  s[Preprocessing]
+  P
+  r
+  e
+  p
+  r
+  o
+  c
+  e
+  s
+  s
+  --> 
+  M
+  o
+  d
+  e
+  l
+  s[AI Models]
+  M
+  o
+  d
+  e
+  l
+  s
+  --> 
+  A
+  n
+  a
+  l
+  y
+  s
+  i
+  s[Analysis]
+  M
+  o
+  d
+  e
+  l
+  s
+  --> 
+  G
+  e
+  n
+  e
+  r
+  a
+  t
+  i
+  o
+  n[Generation]
+  A
+  n
+  a
+  l
+  y
+  s
+  i
+  s
+  --> 
+  O
+  u
+  t
+  p
+  u
+  t[Response]
+  G
+  e
+  n
+  e
+  r
+  a
+  t
+  i
+  o
+  n
+  --> Output
+```
 </Frame>
 
 ### Model Selection

@@ -44,124 +44,124 @@ importers:
     dependencies:
       '@ai-sdk/openai':
         specifier: ^1.3.22
-        version: 1.3.22(zod@3.25.32)
+        version: 1.3.22(zod@3.25.64)
       '@astrojs/node':
         specifier: ^9.2.2
-        version: 9.2.2(astro@5.8.0(@capacitor/preferences@7.0.1(@capacitor/core@7.2.0))(@types/node@22.15.24)(@upstash/redis@1.34.9)(aws4fetch@1.0.20)(encoding@0.1.13)(ioredis@5.6.1)(jiti@2.4.2)(lightningcss@1.30.1)(rollup@4.41.0)(terser@5.39.2)(tsx@4.19.4)(typescript@5.8.3)(yaml@2.8.0))
+        version: 9.2.2(astro@5.9.3(@capacitor/preferences@7.0.1(@capacitor/core@7.3.0))(@types/node@22.15.31)(@upstash/redis@1.35.0)(encoding@0.1.13)(ioredis@5.6.1)(jiti@2.4.2)(lightningcss@1.30.1)(rollup@4.43.0)(terser@5.42.0)(tsx@4.20.3)(typescript@5.8.3)(yaml@2.8.0))
       '@astrojs/react':
         specifier: ^4.3.0
-        version: 4.3.0(@types/node@22.15.24)(@types/react-dom@19.1.5(@types/react@19.1.6))(@types/react@19.1.6)(jiti@2.4.2)(lightningcss@1.30.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(terser@5.39.2)(tsx@4.19.4)(yaml@2.8.0)
+        version: 4.3.0(@types/node@22.15.31)(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(jiti@2.4.2)(lightningcss@1.30.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(terser@5.42.0)(tsx@4.20.3)(yaml@2.8.0)
       '@aws-sdk/client-dynamodb':
         specifier: ^3.817.0
-        version: 3.817.0
+        version: 3.828.0
       '@aws-sdk/client-kms':
         specifier: ^3.812.0
-        version: 3.812.0
+        version: 3.829.0
       '@aws-sdk/client-s3':
         specifier: ^3.815.0
-        version: 3.817.0
+        version: 3.828.0
       '@aws-sdk/lib-dynamodb':
         specifier: ^3.817.0
-        version: 3.817.0(@aws-sdk/client-dynamodb@3.817.0)
+        version: 3.828.0(@aws-sdk/client-dynamodb@3.828.0)
       '@aws-sdk/util-dynamodb':
         specifier: ^3.817.0
-        version: 3.817.0(@aws-sdk/client-dynamodb@3.817.0)
+        version: 3.828.0(@aws-sdk/client-dynamodb@3.828.0)
       '@axe-core/react':
         specifier: ^4.10.1
-        version: 4.10.1
+        version: 4.10.2
       '@clerk/astro':
         specifier: ^2.8.0
-        version: 2.8.1(astro@5.8.0(@capacitor/preferences@7.0.1(@capacitor/core@7.2.0))(@types/node@22.15.24)(@upstash/redis@1.34.9)(aws4fetch@1.0.20)(encoding@0.1.13)(ioredis@5.6.1)(jiti@2.4.2)(lightningcss@1.30.1)(rollup@4.41.0)(terser@5.39.2)(tsx@4.19.4)(typescript@5.8.3)(yaml@2.8.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 2.9.1(astro@5.9.3(@capacitor/preferences@7.0.1(@capacitor/core@7.3.0))(@types/node@22.15.31)(@upstash/redis@1.35.0)(encoding@0.1.13)(ioredis@5.6.1)(jiti@2.4.2)(lightningcss@1.30.1)(rollup@4.43.0)(terser@5.42.0)(tsx@4.20.3)(typescript@5.8.3)(yaml@2.8.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@codesandbox/sdk':
         specifier: 2.0.0-rc.3
         version: 2.0.0-rc.3(bufferutil@4.0.9)(encoding@0.1.13)
       '@emotion/react':
         specifier: ^11.14.0
-        version: 11.14.0(@types/react@19.1.6)(react@19.1.0)
+        version: 11.14.0(@types/react@19.1.8)(react@19.1.0)
       '@emotion/styled':
         specifier: ^11.14.0
-        version: 11.14.0(@emotion/react@11.14.0(@types/react@19.1.6)(react@19.1.0))(@types/react@19.1.6)(react@19.1.0)
+        version: 11.14.0(@emotion/react@11.14.0(@types/react@19.1.8)(react@19.1.0))(@types/react@19.1.8)(react@19.1.0)
       '@eslint/eslintrc':
         specifier: ^3.3.1
         version: 3.3.1
       '@eslint/js':
         specifier: ^9.27.0
-        version: 9.27.0
+        version: 9.29.0
       '@google-cloud/storage':
         specifier: ^7.16.0
         version: 7.16.0(encoding@0.1.13)
       '@iconify-json/lucide':
         specifier: ^1.2.44
-        version: 1.2.44
+        version: 1.2.48
       '@langchain/openai':
         specifier: ^0.5.11
-        version: 0.5.11(@langchain/core@0.3.56(openai@4.103.0(encoding@0.1.13)(ws@8.18.2(bufferutil@4.0.9))(zod@3.25.32)))(encoding@0.1.13)(ws@8.18.2(bufferutil@4.0.9))
+        version: 0.5.13(@langchain/core@0.3.58(openai@4.104.0(encoding@0.1.13)(ws@8.18.2(bufferutil@4.0.9))(zod@3.25.64)))(encoding@0.1.13)(ws@8.18.2(bufferutil@4.0.9))
       '@libsql/client':
         specifier: ^0.15.7
-        version: 0.15.7(bufferutil@4.0.9)
+        version: 0.15.9(bufferutil@4.0.9)
       '@mem0/vercel-ai-provider':
         specifier: ^1.0.5
-        version: 1.0.5(@anthropic-ai/sdk@0.40.1(encoding@0.1.13))(@google/genai@0.7.0(bufferutil@4.0.9)(encoding@0.1.13))(@langchain/core@0.3.56(openai@4.103.0(encoding@0.1.13)(ws@8.18.2(bufferutil@4.0.9))(zod@3.25.32)))(@mistralai/mistralai@1.7.1(zod@3.25.32))(@qdrant/js-client-rest@1.13.0(typescript@5.8.3))(@supabase/supabase-js@2.49.8(bufferutil@4.0.9))(@types/jest@29.5.14)(@types/pg@8.15.2)(@types/sqlite3@3.1.11)(encoding@0.1.13)(groq-sdk@0.3.0(encoding@0.1.13))(neo4j-driver@5.28.1)(ollama@0.5.15)(pg@8.16.0)(react@19.1.0)(redis@5.1.0)(sqlite3@5.1.7)(ws@8.18.2(bufferutil@4.0.9))(zod@3.25.32)
+        version: 1.0.5(@anthropic-ai/sdk@0.32.1(encoding@0.1.13))(@cloudflare/workers-types@4.20250613.0)(@google/genai@1.5.1(@modelcontextprotocol/sdk@1.12.3)(bufferutil@4.0.9)(encoding@0.1.13))(@langchain/core@0.3.58(openai@4.104.0(encoding@0.1.13)(ws@8.18.2(bufferutil@4.0.9))(zod@3.25.64)))(@mistralai/mistralai@1.7.2(zod@3.25.64))(@qdrant/js-client-rest@1.13.0(typescript@5.8.3))(@supabase/supabase-js@2.50.0(bufferutil@4.0.9))(@types/jest@29.5.14)(@types/pg@8.15.2)(@types/sqlite3@3.1.11)(cloudflare@4.3.0(encoding@0.1.13))(encoding@0.1.13)(groq-sdk@0.3.0(encoding@0.1.13))(neo4j-driver@5.28.1)(ollama@0.5.16)(pg@8.16.0)(react@19.1.0)(redis@5.1.0)(sqlite3@5.1.7)(ws@8.18.2(bufferutil@4.0.9))(zod@3.25.64)
       '@mui/material':
         specifier: ^7.1.0
-        version: 7.1.0(@emotion/react@11.14.0(@types/react@19.1.6)(react@19.1.0))(@emotion/styled@11.14.0(@emotion/react@11.14.0(@types/react@19.1.6)(react@19.1.0))(@types/react@19.1.6)(react@19.1.0))(@types/react@19.1.6)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 7.1.1(@emotion/react@11.14.0(@types/react@19.1.8)(react@19.1.0))(@emotion/styled@11.14.0(@emotion/react@11.14.0(@types/react@19.1.8)(react@19.1.0))(@types/react@19.1.8)(react@19.1.0))(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@neondatabase/serverless':
         specifier: ^1.0.0
-        version: 1.0.0
+        version: 1.0.1
       '@next/font':
         specifier: ^14.2.15
-        version: 14.2.15(next@15.3.2(@babel/core@7.27.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.52.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))
+        version: 14.2.15(next@15.3.3(@babel/core@7.27.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.52.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))
       '@radix-ui/react-accordion':
         specifier: ^1.2.11
-        version: 1.2.11(@types/react-dom@19.1.5(@types/react@19.1.6))(@types/react@19.1.6)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 1.2.11(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@radix-ui/react-alert-dialog':
         specifier: ^1.1.14
-        version: 1.1.14(@types/react-dom@19.1.5(@types/react@19.1.6))(@types/react@19.1.6)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 1.1.14(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@radix-ui/react-checkbox':
         specifier: ^1.3.2
-        version: 1.3.2(@types/react-dom@19.1.5(@types/react@19.1.6))(@types/react@19.1.6)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 1.3.2(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@radix-ui/react-dialog':
         specifier: ^1.1.14
-        version: 1.1.14(@types/react-dom@19.1.5(@types/react@19.1.6))(@types/react@19.1.6)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 1.1.14(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@radix-ui/react-label':
         specifier: ^2.1.7
-        version: 2.1.7(@types/react-dom@19.1.5(@types/react@19.1.6))(@types/react@19.1.6)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 2.1.7(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@radix-ui/react-popover':
         specifier: ^1.1.14
-        version: 1.1.14(@types/react-dom@19.1.5(@types/react@19.1.6))(@types/react@19.1.6)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 1.1.14(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@radix-ui/react-select':
         specifier: ^2.2.5
-        version: 2.2.5(@types/react-dom@19.1.5(@types/react@19.1.6))(@types/react@19.1.6)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 2.2.5(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@radix-ui/react-slider':
         specifier: ^1.3.5
-        version: 1.3.5(@types/react-dom@19.1.5(@types/react@19.1.6))(@types/react@19.1.6)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 1.3.5(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@radix-ui/react-slot':
         specifier: ^1.2.3
-        version: 1.2.3(@types/react@19.1.6)(react@19.1.0)
+        version: 1.2.3(@types/react@19.1.8)(react@19.1.0)
       '@radix-ui/react-switch':
         specifier: ^1.2.5
-        version: 1.2.5(@types/react-dom@19.1.5(@types/react@19.1.6))(@types/react@19.1.6)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 1.2.5(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@radix-ui/react-tabs':
         specifier: ^1.1.12
-        version: 1.1.12(@types/react-dom@19.1.5(@types/react@19.1.6))(@types/react@19.1.6)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 1.1.12(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@radix-ui/react-tooltip':
         specifier: ^1.2.7
-        version: 1.2.7(@types/react-dom@19.1.5(@types/react@19.1.6))(@types/react@19.1.6)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 1.2.7(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@react-three/fiber':
         specifier: ^9.1.2
-        version: 9.1.2(@types/react@19.1.6)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(three@0.176.0)
+        version: 9.1.2(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(three@0.176.0)
       '@sentry/astro':
         specifier: 9.15.0
-        version: 9.15.0(astro@5.8.0(@capacitor/preferences@7.0.1(@capacitor/core@7.2.0))(@types/node@22.15.24)(@upstash/redis@1.34.9)(aws4fetch@1.0.20)(encoding@0.1.13)(ioredis@5.6.1)(jiti@2.4.2)(lightningcss@1.30.1)(rollup@4.41.0)(terser@5.39.2)(tsx@4.19.4)(typescript@5.8.3)(yaml@2.8.0))(encoding@0.1.13)
+        version: 9.15.0(astro@5.9.3(@capacitor/preferences@7.0.1(@capacitor/core@7.3.0))(@types/node@22.15.31)(@upstash/redis@1.35.0)(encoding@0.1.13)(ioredis@5.6.1)(jiti@2.4.2)(lightningcss@1.30.1)(rollup@4.43.0)(terser@5.42.0)(tsx@4.20.3)(typescript@5.8.3)(yaml@2.8.0))(encoding@0.1.13)
       '@supabase/ssr':
         specifier: ^0.6.1
-        version: 0.6.1(@supabase/supabase-js@2.49.8(bufferutil@4.0.9))
+        version: 0.6.1(@supabase/supabase-js@2.50.0(bufferutil@4.0.9))
       '@supabase/supabase-js':
         specifier: ^2.49.8
-        version: 2.49.8(bufferutil@4.0.9)
+        version: 2.50.0(bufferutil@4.0.9)
       '@tailus/themer':
         specifier: ^0.1.8
-        version: 0.1.8(tailwindcss@3.4.17(ts-node@10.9.2(@types/node@22.15.24)(typescript@5.8.3)))
+        version: 0.1.8(tailwindcss@4.1.10)
       '@tailus/themer-button':
         specifier: ^0.0.7
         version: 0.0.7
@@ -176,7 +176,7 @@ importers:
         version: 4.1.10
       '@tailwindcss/vite':
         specifier: ^4.1.8
-        version: 4.1.8(vite@6.3.5(@types/node@22.15.24)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.39.2)(tsx@4.19.4)(yaml@2.8.0))
+        version: 4.1.10(vite@6.3.5(@types/node@22.15.31)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.42.0)(tsx@4.20.3)(yaml@2.8.0))
       '@tensorflow/tfjs':
         specifier: ^4.22.0
         version: 4.22.0(encoding@0.1.13)(seedrandom@3.0.5)
@@ -191,25 +191,25 @@ importers:
         version: 8.18.1
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.29.1
-        version: 8.32.1(@typescript-eslint/parser@8.32.1(eslint@9.27.0(jiti@2.4.2))(typescript@5.8.3))(eslint@9.27.0(jiti@2.4.2))(typescript@5.8.3)
+        version: 8.34.0(@typescript-eslint/parser@8.34.0(eslint@9.29.0(jiti@2.4.2))(typescript@5.8.3))(eslint@9.29.0(jiti@2.4.2))(typescript@5.8.3)
       '@unocss/reset':
         specifier: ^0.63.6
         version: 0.63.6
       '@upstash/redis':
         specifier: ^1.34.9
-        version: 1.34.9
+        version: 1.35.0
       '@vercel/analytics':
         specifier: ^1.5.0
-        version: 1.5.0(next@15.3.2(@babel/core@7.27.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.52.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(vue@3.5.16(typescript@5.8.3))
+        version: 1.5.0(next@15.3.3(@babel/core@7.27.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.52.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(vue@3.5.16(typescript@5.8.3))
       '@vercel/speed-insights':
         specifier: ^1.2.0
-        version: 1.2.0(next@15.3.2(@babel/core@7.27.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.52.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(vue@3.5.16(typescript@5.8.3))
+        version: 1.2.0(next@15.3.3(@babel/core@7.27.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.52.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(vue@3.5.16(typescript@5.8.3))
       ai:
         specifier: ^4.3.16
-        version: 4.3.16(react@19.1.0)(zod@3.25.32)
+        version: 4.3.16(react@19.1.0)(zod@3.25.64)
       astro-compress:
         specifier: ^2.3.8
-        version: 2.3.8(@capacitor/preferences@7.0.1(@capacitor/core@7.2.0))(@types/node@22.15.24)(@upstash/redis@1.34.9)(aws4fetch@1.0.20)(encoding@0.1.13)(ioredis@5.6.1)(jiti@2.4.2)(rollup@4.41.0)(tsx@4.19.4)(typescript@5.8.3)(yaml@2.8.0)
+        version: 2.3.8(@capacitor/preferences@7.0.1(@capacitor/core@7.3.0))(@types/node@22.15.31)(@upstash/redis@1.35.0)(encoding@0.1.13)(ioredis@5.6.1)(jiti@2.4.2)(rollup@4.43.0)(tsx@4.20.3)(typescript@5.8.3)(yaml@2.8.0)
       astro-font:
         specifier: ^1.1.0
         version: 1.1.0
@@ -248,10 +248,10 @@ importers:
         version: 13.1.0
       composio-core:
         specifier: ^0.5.39
-        version: 0.5.39(@ai-sdk/openai@1.3.22(zod@3.25.32))(@cloudflare/workers-types@4.20250529.0)(@langchain/core@0.3.56(openai@4.103.0(encoding@0.1.13)(ws@8.18.2(bufferutil@4.0.9))(zod@3.25.32)))(@langchain/openai@0.5.11(@langchain/core@0.3.56(openai@4.103.0(encoding@0.1.13)(ws@8.18.2(bufferutil@4.0.9))(zod@3.25.32)))(encoding@0.1.13)(ws@8.18.2(bufferutil@4.0.9)))(ai@4.3.16(react@19.1.0)(zod@3.25.32))(langchain@0.3.26(@langchain/core@0.3.56(openai@4.103.0(encoding@0.1.13)(ws@8.18.2(bufferutil@4.0.9))(zod@3.25.32)))(axios@1.9.0)(cheerio@1.0.0)(encoding@0.1.13)(openai@4.103.0(encoding@0.1.13)(ws@8.18.2(bufferutil@4.0.9))(zod@3.25.32))(ws@8.18.2(bufferutil@4.0.9)))(openai@4.103.0(encoding@0.1.13)(ws@8.18.2(bufferutil@4.0.9))(zod@3.25.32))
+        version: 0.5.39(@ai-sdk/openai@1.3.22(zod@3.25.64))(@cloudflare/workers-types@4.20250613.0)(@langchain/core@0.3.58(openai@4.104.0(encoding@0.1.13)(ws@8.18.2(bufferutil@4.0.9))(zod@3.25.64)))(@langchain/openai@0.5.13(@langchain/core@0.3.58(openai@4.104.0(encoding@0.1.13)(ws@8.18.2(bufferutil@4.0.9))(zod@3.25.64)))(encoding@0.1.13)(ws@8.18.2(bufferutil@4.0.9)))(ai@4.3.16(react@19.1.0)(zod@3.25.64))(langchain@0.3.28(@langchain/core@0.3.58(openai@4.104.0(encoding@0.1.13)(ws@8.18.2(bufferutil@4.0.9))(zod@3.25.64)))(axios@1.9.0)(cheerio@1.0.0)(encoding@0.1.13)(openai@4.104.0(encoding@0.1.13)(ws@8.18.2(bufferutil@4.0.9))(zod@3.25.64))(ws@8.18.2(bufferutil@4.0.9)))(openai@4.104.0(encoding@0.1.13)(ws@8.18.2(bufferutil@4.0.9))(zod@3.25.64))
       convex:
         specifier: ^1.24.1
-        version: 1.24.1(react@19.1.0)
+        version: 1.24.8(react@19.1.0)
       crypto-js:
         specifier: ^4.2.0
         version: 4.2.0
@@ -260,6 +260,6 @@ importers:
         version: 4.1.0
       eslint-plugin-import-x:
         specifier: ^4.12.2
-        version: 4.12.2(eslint@9.27.0(jiti@2.4.2))(typescript@5.8.3)
+        version: 4.15.2(@typescript-eslint/utils@8.34.0(eslint@9.29.0(jiti@2.4.2))(typescript@5.8.3))(eslint@9.29.0(jiti@2.4.2))
       eslint-plugin-pnpm:
         specifier:

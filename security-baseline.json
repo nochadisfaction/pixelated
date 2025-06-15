@@ -1,24 +1,24 @@
 {
   "framework": {
     "cloudformation": {
-      "CKV_AWS_20": "PASSED", // Ensure S3 bucket has encryption
-      "CKV_AWS_41": "PASSED" // Ensure no hard-coded secrets
+      "CKV_AWS_20": "PASSED",
+      "CKV_AWS_41": "PASSED"
     },
     "dockerfile": {
-      "CKV_DOCKER_2": "PASSED", // Ensure no sensitive info in ENV vars
-      "CKV_DOCKER_3": "PASSED" // Ensure COPY instead of ADD
+      "CKV_DOCKER_2": "PASSED", 
+      "CKV_DOCKER_3": "PASSED"
     },
     "kubernetes": {
-      "CKV_K8S_8": "PASSED", // Ensure liveness probe
-      "CKV_K8S_9": "PASSED", // Ensure readiness probe
-      "CKV_K8S_15": "PASSED", // Ensure image pull policy
-      "CKV_K8S_23": "PASSED" // Ensure no root containers
+      "CKV_K8S_8": "PASSED",
+      "CKV_K8S_9": "PASSED", 
+      "CKV_K8S_15": "PASSED",
+      "CKV_K8S_23": "PASSED"
     },
     "terraform": {
-      "CKV_AWS_143": "PASSED", // Ensure encryption at rest
-      "CKV_AWS_144": "PASSED", // Ensure encryption in transit
-      "CKV_AWS_145": "PASSED", // Ensure access logging
-      "CKV_AWS_146": "PASSED" // Ensure audit logging
+      "CKV_AWS_143": "PASSED", 
+      "CKV_AWS_144": "PASSED",
+      "CKV_AWS_145": "PASSED",
+      "CKV_AWS_146": "PASSED"
     }
   },
   "check_type": "custom",
@@ -47,8 +47,8 @@
     ],
     "failed_checks": [],
     "skipped_checks": [
-      "CKV_K8S_21", // Skip container resource limits
-      "CKV_SECRET_6" // Skip specific secret patterns
+      "CKV_K8S_21",
+      "CKV_SECRET_6"
     ]
   },
   "check_ids": [

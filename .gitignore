@@ -51,14 +51,6 @@
 /.vercel
 /.vercelignore
 
-# Cloudflare
-/.wrangler/
-/.dev.vars
-/wrangler.toml.local
-/.env.cloudflare
-/worker-configuration.d.ts
-/.cloudflare/
-
 # TypeScript
 /*.tsbuildinfo
 
