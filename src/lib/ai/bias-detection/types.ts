@@ -713,6 +713,20 @@ export interface PermissionCondition {
 }
 
 // Performance Monitoring Types
+export interface PerformanceSnapshot {
+  timestamp: number;
+  metrics: Array<{
+    name: string;
+    value: number;
+    unit: string;
+  }>;
+  summary: {
+    averageResponseTime: number;
+    requestCount: number;
+    errorRate: number;
+  };
+}
+
 export interface PerformanceMetrics {
   timestamp: Date;
   endpoint: string;
