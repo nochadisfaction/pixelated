@@ -111,7 +111,7 @@ export interface SessionContent {
   therapeuticInterventions: string[];
   patientResponses: string[];
   sessionNotes: string;
-  assessmentResults?: any;
+  assessmentResults?: Record<string, unknown>;
 }
 
 export interface AIResponse {
@@ -127,8 +127,8 @@ export interface AIResponse {
 export interface ExpectedOutcome {
   outcomeId: string;
   type: 'therapeutic-alliance' | 'symptom-reduction' | 'insight-development' | 'skill-acquisition';
-  expectedValue: any;
-  actualValue?: any;
+  expectedValue: unknown;
+  actualValue?: unknown;
   variance?: number;
 }
 
@@ -296,8 +296,8 @@ export interface FeatureImportanceResult {
 
 export interface WhatIfScenarioResult {
   scenarioId: string;
-  modifications: Record<string, any>;
-  predictedOutcome: any;
+  modifications: Record<string, unknown>;
+  predictedOutcome: unknown;
   confidenceChange: number;
   biasImplications: string[];
 }
@@ -467,8 +467,8 @@ export interface ReportAttachment {
 
 // Configuration interfaces for different bias detection layers
 export interface AIF360Config {
-  privilegedGroups: Record<string, any>[];
-  unprivilegedGroups: Record<string, any>[];
+  privilegedGroups: Record<string, unknown>[];
+  unprivilegedGroups: Record<string, unknown>[];
   favorableLabel: number;
   unfavorableLabel: number;
   metricsToCompute: string[];
@@ -512,7 +512,7 @@ export interface BiasDetectionEvent {
   type: 'bias-detected' | 'threshold-exceeded' | 'analysis-completed' | 'system-error';
   sessionId: string;
   severity: 'info' | 'warning' | 'error' | 'critical';
-  data: any;
+  data: Record<string, unknown>;
   requiresAction: boolean;
 }
 
@@ -644,7 +644,7 @@ export interface ServiceStatus {
 export interface WebSocketMessage {
   type: 'bias-alert' | 'analysis-complete' | 'dashboard-update' | 'system-status';
   timestamp: Date;
-  data: any;
+  data: Record<string, unknown>;
   sessionId?: string;
 }
 
@@ -709,7 +709,7 @@ export interface Permission {
 export interface PermissionCondition {
   field: string;
   operator: 'equals' | 'in' | 'not_in' | 'contains';
-  value: any;
+  value: unknown;
 }
 
 // Performance Monitoring Types
@@ -768,7 +768,7 @@ export interface AuditLogEntry {
   action: AuditAction;
   resource: string;
   resourceId?: string;
-  details: Record<string, any>;
+  details: Record<string, unknown>;
   ipAddress: string;
   userAgent: string;
   sessionId?: string;
@@ -863,7 +863,7 @@ export interface EncryptionStatus {
 }
 
 // Cache and Storage Types
-export interface CacheEntry<T = any> {
+export interface CacheEntry<T = unknown> {
   key: string;
   value: T;
   timestamp: Date;
@@ -897,8 +897,8 @@ export interface ConfigurationUpdate {
 
 export interface ConfigurationChange {
   field: string;
-  oldValue: any;
-  newValue: any;
+  oldValue: unknown;
+  newValue: unknown;
   impact: 'low' | 'medium' | 'high' | 'critical';
   requiresRestart: boolean;
 }
@@ -911,7 +911,7 @@ export interface ErrorContext {
   endpoint?: string;
   userAgent?: string;
   stackTrace?: string;
-  additionalData?: Record<string, any>;
+  additionalData?: Record<string, unknown>;
 }
 
 export interface RecoveryAction {
