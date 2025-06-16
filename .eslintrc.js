@@ -154,6 +154,7 @@ module.exports = {
     browser: true,
     node: true,
     es2024: true,
+    'vitest-globals/env': true
   },
   globals: {
     process: 'readonly',

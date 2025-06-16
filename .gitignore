@@ -80,9 +80,6 @@
 /tools/
 /security-reports/
 
-# MCP
-/.cursor/
-
 # scripts
 /underscore-removal-report.md
 /repomix-output.xml
@@ -91,16 +88,11 @@
 /fix-blog-dates.js
 /fix_pubdates.py
 /remove-underscores.js
-/pixelated.code-workspace
 /grad-output.txt
-/.qodo
 
 /convex/
-.qodo
 .tmp.driveupload/
 /tests/security/node_modules/
-
-.github/copilot-instructions.md
 
 # Security and credential reports
 /security-report.md
@@ -138,5 +130,3 @@ tasks.json
 
 .sentryclirc
 .pnpm-store/
-.cursor/mcp.json
-src/lib/ai/bias-detection/
