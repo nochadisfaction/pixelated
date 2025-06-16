@@ -118,6 +118,13 @@ export default [
   {
     files: ['**/*.{test,spec}.{ts,tsx}'],
     languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
+        project: './tsconfig.test.json',
+      },
       globals: {
         // Add Vitest globals
         describe: 'readonly',
@@ -131,6 +138,11 @@ export default [
         afterAll: 'readonly',
         suite: 'readonly',
       },
+    },
+    plugins: {
+      '@typescript-eslint': tsPlugin,
+      'react': reactPlugin,
+      'react-hooks': reactHooksPlugin,
     },
     rules: {
       // Disable certain rules for test files

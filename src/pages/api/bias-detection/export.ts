@@ -1,37 +1,37 @@
-import type { APIRoute } from 'astro';
-import { BiasDetectionEngine } from '@/lib/ai/bias-detection/BiasDetectionEngine';
-import { getLogger } from '@/lib/utils/logger';
-import type { BiasDashboardData } from '@/lib/ai/bias-detection/types';
+import type { APIRoute } from 'astro'
+import { BiasDetectionEngine } from '@/lib/ai/bias-detection/BiasDetectionEngine'
+import { getLogger } from '@/lib/utils/logger'
 
-const logger = getLogger('BiasExportAPI');
+const logger = getLogger('BiasExportAPI')
 
 export const GET: APIRoute = async ({ request, cookies }) => {
   try {
-    const url = new URL(request.url);
-    const format = url.searchParams.get('format') || 'json';
-    const timeRange = url.searchParams.get('timeRange') || '24h';
-    const includeDetails = url.searchParams.get('includeDetails') === 'true';
-    
+    const url = new URL(request.url)
+    const format = url.searchParams.get('format') || 'json'
+    const timeRange = url.searchParams.get('timeRange') || '24h'
+    const includeDetails = url.searchParams.get('includeDetails') === 'true'
+
     logger.info('Exporting bias detection data', {
       format,
       timeRange,
-      includeDetails
-    });
+      includeDetails,
+    })
 
     // Initialize bias detection engine
     const biasEngine = new BiasDetectionEngine({
-      pythonServiceUrl: process.env.BIAS_DETECTION_SERVICE_URL || 'http://localhost:8000',
+      pythonServiceUrl:
+        process.env.BIAS_DETECTION_SERVICE_URL || 'http://localhost:8000',
       pythonServiceTimeout: 30000,
       thresholds: {
         warningLevel: 0.3,
         highLevel: 0.6,
-        criticalLevel: 0.8
+        criticalLevel: 0.8,
       },
       layerWeights: {
         preprocessing: 0.2,
         modelLevel: 0.3,
         interactive: 0.2,
-        evaluation: 0.3
+        evaluation: 0.3,
       },
       evaluationMetrics: ['bias', 'fairness', 'toxicity'],
       metricsConfig: {
@@ -39,7 +39,7 @@ export const GET: APIRoute = async ({ request, cookies }) => {
         metricsRetentionDays: 90,
         aggregationIntervals: ['1h', '1d', '1w'],
         dashboardRefreshRate: 30,
-        exportFormats: ['json', 'csv', 'pdf']
+        exportFormats: ['json', 'csv', 'pdf'],
       },
       alertConfig: {
         enableSlackNotifications: false,
@@ -48,8 +48,8 @@ export const GET: APIRoute = async ({ request, cookies }) => {
         alertCooldownMinutes: 15,
         escalationThresholds: {
           criticalResponseTimeMinutes: 5,
-          highResponseTimeMinutes: 15
-        }
+          highResponseTimeMinutes: 15,
+        },
       },
       reportConfig: {
         includeConfidentialityAnalysis: true,
@@ -57,157 +57,170 @@ export const GET: APIRoute = async ({ request, cookies }) => {
         includeTemporalTrends: true,
         includeRecommendations: true,
         reportTemplate: 'standard',
-        exportFormats: ['json', 'csv', 'pdf']
+        exportFormats: ['json', 'csv', 'pdf'],
       },
       explanationConfig: {
         explanationMethod: 'shap',
         maxFeatures: 10,
         includeCounterfactuals: true,
-        generateVisualization: false
+        generateVisualization: false,
       },
       hipaaCompliant: true,
       dataMaskingEnabled: true,
-      auditLogging: true
-    });
+      auditLogging: true,
+    })
 
     // Get dashboard data for export
     const dashboardData = await biasEngine.getDashboardData({
       timeRange,
-      includeDetails
-    });
+      includeDetails,
+    })
 
     // Generate export data based on format
     switch (format.toLowerCase()) {
       case 'json':
-        return exportAsJSON(dashboardData);
-      
-      case 'csv':
-        return exportAsCSV(dashboardData);
-      
-      case 'pdf':
-        return exportAsPDF(dashboardData);
-      
-      default:
-        return new Response(JSON.stringify({
-          error: 'Unsupported format',
-          message: 'Supported formats: json, csv, pdf'
-        }), {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' }
-        });
-    }
+        return exportAsJSON(dashboardData)
 
+      case 'csv':
+        return exportAsCSV(dashboardData)
+
+      case 'pdf':
+        return exportAsPDF(dashboardData)
+
+      default:
+        return new Response(
+          JSON.stringify({
+            error: 'Unsupported format',
+            message: 'Supported formats: json, csv, pdf',
+          }),
+          {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+          },
+        )
+    }
   } catch (error) {
-    logger.error('Export failed', { error });
-    
-    return new Response(JSON.stringify({
-      error: 'Export failed',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
+    logger.error('Export failed', { error })
+
+    return new Response(
+      JSON.stringify({
+        error: 'Export failed',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      }),
+      {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    )
   }
-};
+}
 
 function exportAsJSON(data: any): Response {
   const exportData = {
     exportedAt: new Date().toISOString(),
     format: 'json',
-    data: data
-  };
+    data: data,
+  }
 
   return new Response(JSON.stringify(exportData, null, 2), {
     status: 200,
     headers: {
       'Content-Type': 'application/json',
-      'Content-Disposition': `attachment; filename="bias-detection-export-${new Date().toISOString().split('T')[0]}.json"`
-    }
-  });
+      'Content-Disposition': `attachment; filename="bias-detection-export-${new Date().toISOString().split('T')[0]}.json"`,
+    },
+  })
 }
 
 function exportAsCSV(data: any): Response {
   // Create CSV content from dashboard data
-  const csvRows = [];
-  
+  const csvRows = []
+
   // Headers
-  csvRows.push([
-    'Session ID',
-    'Timestamp',
-    'Bias Score',
-    'Alert Level',
-    'Gender',
-    'Age',
-    'Ethnicity',
-    'Scenario',
-    'Recommendations'
-  ].join(','));
+  csvRows.push(
+    [
+      'Session ID',
+      'Timestamp',
+      'Bias Score',
+      'Alert Level',
+      'Gender',
+      'Age',
+      'Ethnicity',
+      'Scenario',
+      'Recommendations',
+    ].join(','),
+  )
 
   // Add recent sessions data
   if (data.recentSessions) {
     data.recentSessions.forEach((session: any) => {
-      csvRows.push([
-        session.sessionId,
-        session.timestamp,
-        session.biasScore,
-        session.alertLevel,
-        session.participantDemographics?.gender || '',
-        session.participantDemographics?.age || '',
-        session.participantDemographics?.ethnicity || '',
-        session.scenario || '',
-        '' // Recommendations would need to be flattened
-      ].join(','));
-    });
+      csvRows.push(
+        [
+          session.sessionId,
+          session.timestamp,
+          session.biasScore,
+          session.alertLevel,
+          session.participantDemographics?.gender || '',
+          session.participantDemographics?.age || '',
+          session.participantDemographics?.ethnicity || '',
+          session.scenario || '',
+          '', // Recommendations would need to be flattened
+        ].join(','),
+      )
+    })
   }
 
   // Add alerts data
-  csvRows.push(['', '', '', '', '', '', '', '', '']); // Empty row
-  csvRows.push(['ALERTS', '', '', '', '', '', '', '', '']);
-  csvRows.push([
-    'Alert ID',
-    'Session ID',
-    'Level',
-    'Message',
-    'Timestamp',
-    'Bias Type',
-    'Confidence',
-    'Affected Demographics',
-    'Recommendations'
-  ].join(','));
+  csvRows.push(['', '', '', '', '', '', '', '', '']) // Empty row
+  csvRows.push(['ALERTS', '', '', '', '', '', '', '', ''])
+  csvRows.push(
+    [
+      'Alert ID',
+      'Session ID',
+      'Level',
+      'Message',
+      'Timestamp',
+      'Bias Type',
+      'Confidence',
+      'Affected Demographics',
+      'Recommendations',
+    ].join(','),
+  )
 
   if (data.alerts) {
     data.alerts.forEach((alert: any) => {
-      csvRows.push([
-        alert.id,
-        alert.sessionId,
-        alert.level,
-        `"${alert.message}"`,
-        alert.timestamp,
-        alert.biasType,
-        alert.confidence,
-        alert.affectedDemographics?.join(';') || '',
-        alert.recommendations?.join(';') || ''
-      ].join(','));
-    });
+      csvRows.push(
+        [
+          alert.id,
+          alert.sessionId,
+          alert.level,
+          `"${alert.message}"`,
+          alert.timestamp,
+          alert.biasType,
+          alert.confidence,
+          alert.affectedDemographics?.join(';') || '',
+          alert.recommendations?.join(';') || '',
+        ].join(','),
+      )
+    })
   }
 
-  const csvContent = csvRows.join('\n');
+  const csvContent = csvRows.join('\n')
 
   return new Response(csvContent, {
     status: 200,
     headers: {
       'Content-Type': 'text/csv',
-      'Content-Disposition': `attachment; filename="bias-detection-export-${new Date().toISOString().split('T')[0]}.csv"`
-    }
-  });
+      'Content-Disposition': `attachment; filename="bias-detection-export-${new Date().toISOString().split('T')[0]}.csv"`,
+    },
+  })
 }
 
 function exportAsPDF(data: any): Response {
   // For PDF export, we'll create a simple HTML-based PDF
   // In production, you'd use a library like Puppeteer or jsPDF
-  
+
   const htmlContent = `
     <!DOCTYPE html>
     <html>
@@ -243,7 +256,10 @@ function exportAsPDF(data: any): Response {
       
       <div class="section">
         <h2>Recent Alerts</h2>
-        ${data.alerts?.map((alert: any) => `
+        ${
+          data.alerts
+            ?.map(
+              (alert: any) => `
           <div class="alert ${alert.level}">
             <h4>${alert.message}</h4>
             <p><strong>Session:</strong> ${alert.sessionId}</p>
@@ -251,7 +267,10 @@ function exportAsPDF(data: any): Response {
             <p><strong>Confidence:</strong> ${(alert.confidence * 100).toFixed(1)}%</p>
             <p><strong>Affected Demographics:</strong> ${alert.affectedDemographics?.join(', ') || 'N/A'}</p>
           </div>
-        `).join('') || '<p>No alerts found.</p>'}
+        `,
+            )
+            .join('') || '<p>No alerts found.</p>'
+        }
       </div>
       
       <div class="section">
@@ -266,26 +285,32 @@ function exportAsPDF(data: any): Response {
             </tr>
           </thead>
           <tbody>
-            ${data.demographics?.breakdown?.map((group: any) => `
+            ${
+              data.demographics?.breakdown
+                ?.map(
+                  (group: any) => `
               <tr>
                 <td>${group.group}</td>
                 <td>${group.count}</td>
                 <td>${group.percentage}%</td>
                 <td>${group.averageBiasScore}</td>
               </tr>
-            `).join('') || '<tr><td colspan="4">No data available</td></tr>'}
+            `,
+                )
+                .join('') || '<tr><td colspan="4">No data available</td></tr>'
+            }
           </tbody>
         </table>
       </div>
     </body>
     </html>
-  `;
+  `
 
   return new Response(htmlContent, {
     status: 200,
     headers: {
       'Content-Type': 'text/html',
-      'Content-Disposition': `attachment; filename="bias-detection-report-${new Date().toISOString().split('T')[0]}.html"`
-    }
-  });
-} 
+      'Content-Disposition': `attachment; filename="bias-detection-report-${new Date().toISOString().split('T')[0]}.html"`,
+    },
+  })
+}

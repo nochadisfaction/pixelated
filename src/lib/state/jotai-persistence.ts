@@ -10,11 +10,8 @@
  */
 
 import { atomWithStorage, createJSONStorage } from 'jotai/utils'
-import { atom } from 'jotai'
-import type {
-  AsyncStorage,
-  SyncStorage,
-} from 'jotai/vanilla/utils/atomWithStorage'
+
+import type { AsyncStorage } from 'jotai/vanilla/utils/atomWithStorage'
 import { logger } from '@/lib/logger'
 import { encrypt, decrypt } from '@/lib/crypto'
 

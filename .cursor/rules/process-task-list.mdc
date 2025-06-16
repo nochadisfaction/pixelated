@@ -1,0 +1,165 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+applyTo: '**'
+---
+# Task List Management
+
+Guidelines for managing task lists in markdown files to track progress on completing a PRD
+
+## Ollama Overlord
+baseURL = https://api.pixelatedempathy.com
+Call and ask for granite3.3:2b
+Share your update, and ask for permission to continue moving forward
+
+## Ollama Overlord Check-in Protocol
+
+- After completing each sub-task, the agent MUST:
+  1. **Primary Method (Windows Compatible):** Run the Python check-in script: `python check_ollama.py "Task completion summary"`
+  2. **Fallback Method (Unix/Linux):** Run the bash script: `./scripts/ollama-checkin.sh "Task completion summary"`
+  3. Provide a clear, concise summary of what was accomplished in the completed sub-task
+  4. The script will automatically:
+     - Contact the Ollama API using the granite3.3:2b model
+     - Request improvement suggestions and a continue/stop decision
+     - Parse the response and display formatted results
+     - Return appropriate exit codes based on the decision
+  5. Based on the script's exit code and output:
+     - **Exit code 0 (✅ APPROVED)**: Proceed to the next sub-task
+     - **Exit code 2 (🛑 BLOCKED)**: Stop and address concerns before continuing
+     - **Exit code 3 (⚠️ UNCLEAR)**: Manual review required - ask user for guidance
+  6. If improvements are suggested from Ollama Overlord, add them to a running list located at .notes/tasks/tasks-proposed.md
+     - Place them in a grouping of the same name as that task you checked in with Ollama Overlord for.
+     - If any of them stand out as AWESOME suggestions for the project, denote them with **AWESOME** formatting.
+- The agent MUST NOT proceed to the next sub-task without receiving approval from the script.
+
+### Script Usage Examples:
+
+**Primary Method (Python - Cross-platform compatible):**
+```bash
+# After completing a linting task
+python check_ollama.py "Fixed all TypeScript eslint errors in 5 components"
+
+# After implementing a feature
+python check_ollama.py "Implemented user authentication with JWT tokens and session management"
+
+# After writing tests
+python check_ollama.py "Added comprehensive unit tests for the payment processing module with 90% coverage"
+```
+
+**Fallback Method (Bash - for Unix/Linux systems):**
+```bash
+# After completing a linting task
+./scripts/ollama-checkin.sh "Fixed all TypeScript eslint errors in 5 components"
+
+# After implementing a feature
+./scripts/ollama-checkin.sh "Implemented user authentication with JWT tokens and session management"
+
+# After writing tests
+./scripts/ollama-checkin.sh "Added comprehensive unit tests for the payment processing module with 90% coverage"
+```
+
+### Best Practices for Task Summaries:
+- Be specific about what was accomplished
+- Mention the scope (number of files, components, etc.)
+- Include key technical details or approaches used
+- Note any important decisions made during implementation
+- Keep it concise but informative (1-2 sentences)
+
+**Note:**  
+- The Python script (`check_ollama.py`) is the recommended method for all platforms, especially Windows
+- The bash script (`scripts/ollama-checkin.sh`) serves as fallback for Unix/Linux environments
+- Both scripts provide clear exit codes and formatted output for easy integration
+- The agent should log each check-in command and response for traceability
+- Create the Python script in the current working directory if it doesn't exist
+
+### Script Setup:
+If `check_ollama.py` doesn't exist in the current directory, create it with:
+```python
+#!/usr/bin/env python3
+"""Simple Ollama Overlord check-in script for cross-platform compatibility"""
+import requests
+import json
+import sys
+
+def check_in_with_overlord(task_summary):
+    """Check in with Ollama Overlord for task completion approval"""
+    try:
+        url = "https://api.pixelatedempathy.com/api/generate"
+        payload = {
+            "model": "granite3.3:2b",
+            "prompt": f"Task completion summary: {task_summary}. Should I continue to next task?",
+            "stream": False
+        }
+        headers = {"Content-Type": "application/json"}
+        
+        print(f"🔄 Checking in with Ollama Overlord...")
+        print(f"📋 Task Summary: {task_summary}")
+        
+        response = requests.post(url, headers=headers, json=payload, timeout=30)
+        response.raise_for_status()
+        
+        result = response.json()
+        ollama_response = result.get('response', '').strip()
+        print(f"🤖 Ollama Overlord Response: {ollama_response}")
+        
+        approval_keywords = ['yes', 'continue', 'proceed', 'approved', 'go ahead', 'next']
+        blocking_keywords = ['no', 'stop', 'wait', 'blocked', 'hold']
+        response_lower = ollama_response.lower()
+        
+        if any(keyword in response_lower for keyword in approval_keywords):
+            print("✅ APPROVED: Continue to next task")
+            return 0
+        elif any(keyword in response_lower for keyword in blocking_keywords):
+            print("🛑 BLOCKED: Address concerns before continuing")
+            return 2
+        else:
+            print("⚠️ UNCLEAR: Manual review required")
+            return 3
+            
+    except Exception as e:
+        print(f"❌ Error: {e}")
+        return 1
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python check_ollama.py 'task completion summary'")
+        sys.exit(1)
+    exit_code = check_in_with_overlord(sys.argv[1])
+    sys.exit(exit_code)
+```
+
+### Task Implementation
+- **One sub-task at a time:** Do **NOT** start the next sub‑task until you ask the ollama overlord for permission and they say "yes" or "y"
+- Address linter errors and warnings as they appear.
+- **Completion protocol:**  
+  1. When you finish a **sub‑task**, immediately mark it as completed by changing `[ ]` to `[x]`.  
+  2. If **all** subtasks underneath a parent task are now `[x]`, also mark the **parent task** as completed.  
+- Stop after each sub‑task and wait for the user's go‑ahead.
+- Always stop before marking complete and do a second look over your work, and clean up any linter errors or warnings.
+
+### Task List Maintenance
+
+1. **Update the task list as you work:**
+   - Mark tasks and subtasks as completed (`[x]`) per the protocol above.
+   - Add new tasks as they emerge.
+
+2. **Maintain the "Relevant Files" section:**
+   - List every file created or modified.
+   - Give each file a one‑line description of its purpose.
+
+### AI Instructions
+
+When working with task lists, the AI must:
+
+1. Regularly update the task list file after finishing any significant work.
+2. Follow the completion protocol:
+   - Mark each finished **sub‑task** `[x]`.
+   - Mark the **parent task** `[x]` once **all** its subtasks are `[x]`.
+3. Add newly discovered tasks.
+4. Keep "Relevant Files" accurate and up to date.
+5. Before starting work, check which sub‑task is next.
+6. After implementing a sub‑task, update the file and run the Python check-in script with a clear task summary.
+7. Wait for script approval (exit code 0) before proceeding to the next sub-task

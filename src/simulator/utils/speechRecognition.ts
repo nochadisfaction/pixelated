@@ -78,7 +78,8 @@ export function createSpeechRecognition(
 
   // Initialize speech recognition with the appropriate constructor
   const SpeechRecognitionConstructor =
-    (window as unknown as Window).SpeechRecognition || (window as unknown as Window).webkitSpeechRecognition
+    (window as unknown as Window).SpeechRecognition ||
+    (window as unknown as Window).webkitSpeechRecognition
 
   const recognition = new SpeechRecognitionConstructor()
 
@@ -397,7 +398,8 @@ export function getTherapeuticPrompts(
     // biome-ignore lint/complexity/useLiteralKeys: <explanation>
     const domainPrompts = generalPrompts[domain] || generalPrompts['general']
     if (domainPrompts) {
-      const selectedPrompt = domainPrompts[Math.floor(Math.random() * domainPrompts.length)]
+      const selectedPrompt =
+        domainPrompts[Math.floor(Math.random() * domainPrompts.length)]
       if (selectedPrompt) {
         prompts.push(selectedPrompt)
       }

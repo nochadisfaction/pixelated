@@ -122,7 +122,7 @@ if __name__ == "__main__":
     pytest.main([__file__, "-v"])
 '''
 
-with open('ai/dataset_pipeline/quality_filtering_system.test.py', 'w') as f:
+with open("ai/dataset_pipeline/quality_filtering_system.test.py", "w") as f:
     f.write(test_content)
 
-print("Test file created successfully!") 
+print("Test file created successfully!")

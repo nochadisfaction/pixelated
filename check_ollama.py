@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Simple Ollama Overlord check-in script for cross-platform compatibility"""
 import requests
-import json
 import sys
 
 def check_in_with_overlord(task_summary):
@@ -15,7 +14,7 @@ def check_in_with_overlord(task_summary):
         }
         headers = {"Content-Type": "application/json"}
         
-        print(f"🔄 Checking in with Ollama Overlord...")
+        print("🔄 Checking in with Ollama Overlord...")
         print(f"📋 Task Summary: {task_summary}")
         
         response = requests.post(url, headers=headers, json=payload, timeout=30)
@@ -48,4 +47,4 @@ if __name__ == "__main__":
         print("Usage: python check_ollama.py 'task completion summary'")
         sys.exit(1)
     exit_code = check_in_with_overlord(sys.argv[1])
-    sys.exit(exit_code) 
+    sys.exit(exit_code)

@@ -6,10 +6,7 @@
  */
 
 import { z } from 'zod'
-import type {
-  CognitiveModel,
-  ConversationalStyle,
-} from '../types/CognitiveModel'
+import type { CognitiveModel } from '../types/CognitiveModel'
 
 // Context schemas
 const HistoryContextSchema = z.object({

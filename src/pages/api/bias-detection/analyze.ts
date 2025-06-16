@@ -1,34 +1,30 @@
 /**
  * Session Analysis API Endpoint for Pixelated Empathy Bias Detection Engine
- * 
+ *
  * This endpoint provides comprehensive bias analysis for therapeutic sessions with
  * full validation, authentication, security controls, and HIPAA compliance.
  */
 
-import type { APIRoute } from 'astro';
-import { z } from 'zod';
-import { BiasDetectionEngine } from '@/lib/ai/bias-detection/BiasDetectionEngine';
-import { 
+import type { APIRoute } from 'astro'
+import { z } from 'zod'
+import { BiasDetectionEngine } from '@/lib/ai/bias-detection/BiasDetectionEngine'
+import {
   validateTherapeuticSession,
-  createBiasDetectionError,
-  createAuditLogEntry,
-  sanitizeTextContent,
-  generateAnonymizedId
-} from '@/lib/ai/bias-detection/utils';
-import { getAuditLogger } from '@/lib/ai/bias-detection/audit';
-import { getCacheManager } from '@/lib/ai/bias-detection/cache';
-import { performanceMonitor } from '@/lib/ai/bias-detection/performance-monitor';
-import { getLogger } from '@/lib/utils/logger';
-import type { 
-  TherapeuticSession, 
+  generateAnonymizedId,
+} from '@/lib/ai/bias-detection/utils'
+import { getAuditLogger } from '@/lib/ai/bias-detection/audit'
+import { getCacheManager } from '@/lib/ai/bias-detection/cache'
+import { performanceMonitor } from '@/lib/ai/bias-detection/performance-monitor'
+import { getLogger } from '@/lib/utils/logger'
+import type {
+  TherapeuticSession,
   BiasAnalysisResult,
   AnalyzeSessionRequest,
   AnalyzeSessionResponse,
   UserContext,
-  AuditAction
-} from '@/lib/ai/bias-detection/types';
+} from '@/lib/ai/bias-detection/types'
 
-const logger = getLogger('BiasAnalysisAPI');
+const logger = getLogger('BiasAnalysisAPI')
 
 // =============================================================================
 // REQUEST/RESPONSE VALIDATION SCHEMAS
@@ -37,42 +33,64 @@ const logger = getLogger('BiasAnalysisAPI');
 const AnalyzeSessionRequestSchema = z.object({
   session: z.object({
     sessionId: z.string().uuid('Session ID must be a valid UUID'),
-    timestamp: z.string().datetime().transform(str => new Date(str)),
+    timestamp: z
+      .string()
+      .datetime()
+      .transform((str) => new Date(str)),
     participantDemographics: z.object({
       age: z.string().min(1),
       gender: z.enum(['male', 'female', 'non-binary', 'prefer-not-to-say']),
       ethnicity: z.string().min(1),
       primaryLanguage: z.string().min(2),
-      socioeconomicStatus: z.enum(['low', 'middle', 'high', 'not-specified']).optional(),
+      socioeconomicStatus: z
+        .enum(['low', 'middle', 'high', 'not-specified'])
+        .optional(),
       education: z.string().optional(),
       region: z.string().optional(),
       culturalBackground: z.array(z.string()).optional(),
-      disabilityStatus: z.string().optional()
+      disabilityStatus: z.string().optional(),
     }),
     scenario: z.object({
       scenarioId: z.string().min(1),
-      type: z.enum(['depression', 'anxiety', 'trauma', 'substance-abuse', 'grief', 'other']),
+      type: z.enum([
+        'depression',
+        'anxiety',
+        'trauma',
+        'substance-abuse',
+        'grief',
+        'other',
+      ]),
       complexity: z.enum(['beginner', 'intermediate', 'advanced']),
       tags: z.array(z.string()),
       description: z.string().min(1),
-      learningObjectives: z.array(z.string())
+      learningObjectives: z.array(z.string()),
     }),
     content: z.object({
       patientPresentation: z.string().min(1),
       therapeuticInterventions: z.array(z.string()),
       patientResponses: z.array(z.string()),
       sessionNotes: z.string(),
-      assessmentResults: z.any().optional()
+      assessmentResults: z.any().optional(),
     }),
-    aiResponses: z.array(z.object({
-      responseId: z.string(),
-      timestamp: z.string().datetime().transform(str => new Date(str)),
-      type: z.enum(['diagnostic', 'intervention', 'risk-assessment', 'recommendation']),
-      content: z.string().min(1),
-      confidence: z.number().min(0).max(1),
-      modelUsed: z.string(),
-      reasoning: z.string().optional()
-    })),
+    aiResponses: z.array(
+      z.object({
+        responseId: z.string(),
+        timestamp: z
+          .string()
+          .datetime()
+          .transform((str) => new Date(str)),
+        type: z.enum([
+          'diagnostic',
+          'intervention',
+          'risk-assessment',
+          'recommendation',
+        ]),
+        content: z.string().min(1),
+        confidence: z.number().min(0).max(1),
+        modelUsed: z.string(),
+        reasoning: z.string().optional(),
+      }),
+    ),
     expectedOutcomes: z.array(z.any()),
     transcripts: z.array(z.any()),
     metadata: z.object({
@@ -81,42 +99,46 @@ const AnalyzeSessionRequestSchema = z.object({
       traineeId: z.string(),
       sessionDuration: z.number().positive(),
       completionStatus: z.enum(['completed', 'partial', 'abandoned']),
-      technicalIssues: z.array(z.string()).optional()
-    })
+      technicalIssues: z.array(z.string()).optional(),
+    }),
   }),
-  options: z.object({
-    skipCache: z.boolean().optional(),
-    includeExplanation: z.boolean().optional(),
-    demographicFocus: z.array(z.any()).optional()
-  }).optional()
-});
+  options: z
+    .object({
+      skipCache: z.boolean().optional(),
+      includeExplanation: z.boolean().optional(),
+      demographicFocus: z.array(z.any()).optional(),
+    })
+    .optional(),
+})
 
 const GetAnalysisRequestSchema = z.object({
   sessionId: z.string().uuid('Session ID must be a valid UUID'),
   includeCache: z.boolean().optional(),
-  anonymize: z.boolean().optional()
-});
+  anonymize: z.boolean().optional(),
+})
 
 // =============================================================================
 // AUTHENTICATION & AUTHORIZATION
 // =============================================================================
 
-async function authenticateRequest(request: Request): Promise<UserContext | null> {
+async function authenticateRequest(
+  request: Request,
+): Promise<UserContext | null> {
   try {
     // Check for Authorization header
-    const authHeader = request.headers.get('authorization');
+    const authHeader = request.headers.get('authorization')
     if (!authHeader?.startsWith('Bearer ')) {
-      return null;
+      return null
     }
 
-    const token = authHeader.substring(7);
-    
+    const token = authHeader.substring(7)
+
     // TODO: Integrate with Supabase Auth
     // For now, we'll decode a mock JWT or use a simple token validation
     // In production, this would validate against Supabase JWT
-    
+
     if (!token || token === 'invalid') {
-      return null;
+      return null
     }
 
     // Mock user context - in production this would come from JWT claims
@@ -127,69 +149,84 @@ async function authenticateRequest(request: Request): Promise<UserContext | null
         id: 'analyst',
         name: 'analyst',
         description: 'Data Analyst',
-        level: 3
+        level: 3,
       },
       permissions: [
         {
           resource: 'bias-analysis',
           actions: ['read', 'write'],
-          conditions: []
-        }
-      ]
-    };
+          conditions: [],
+        },
+      ],
+    }
 
-    return mockUser;
+    return mockUser
   } catch (error) {
-    logger.error('Authentication failed', { error });
-    return null;
+    logger.error('Authentication failed', { error })
+    return null
   }
 }
 
-function hasPermission(user: UserContext, resource: string, action: string): boolean {
-  return user.permissions.some(permission => 
-    permission.resource === resource && permission.actions.includes(action as any)
-  );
+function hasPermission(
+  user: UserContext,
+  resource: string,
+  action: string,
+): boolean {
+  return user.permissions.some(
+    (permission) =>
+      permission.resource === resource &&
+      permission.actions.includes(action as any),
+  )
 }
 
 // =============================================================================
 // RATE LIMITING
 // =============================================================================
 
-const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>()
 
-function checkRateLimit(identifier: string, limit: number = 60, windowMs: number = 60000): boolean {
-  const now = Date.now();
-  const userLimit = rateLimitMap.get(identifier);
+function checkRateLimit(
+  identifier: string,
+  limit: number = 60,
+  windowMs: number = 60000,
+): boolean {
+  const now = Date.now()
+  const userLimit = rateLimitMap.get(identifier)
 
   if (!userLimit || now > userLimit.resetTime) {
-    rateLimitMap.set(identifier, { count: 1, resetTime: now + windowMs });
-    return true;
+    rateLimitMap.set(identifier, { count: 1, resetTime: now + windowMs })
+    return true
   }
 
   if (userLimit.count >= limit) {
-    return false;
+    return false
   }
 
-  userLimit.count++;
-  return true;
+  userLimit.count++
+  return true
 }
 
 // =============================================================================
 // SECURITY HELPERS
 // =============================================================================
 
-function getClientInfo(request: Request): { ipAddress: string; userAgent: string } {
-  const forwarded = request.headers.get('x-forwarded-for');
-  const ipAddress = forwarded ? forwarded.split(',')[0].trim() : 
-                   request.headers.get('x-real-ip') || 
-                   'unknown';
-  
-  const userAgent = request.headers.get('user-agent') || 'unknown';
-  
-  return { ipAddress, userAgent };
+function getClientInfo(request: Request): {
+  ipAddress: string
+  userAgent: string
+} {
+  const forwarded = request.headers.get('x-forwarded-for')
+  const ipAddress = forwarded
+    ? forwarded.split(',')[0].trim()
+    : request.headers.get('x-real-ip') || 'unknown'
+
+  const userAgent = request.headers.get('user-agent') || 'unknown'
+
+  return { ipAddress, userAgent }
 }
 
-function sanitizeSessionForLogging(session: TherapeuticSession): Partial<TherapeuticSession> {
+function sanitizeSessionForLogging(
+  session: TherapeuticSession,
+): Partial<TherapeuticSession> {
   return {
     sessionId: session.sessionId,
     timestamp: session.timestamp,
@@ -197,7 +234,7 @@ function sanitizeSessionForLogging(session: TherapeuticSession): Partial<Therape
       age: session.participantDemographics.age,
       gender: session.participantDemographics.gender,
       ethnicity: session.participantDemographics.ethnicity,
-      primaryLanguage: session.participantDemographics.primaryLanguage
+      primaryLanguage: session.participantDemographics.primaryLanguage,
       // Remove potentially identifying information
     },
     scenario: {
@@ -206,15 +243,15 @@ function sanitizeSessionForLogging(session: TherapeuticSession): Partial<Therape
       complexity: session.scenario.complexity,
       tags: session.scenario.tags,
       description: '[REDACTED]',
-      learningObjectives: []
+      learningObjectives: [],
     },
     metadata: {
       trainingInstitution: session.metadata.trainingInstitution,
       traineeId: '[REDACTED]',
       sessionDuration: session.metadata.sessionDuration,
-      completionStatus: session.metadata.completionStatus
-    }
-  };
+      completionStatus: session.metadata.completionStatus,
+    },
+  }
 }
 
 // =============================================================================
@@ -222,141 +259,160 @@ function sanitizeSessionForLogging(session: TherapeuticSession): Partial<Therape
 // =============================================================================
 
 export const POST: APIRoute = async ({ request }) => {
-  const startTime = Date.now();
-  let user: UserContext | null = null;
-  let sessionId: string | undefined;
+  const startTime = Date.now()
+  let user: UserContext | null = null
+  let sessionId: string | undefined
 
   try {
     // Get client information for security logging
-    const clientInfo = getClientInfo(request);
-    
+    const clientInfo = getClientInfo(request)
+
     // Authenticate user
-    user = await authenticateRequest(request);
+    user = await authenticateRequest(request)
     if (!user) {
-      const auditLogger = getAuditLogger();
+      const auditLogger = getAuditLogger()
       await auditLogger.logAuthentication(
         'unknown',
         'unknown@example.com',
         'login',
         clientInfo,
         false,
-        'Missing or invalid authorization token'
-      );
+        'Missing or invalid authorization token',
+      )
 
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'Unauthorized',
-        message: 'Valid authorization token required'
-      } as AnalyzeSessionResponse), {
-        status: 401,
-        headers: { 
-          'Content-Type': 'application/json',
-          'X-RateLimit-Limit': '60',
-          'X-RateLimit-Remaining': '0'
-        }
-      });
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Unauthorized',
+          message: 'Valid authorization token required',
+        } as AnalyzeSessionResponse),
+        {
+          status: 401,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-RateLimit-Limit': '60',
+            'X-RateLimit-Remaining': '0',
+          },
+        },
+      )
     }
 
     // Check authorization
     if (!hasPermission(user, 'bias-analysis', 'write')) {
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'Forbidden',
-        message: 'Insufficient permissions for bias analysis'
-      } as AnalyzeSessionResponse), {
-        status: 403,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Forbidden',
+          message: 'Insufficient permissions for bias analysis',
+        } as AnalyzeSessionResponse),
+        {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      )
     }
 
     // Rate limiting
     if (!checkRateLimit(user.userId, 60, 60000)) {
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'Rate Limit Exceeded',
-        message: 'Too many requests. Please try again later.'
-      } as AnalyzeSessionResponse), {
-        status: 429,
-        headers: { 
-          'Content-Type': 'application/json',
-          'Retry-After': '60',
-          'X-RateLimit-Limit': '60',
-          'X-RateLimit-Remaining': '0'
-        }
-      });
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Rate Limit Exceeded',
+          message: 'Too many requests. Please try again later.',
+        } as AnalyzeSessionResponse),
+        {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'Retry-After': '60',
+            'X-RateLimit-Limit': '60',
+            'X-RateLimit-Remaining': '0',
+          },
+        },
+      )
     }
 
     // Validate Content-Type
-    const contentType = request.headers.get('content-type');
+    const contentType = request.headers.get('content-type')
     if (!contentType?.includes('application/json')) {
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'Invalid Content Type',
-        message: 'Content-Type must be application/json'
-      } as AnalyzeSessionResponse), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Invalid Content Type',
+          message: 'Content-Type must be application/json',
+        } as AnalyzeSessionResponse),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      )
     }
 
     // Parse and validate request body
-    let requestData: AnalyzeSessionRequest;
+    let requestData: AnalyzeSessionRequest
     try {
-      const rawBody = await request.json();
-      const validatedRequest = AnalyzeSessionRequestSchema.parse(rawBody);
-      requestData = validatedRequest as AnalyzeSessionRequest;
-      sessionId = requestData.session.sessionId;
+      const rawBody = await request.json()
+      const validatedRequest = AnalyzeSessionRequestSchema.parse(rawBody)
+      requestData = validatedRequest as AnalyzeSessionRequest
+      sessionId = requestData.session.sessionId
     } catch (error) {
-      logger.error('Request validation failed', { error, userId: user.userId });
-      
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'Validation Error',
-        message: error instanceof z.ZodError 
-          ? `Invalid request data: ${error.errors.map(e => e.message).join(', ')}`
-          : 'Invalid request format'
-      } as AnalyzeSessionResponse), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      logger.error('Request validation failed', { error, userId: user.userId })
+
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Validation Error',
+          message:
+            error instanceof z.ZodError
+              ? `Invalid request data: ${error.errors.map((e) => e.message).join(', ')}`
+              : 'Invalid request format',
+        } as AnalyzeSessionResponse),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      )
     }
 
     // Additional therapeutic session validation
-    const validatedSession = validateTherapeuticSession(requestData.session);
-    
+    const validatedSession = validateTherapeuticSession(requestData.session)
+
     logger.info('Starting bias analysis for session', {
       sessionId: validatedSession.sessionId,
       userId: user.userId,
-      demographics: sanitizeSessionForLogging(validatedSession).participantDemographics
-    });
+      demographics:
+        sanitizeSessionForLogging(validatedSession).participantDemographics,
+    })
 
     // Check cache first (unless skipCache is true)
-    const cacheManager = getCacheManager();
-    const shouldUseCache = !requestData.options?.skipCache;
-    let cacheHit = false;
+    const cacheManager = getCacheManager()
+    const shouldUseCache = !requestData.options?.skipCache
+    let _cacheHit = false
 
     if (shouldUseCache) {
-      const cachedResult = await cacheManager.analysisCache.getAnalysisResult(validatedSession.sessionId);
+      const cachedResult = await cacheManager.analysisCache.getAnalysisResult(
+        validatedSession.sessionId,
+      )
       if (cachedResult) {
-        cacheHit = true;
-        
+        _cacheHit = true
+
         // Log cache hit
-        const auditLogger = getAuditLogger();
+        const auditLogger = getAuditLogger()
         await auditLogger.logAction(
           user,
           {
             type: 'read',
             category: 'bias-analysis',
             description: `Retrieved cached bias analysis for session ${validatedSession.sessionId}`,
-            sensitivityLevel: 'medium'
+            sensitivityLevel: 'medium',
           },
           'cached-analysis',
           { sessionId: validatedSession.sessionId, cacheHit: true },
           clientInfo,
-          validatedSession.sessionId
-        );
+          validatedSession.sessionId,
+        )
 
-        const cacheProcessingTime = Date.now() - startTime;
+        const cacheProcessingTime = Date.now() - startTime
 
         // Record cache hit performance
         performanceMonitor.recordRequestTiming(
@@ -364,44 +420,48 @@ export const POST: APIRoute = async ({ request }) => {
           'POST',
           cacheProcessingTime,
           200,
-          user.userId
-        );
+          user.userId,
+        )
 
         logger.info('Bias analysis served from cache', {
           sessionId: validatedSession.sessionId,
           userId: user.userId,
-          processingTime: cacheProcessingTime
-        });
-
-        return new Response(JSON.stringify({
-          success: true,
-          data: cachedResult,
           processingTime: cacheProcessingTime,
-          cacheHit: true
-        } as AnalyzeSessionResponse), {
-          status: 200,
-          headers: { 
-            'Content-Type': 'application/json',
-            'X-Cache': 'HIT'
-          }
-        });
+        })
+
+        return new Response(
+          JSON.stringify({
+            success: true,
+            data: cachedResult,
+            processingTime: cacheProcessingTime,
+            cacheHit: true,
+          } as AnalyzeSessionResponse),
+          {
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Cache': 'HIT',
+            },
+          },
+        )
       }
     }
 
     // Initialize bias detection engine with secure configuration
     const biasEngine = new BiasDetectionEngine({
-      pythonServiceUrl: process.env.PYTHON_SERVICE_URL || 'http://localhost:5000',
+      pythonServiceUrl:
+        process.env.PYTHON_SERVICE_URL || 'http://localhost:5000',
       pythonServiceTimeout: 30000,
       thresholds: {
         warningLevel: 0.3,
         highLevel: 0.6,
-        criticalLevel: 0.8
+        criticalLevel: 0.8,
       },
       layerWeights: {
         preprocessing: 0.2,
         modelLevel: 0.3,
         interactive: 0.2,
-        evaluation: 0.3
+        evaluation: 0.3,
       },
       evaluationMetrics: ['fairness', 'bias', 'performance'],
       metricsConfig: {
@@ -409,7 +469,7 @@ export const POST: APIRoute = async ({ request }) => {
         metricsRetentionDays: 90,
         aggregationIntervals: ['1h', '1d', '1w'],
         dashboardRefreshRate: 300,
-        exportFormats: ['json', 'csv']
+        exportFormats: ['json', 'csv'],
       },
       alertConfig: {
         enableSlackNotifications: false,
@@ -418,8 +478,8 @@ export const POST: APIRoute = async ({ request }) => {
         alertCooldownMinutes: 30,
         escalationThresholds: {
           criticalResponseTimeMinutes: 15,
-          highResponseTimeMinutes: 60
-        }
+          highResponseTimeMinutes: 60,
+        },
       },
       reportConfig: {
         includeConfidentialityAnalysis: true,
@@ -427,32 +487,32 @@ export const POST: APIRoute = async ({ request }) => {
         includeTemporalTrends: true,
         includeRecommendations: true,
         reportTemplate: 'standard',
-        exportFormats: ['json', 'pdf']
+        exportFormats: ['json', 'pdf'],
       },
       explanationConfig: {
         explanationMethod: 'shap',
         maxFeatures: 10,
         includeCounterfactuals: true,
-        generateVisualization: false
+        generateVisualization: false,
       },
       hipaaCompliant: true,
       dataMaskingEnabled: true,
-      auditLogging: true
-    });
+      auditLogging: true,
+    })
 
     // Perform bias analysis
-    const analysisResult = await biasEngine.analyzeSession(validatedSession);
+    const analysisResult = await biasEngine.analyzeSession(validatedSession)
 
     // Cache the result
     if (shouldUseCache) {
       await cacheManager.analysisCache.cacheAnalysisResult(
-        validatedSession.sessionId, 
-        analysisResult
-      );
+        validatedSession.sessionId,
+        analysisResult,
+      )
     }
 
     // Log successful analysis
-    const auditLogger = getAuditLogger();
+    const auditLogger = getAuditLogger()
     await auditLogger.logBiasAnalysis(
       user,
       validatedSession.sessionId,
@@ -460,10 +520,10 @@ export const POST: APIRoute = async ({ request }) => {
       analysisResult.overallBiasScore,
       analysisResult.alertLevel,
       clientInfo,
-      true
-    );
+      true,
+    )
 
-    const processingTime = Date.now() - startTime;
+    const processingTime = Date.now() - startTime
 
     // Record performance metrics
     performanceMonitor.recordRequestTiming(
@@ -471,8 +531,8 @@ export const POST: APIRoute = async ({ request }) => {
       'POST',
       processingTime,
       200,
-      user.userId
-    );
+      user.userId,
+    )
 
     // Record ML performance
     performanceMonitor.recordMLPerformance(
@@ -480,8 +540,8 @@ export const POST: APIRoute = async ({ request }) => {
       'session-analysis',
       processingTime,
       undefined, // accuracy would be calculated separately
-      analysisResult.confidence
-    );
+      analysisResult.confidence,
+    )
 
     logger.info('Bias analysis completed successfully', {
       sessionId: validatedSession.sessionId,
@@ -489,25 +549,27 @@ export const POST: APIRoute = async ({ request }) => {
       overallBiasScore: analysisResult.overallBiasScore,
       alertLevel: analysisResult.alertLevel,
       processingTime,
-      cacheHit: false
-    });
+      cacheHit: false,
+    })
 
-    return new Response(JSON.stringify({
-      success: true,
-      data: analysisResult,
-      processingTime,
-      cacheHit: false
-    } as AnalyzeSessionResponse), {
-      status: 200,
-      headers: { 
-        'Content-Type': 'application/json',
-        'X-Cache': 'MISS',
-        'X-Processing-Time': processingTime.toString()
-      }
-    });
-
+    return new Response(
+      JSON.stringify({
+        success: true,
+        data: analysisResult,
+        processingTime,
+        cacheHit: false,
+      } as AnalyzeSessionResponse),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Cache': 'MISS',
+          'X-Processing-Time': processingTime.toString(),
+        },
+      },
+    )
   } catch (error) {
-    const processingTime = Date.now() - startTime;
+    const processingTime = Date.now() - startTime
 
     // Record error performance metrics
     if (user) {
@@ -516,157 +578,180 @@ export const POST: APIRoute = async ({ request }) => {
         'POST',
         processingTime,
         500,
-        user.userId
-      );
+        user.userId,
+      )
     }
 
-    logger.error('Bias analysis failed', { 
-      error, 
+    logger.error('Bias analysis failed', {
+      error,
       sessionId,
       userId: user?.userId,
-      processingTime
-    });
+      processingTime,
+    })
 
     // Log failed analysis
     if (user && sessionId) {
-      const auditLogger = getAuditLogger();
-      const clientInfo = getClientInfo(request);
-      
+      const auditLogger = getAuditLogger()
+      const clientInfo = getClientInfo(request)
+
       await auditLogger.logAction(
         user,
         {
           type: 'create',
           category: 'bias-analysis',
           description: `Failed bias analysis for session ${sessionId}`,
-          sensitivityLevel: 'high'
+          sensitivityLevel: 'high',
         },
         'bias-analysis',
-        { sessionId, error: error instanceof Error ? error.message : String(error) },
+        {
+          sessionId,
+          error: error instanceof Error ? error.message : String(error),
+        },
         clientInfo,
         sessionId,
         false,
-        error instanceof Error ? error.message : String(error)
-      );
+        error instanceof Error ? error.message : String(error),
+      )
     }
-    
-    return new Response(JSON.stringify({
-      success: false,
-      error: 'Analysis Failed',
-      message: error instanceof Error ? error.message : 'Unknown error occurred',
-      processingTime
-    } as AnalyzeSessionResponse), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: 'Analysis Failed',
+        message:
+          error instanceof Error ? error.message : 'Unknown error occurred',
+        processingTime,
+      } as AnalyzeSessionResponse),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      },
+    )
   }
-};
+}
 
 export const GET: APIRoute = async ({ request }) => {
-  const startTime = Date.now();
-  let user: UserContext | null = null;
-  let sessionId: string | undefined;
+  const startTime = Date.now()
+  let user: UserContext | null = null
+  let sessionId: string | undefined
 
   try {
     // Get client information
-    const clientInfo = getClientInfo(request);
-    
+    const clientInfo = getClientInfo(request)
+
     // Authenticate user
-    user = await authenticateRequest(request);
+    user = await authenticateRequest(request)
     if (!user) {
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'Unauthorized',
-        message: 'Valid authorization token required'
-      } as AnalyzeSessionResponse), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Unauthorized',
+          message: 'Valid authorization token required',
+        } as AnalyzeSessionResponse),
+        {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      )
     }
 
     // Check authorization
     if (!hasPermission(user, 'bias-analysis', 'read')) {
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'Forbidden',
-        message: 'Insufficient permissions to read bias analysis'
-      } as AnalyzeSessionResponse), {
-        status: 403,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Forbidden',
+          message: 'Insufficient permissions to read bias analysis',
+        } as AnalyzeSessionResponse),
+        {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      )
     }
 
     // Rate limiting
-    if (!checkRateLimit(user.userId, 120, 60000)) { // Higher limit for GET requests
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'Rate Limit Exceeded',
-        message: 'Too many requests. Please try again later.'
-      } as AnalyzeSessionResponse), {
-        status: 429,
-        headers: { 
-          'Content-Type': 'application/json',
-          'Retry-After': '60'
-        }
-      });
+    if (!checkRateLimit(user.userId, 120, 60000)) {
+      // Higher limit for GET requests
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Rate Limit Exceeded',
+          message: 'Too many requests. Please try again later.',
+        } as AnalyzeSessionResponse),
+        {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'Retry-After': '60',
+          },
+        },
+      )
     }
 
     // Parse and validate query parameters
-    const url = new URL(request.url);
+    const url = new URL(request.url)
     const queryParams = {
       sessionId: url.searchParams.get('sessionId'),
       includeCache: url.searchParams.get('includeCache') === 'true',
-      anonymize: url.searchParams.get('anonymize') === 'true'
-    };
-
-    try {
-      const validatedParams = GetAnalysisRequestSchema.parse(queryParams);
-      sessionId = validatedParams.sessionId;
-    } catch (error) {
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'Validation Error',
-        message: error instanceof z.ZodError 
-          ? `Invalid query parameters: ${error.errors.map(e => e.message).join(', ')}`
-          : 'Invalid query parameters'
-      } as AnalyzeSessionResponse), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      anonymize: url.searchParams.get('anonymize') === 'true',
     }
 
-    logger.info('Retrieving bias analysis results', { 
-      sessionId, 
+    try {
+      const validatedParams = GetAnalysisRequestSchema.parse(queryParams)
+      sessionId = validatedParams.sessionId
+    } catch (error) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Validation Error',
+          message:
+            error instanceof z.ZodError
+              ? `Invalid query parameters: ${error.errors.map((e) => e.message).join(', ')}`
+              : 'Invalid query parameters',
+        } as AnalyzeSessionResponse),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      )
+    }
+
+    logger.info('Retrieving bias analysis results', {
+      sessionId,
       userId: user.userId,
-      includeCache: queryParams.includeCache
-    });
+      includeCache: queryParams.includeCache,
+    })
 
     // Try cache first
-    const cacheManager = getCacheManager();
-    let analysisResult: BiasAnalysisResult | null = null;
-    let cacheHit = false;
+    const cacheManager = getCacheManager()
+    let analysisResult: BiasAnalysisResult | null = null
+    let cacheHit = false
 
     if (queryParams.includeCache) {
-      analysisResult = await cacheManager.analysisCache.getAnalysisResult(sessionId);
+      analysisResult =
+        await cacheManager.analysisCache.getAnalysisResult(sessionId)
       if (analysisResult) {
-        cacheHit = true;
+        cacheHit = true
       }
     }
 
     // If not in cache, try to get from bias detection engine
     if (!analysisResult) {
       const biasEngine = new BiasDetectionEngine({
-        pythonServiceUrl: process.env.PYTHON_SERVICE_URL || 'http://localhost:5000',
+        pythonServiceUrl:
+          process.env.PYTHON_SERVICE_URL || 'http://localhost:5000',
         pythonServiceTimeout: 30000,
         thresholds: {
           warningLevel: 0.3,
           highLevel: 0.6,
-          criticalLevel: 0.8
+          criticalLevel: 0.8,
         },
         layerWeights: {
           preprocessing: 0.2,
           modelLevel: 0.3,
           interactive: 0.2,
-          evaluation: 0.3
+          evaluation: 0.3,
         },
         evaluationMetrics: ['fairness', 'bias', 'performance'],
         metricsConfig: {
@@ -674,7 +759,7 @@ export const GET: APIRoute = async ({ request }) => {
           metricsRetentionDays: 90,
           aggregationIntervals: ['1h', '1d', '1w'],
           dashboardRefreshRate: 300,
-          exportFormats: ['json', 'csv']
+          exportFormats: ['json', 'csv'],
         },
         alertConfig: {
           enableSlackNotifications: false,
@@ -683,8 +768,8 @@ export const GET: APIRoute = async ({ request }) => {
           alertCooldownMinutes: 30,
           escalationThresholds: {
             criticalResponseTimeMinutes: 15,
-            highResponseTimeMinutes: 60
-          }
+            highResponseTimeMinutes: 60,
+          },
         },
         reportConfig: {
           includeConfidentialityAnalysis: true,
@@ -692,31 +777,34 @@ export const GET: APIRoute = async ({ request }) => {
           includeTemporalTrends: true,
           includeRecommendations: true,
           reportTemplate: 'standard',
-          exportFormats: ['json', 'pdf']
+          exportFormats: ['json', 'pdf'],
         },
         explanationConfig: {
           explanationMethod: 'shap',
           maxFeatures: 10,
           includeCounterfactuals: true,
-          generateVisualization: false
+          generateVisualization: false,
         },
         hipaaCompliant: true,
         dataMaskingEnabled: true,
-        auditLogging: true
-      });
+        auditLogging: true,
+      })
 
-      analysisResult = await biasEngine.getSessionAnalysis(sessionId);
+      analysisResult = await biasEngine.getSessionAnalysis(sessionId)
     }
 
     if (!analysisResult) {
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'Not Found',
-        message: 'Session analysis not found'
-      } as AnalyzeSessionResponse), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Not Found',
+          message: 'Session analysis not found',
+        } as AnalyzeSessionResponse),
+        {
+          status: 404,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      )
     }
 
     // Anonymize sensitive data if requested
@@ -727,93 +815,102 @@ export const GET: APIRoute = async ({ request }) => {
           age: analysisResult.demographics.age,
           gender: analysisResult.demographics.gender,
           ethnicity: '[ANONYMIZED]',
-          primaryLanguage: analysisResult.demographics.primaryLanguage
-        }
-      };
+          primaryLanguage: analysisResult.demographics.primaryLanguage,
+        },
+      }
     }
 
     // Log successful retrieval
-    const auditLogger = getAuditLogger();
+    const auditLogger = getAuditLogger()
     await auditLogger.logAction(
       user,
       {
         type: 'read',
         category: 'bias-analysis',
         description: `Retrieved bias analysis for session ${sessionId}`,
-        sensitivityLevel: 'medium'
+        sensitivityLevel: 'medium',
       },
       'bias-analysis-retrieval',
-      { 
-        sessionId, 
+      {
+        sessionId,
         cacheHit,
-        anonymized: queryParams.anonymize 
+        anonymized: queryParams.anonymize,
       },
       clientInfo,
-      sessionId
-    );
+      sessionId,
+    )
 
-    const processingTime = Date.now() - startTime;
+    const processingTime = Date.now() - startTime
 
     logger.info('Bias analysis retrieved successfully', {
       sessionId,
       userId: user.userId,
       cacheHit,
-      processingTime
-    });
-
-    return new Response(JSON.stringify({
-      success: true,
-      data: analysisResult,
       processingTime,
-      cacheHit
-    } as AnalyzeSessionResponse), {
-      status: 200,
-      headers: { 
-        'Content-Type': 'application/json',
-        'X-Cache': cacheHit ? 'HIT' : 'MISS',
-        'X-Processing-Time': processingTime.toString()
-      }
-    });
+    })
 
+    return new Response(
+      JSON.stringify({
+        success: true,
+        data: analysisResult,
+        processingTime,
+        cacheHit,
+      } as AnalyzeSessionResponse),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Cache': cacheHit ? 'HIT' : 'MISS',
+          'X-Processing-Time': processingTime.toString(),
+        },
+      },
+    )
   } catch (error) {
-    const processingTime = Date.now() - startTime;
-    logger.error('Failed to retrieve bias analysis', { 
-      error, 
+    const processingTime = Date.now() - startTime
+    logger.error('Failed to retrieve bias analysis', {
+      error,
       sessionId,
       userId: user?.userId,
-      processingTime
-    });
+      processingTime,
+    })
 
     // Log failed retrieval
     if (user && sessionId) {
-      const auditLogger = getAuditLogger();
-      const clientInfo = getClientInfo(request);
-      
+      const auditLogger = getAuditLogger()
+      const clientInfo = getClientInfo(request)
+
       await auditLogger.logAction(
         user,
         {
           type: 'read',
           category: 'bias-analysis',
           description: `Failed to retrieve bias analysis for session ${sessionId}`,
-          sensitivityLevel: 'medium'
+          sensitivityLevel: 'medium',
         },
         'bias-analysis-retrieval',
-        { sessionId, error: error instanceof Error ? error.message : String(error) },
+        {
+          sessionId,
+          error: error instanceof Error ? error.message : String(error),
+        },
         clientInfo,
         sessionId,
         false,
-        error instanceof Error ? error.message : String(error)
-      );
+        error instanceof Error ? error.message : String(error),
+      )
     }
-    
-    return new Response(JSON.stringify({
-      success: false,
-      error: 'Retrieval Failed',
-      message: error instanceof Error ? error.message : 'Unknown error occurred',
-      processingTime
-    } as AnalyzeSessionResponse), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: 'Retrieval Failed',
+        message:
+          error instanceof Error ? error.message : 'Unknown error occurred',
+        processingTime,
+      } as AnalyzeSessionResponse),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      },
+    )
   }
-}; 
+}

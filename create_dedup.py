@@ -307,7 +307,7 @@ def create_strict_deduplication_config() -> DeduplicationConfig:
     )
 '''
 
-with open('ai/dataset_pipeline/deduplication_system.py', 'w') as f:
+with open("ai/dataset_pipeline/deduplication_system.py", "w") as f:
     f.write(dedup_content)
 
-print("Deduplication system file created successfully!") 
+print("Deduplication system file created successfully!")
