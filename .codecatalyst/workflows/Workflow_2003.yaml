@@ -1,0 +1,33 @@
+Name: Workflow_2003
+SchemaVersion: "1.0"
+
+# Optional - Set automatic triggers.
+Triggers:
+  - Type: Push
+    Branches:
+      - master
+      - jefferson
+
+# Required - Define action configurations.
+Actions:
+  AmplifyFromGit:
+    # Identifies the action. Do not modify this value.
+    Identifier: codecatalyst-labs/deploy-to-amplify-hosting@v1.1.0
+    # Required; You can use an environment to access AWS resources.
+    Environment:
+      Name: Staging
+    Timeout: 10
+    # Specifies the source and/or artifacts to pass to the action as input.
+    Inputs:
+      # Optional
+      Sources:
+        - WorkflowSource # This specifies that the action requires this Workflow as a source
+    Compute:
+      Type: EC2
+      Fleet: Linux.x86-64.Large
+    Configuration:
+      Wait: true
+      AWSRegion: us-east-2
+      CreateBranch: true
+      AmplifyBranchName: ${WorkflowSource.BranchName}
+      Path: .
