@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { memoryManager, type MemoryEntry, type SearchOptions, type MemoryStats } from '@/lib/memory/mem0-manager';
+import { memoryManager, type MemoryEntry, type SearchOptions, type MemoryStats } from '@/lib/memory/memory-client';
 
 interface UseMemoryOptions {
   userId?: string;

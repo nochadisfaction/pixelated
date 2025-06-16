@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { memoryManager } from '@/lib/memory/mem0-manager';
+import { memoryManager } from '@/server/memory/mem0-manager';
 
 export const GET: APIRoute = async ({ request, url }) => {
   try {

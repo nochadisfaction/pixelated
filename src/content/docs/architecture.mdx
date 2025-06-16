@@ -81,27 +81,40 @@ Pixelated Empathy is built on a modern, secure, and scalable architecture that c
 
 ### Backend Architecture
 
-<Cards>
-<Card title="API Layer">
-  - RESTful endpoints
-  - GraphQL interface
-  - WebSocket connections
-  - Rate limiting
-  - Request validation
-</Card>
-<Card title="Authentication">
-  - Supabase Auth integration
-  - JWT token management
-  - Role-based access control
-  - Session handling
-</Card>
-<Card title="Zero-Knowledge System">
-  - End-to-end encryption
-  - Client-side key generation
-  - Secure message passing
-  - Zero-knowledge proofs
-</Card>
-</Cards>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin: 1rem 0;">
+
+<div style="border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem;">
+<h4><strong>API Layer</strong></h4>
+
+- RESTful endpoints
+- GraphQL interface
+- WebSocket connections
+- Rate limiting
+- Request validation
+
+</div>
+
+<div style="border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem;">
+<h4><strong>Authentication</strong></h4>
+
+- Supabase Auth integration
+- JWT token management
+- Role-based access control
+- Session handling
+
+</div>
+
+<div style="border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem;">
+<h4><strong>Zero-Knowledge System</strong></h4>
+
+- End-to-end encryption
+- Client-side key generation
+- Secure message passing
+- Zero-knowledge proofs
+
+</div>
+
+</div>
 
 ## Database Design
 
@@ -159,29 +172,45 @@ created_at TIMESTAMPTZ DEFAULT NOW()
 
 ### Liftoff Features
 
-<AccordionGroup>
-  <Accordion title="UI Components">
-    - Chat interface adaptation - Dashboard layouts - Form components -
-    Navigation elements
-  </Accordion>
+<details>
+<summary><strong>UI Components</strong></summary>
 
-  <Accordion title="State Management">
-    - Real-time updates - Cache management - Optimistic updates - Error handling
-  </Accordion>
-</AccordionGroup>
+- Chat interface adaptation 
+- Dashboard layouts 
+- Form components
+- Navigation elements
+
+</details>
+
+<details>
+<summary><strong>State Management</strong></summary>
+
+- Real-time updates 
+- Cache management 
+- Optimistic updates 
+- Error handling
+
+</details>
 
 ### PocketBase Inspired Features
 
-<AccordionGroup>
-  <Accordion title="Authentication System">
-    - Adapted for Supabase - Enhanced with ZK principles - Role-based access
-    control
-  </Accordion>
+<details>
+<summary><strong>Authentication System</strong></summary>
 
-  <Accordion title="API Structure">
-    - RESTful endpoints - Real-time subscriptions - Request validation
-  </Accordion>
-</AccordionGroup>
+- Adapted for Supabase 
+- Enhanced with ZK principles 
+- Role-based access control
+
+</details>
+
+<details>
+<summary><strong>API Structure</strong></summary>
+
+- RESTful endpoints 
+- Real-time subscriptions 
+- Request validation
+
+</details>
 
 ## Performance Considerations
 
@@ -208,15 +237,29 @@ flowchart LR
 
 ### Optimization Techniques
 
-<Cards>
-  <Card title="Frontend Optimization">
-    - Code splitting - Lazy loading - Image optimization - Bundle size reduction
-  </Card>
-  <Card title="Backend Optimization">
-    - Query optimization - Connection pooling - Background job processing -
-    Resource scaling
-  </Card>
-</Cards>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin: 1rem 0;">
+
+<div style="border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem;">
+<h4><strong>Frontend Optimization</strong></h4>
+
+- Code splitting
+- Lazy loading  
+- Image optimization
+- Bundle size reduction
+
+</div>
+
+<div style="border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem;">
+<h4><strong>Backend Optimization</strong></h4>
+
+- Query optimization
+- Connection pooling
+- Background job processing
+- Resource scaling
+
+</div>
+
+</div>
 
 ## Deployment Architecture
 

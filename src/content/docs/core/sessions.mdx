@@ -1,6 +1,6 @@
 ---
-title: 'Session Management'
-description: 'Understanding Pixelated Healths session management system'
+title: "Session Management"
+description: "Real-time session handling and WebSocket communication"
 pubDate: '2025-01-01'
 author: 'Pixelated Empathy Team'
 draft: false
@@ -10,31 +10,40 @@ share: true
 
 ## Overview
 
-Pixelated Healths session management system handles real-time communication, state management, and message persistence for therapy sessions. The system supports multiple communication modes and ensures secure, reliable interactions.
+The session management system handles real-time communication between clients and the AI therapy platform. It manages WebSocket connections, message routing, and session state.
 
-## Session Types
+## Features
 
-### Communication Modes
-
-<CardGroup cols={3}>
-  <Card title="Text Chat" icon="message">
-    Real-time text-based communication with AI assistance
+<CardGroup>
+  <Card title="Real-time Messaging" icon="message-circle">
+    WebSocket-based instant communication
   </Card>
-  <Card title="Voice Call" icon="microphone">
-    Audio communication with real-time transcription
+  <Card title="Session State" icon="activity">
+    Persistent session tracking and management
   </Card>
-  <Card title="Video Call" icon="video">
-    Face-to-face sessions with video analysis
+  <Card title="AI Integration" icon="cpu">
+    Integrated AI analysis and response generation
+  </Card>
+  <Card title="Error Recovery" icon="refresh-cw">
+    Automatic connection recovery and error handling
   </Card>
 </CardGroup>
 
 ## Session Lifecycle
 
 <Frame>
-  ```mermaid stateDiagram-v2 [*] --> Created Created --> Active: Start Session
-  Active --> Paused: Pause Paused --> Active: Resume Active --> Completed: End
-  Session Active --> Cancelled: Cancel Paused --> Cancelled: Cancel Completed
-  --> [*] Cancelled --> [*] ```
+```mermaid
+stateDiagram-v2
+  [*] --> Created
+  Created --> Active: Start Session
+  Active --> Paused: Pause
+  Paused --> Active: Resume
+  Active --> Completed: End Session
+  Active --> Cancelled: Cancel
+  Paused --> Cancelled: Cancel
+  Completed --> [*]
+  Cancelled --> [*]
+```
 </Frame>
 
 ## WebSocket Communication
@@ -161,11 +170,17 @@ class MessageQueue {
 ### Message Processing
 
 <Frame>
-  ```mermaid graph LR Message[New Message] --> Analysis[AI Analysis] Analysis
-  --> Sentiment[Sentiment Analysis] Analysis --> Topics[Topic Extraction]
-  Analysis --> Crisis[Crisis Detection] Sentiment --> Response[Response] Topics
-  --> Response Crisis --> Alert[Crisis Alert] Response --> Queue[Message Queue]
-  ```
+```mermaid
+graph LR
+  Message[New Message] --> Analysis[AI Analysis]
+  Analysis --> Sentiment[Sentiment Analysis]
+  Analysis --> Topics[Topic Extraction]
+  Analysis --> Crisis[Crisis Detection]
+  Sentiment --> Response[Response]
+  Topics --> Response
+  Crisis --> Alert[Crisis Alert]
+  Response --> Queue[Message Queue]
+```
 </Frame>
 
 ### AI Features
@@ -226,19 +241,37 @@ class ConnectionManager {
 }
 ```
 
-### Message Recovery
+### Message Retry Logic
 
 ```typescript
-async function recoverMessages(sessionId: string, lastMessageId: string) {
-  const { data, error } = await supabase
-    .from('messages')
-    .select('*')
-    .eq('session_id', sessionId)
-    .gt('id', lastMessageId)
-    .order('created_at', { ascending: true })
+interface RetryOptions {
+  maxRetries: number
+  backoffMs: number
+  exponential: boolean
+}
 
-  if (error) throw error
-  return data
+async function sendWithRetry(
+  message: Message,
+  options: RetryOptions = {
+    maxRetries: 3,
+    backoffMs: 1000,
+    exponential: true,
+  }
+) {
+  let retries = 0
+  while (retries < options.maxRetries) {
+    try {
+      await sendMessage(message)
+      return
+    } catch (error) {
+      retries++
+      const delay = options.exponential
+        ? options.backoffMs * Math.pow(2, retries)
+        : options.backoffMs
+      await new Promise(resolve => setTimeout(resolve, delay))
+    }
+  }
+  throw new Error('Failed to send message after retries')
 }
 ```
 
@@ -265,9 +298,8 @@ class MessageBatcher {
 
   private async flush() {
     if (this.batch.length === 0) return
-    const messages = [...this.batch]
-    this.batch = []
-    await this.persistMessages(messages)
+    const messages = this.batch.splice(0)
+    await this.sendBatch(messages)
   }
 }
 ```
@@ -275,12 +307,69 @@ class MessageBatcher {
 ### Connection Pooling
 
 ```typescript
-const pool = {
-  max: 20,
-  min: 5,
-  idle: 10000,
-  acquire: 30000,
-  evict: 1000,
+class ConnectionPool {
+  private connections: Map<string, WebSocket> = new Map()
+  private maxConnections = 100
+
+  getConnection(sessionId: string): WebSocket {
+    if (this.connections.has(sessionId)) {
+      return this.connections.get(sessionId)!
+    }
+
+    if (this.connections.size >= this.maxConnections) {
+      this.evictOldest()
+    }
+
+    const connection = this.createConnection(sessionId)
+    this.connections.set(sessionId, connection)
+    return connection
+  }
+}
+```
+
+## Security
+
+### Authentication
+
+```typescript
+interface SessionAuth {
+  token: string
+  sessionId: string
+  clientId: string
+  permissions: string[]
+}
+
+function validateSession(auth: SessionAuth): boolean {
+  // Validate JWT token
+  // Check session permissions
+  // Verify client authorization
+  return true
+}
+```
+
+### Rate Limiting
+
+```typescript
+class RateLimit {
+  private requests: Map<string, number[]> = new Map()
+  private maxRequests = 100
+  private windowMs = 60000
+
+  isAllowed(clientId: string): boolean {
+    const now = Date.now()
+    const window = now - this.windowMs
+    
+    let requests = this.requests.get(clientId) || []
+    requests = requests.filter(time => time > window)
+    
+    if (requests.length >= this.maxRequests) {
+      return false
+    }
+    
+    requests.push(now)
+    this.requests.set(clientId, requests)
+    return true
+  }
 }
 ```
 
@@ -290,37 +379,64 @@ const pool = {
 
 ```typescript
 interface SessionMetrics {
-  messageCount: number
+  activeConnections: number
+  messagesPerSecond: number
   averageResponseTime: number
-  aiUsage: {
-    requests: number
-    processingTime: number
-    errorRate: number
-  }
-  networkMetrics: {
-    latency: number
-    bandwidth: number
-    packetLoss: number
+  errorRate: number
+  connectionErrors: number
+}
+
+class MetricsCollector {
+  collect(): SessionMetrics {
+    return {
+      activeConnections: this.getActiveConnections(),
+      messagesPerSecond: this.getMessageRate(),
+      averageResponseTime: this.getAverageResponseTime(),
+      errorRate: this.getErrorRate(),
+      connectionErrors: this.getConnectionErrors(),
+    }
   }
 }
 ```
 
-### Performance Monitoring
+### Health Checks
 
 ```typescript
-const monitor = {
-  collectMetrics: async (session: Session) => {
-    const metrics = await calculateMetrics(session)
-    await persistMetrics(metrics)
-    checkThresholds(metrics)
-  },
+interface HealthStatus {
+  status: 'healthy' | 'degraded' | 'unhealthy'
+  checks: {
+    websocket: boolean
+    database: boolean
+    ai_service: boolean
+    redis: boolean
+  }
+  timestamp: string
+}
 
-  checkHealth: async () => {
-    const status = await getSystemStatus()
-    if (status.hasIssues) {
-      alertOperations(status)
-    }
-  },
+async function healthCheck(): Promise<HealthStatus> {
+  const checks = await Promise.allSettled([
+    checkWebSocketHealth(),
+    checkDatabaseHealth(),
+    checkAIServiceHealth(),
+    checkRedisHealth(),
+  ])
+
+  const results = {
+    websocket: checks[0].status === 'fulfilled',
+    database: checks[1].status === 'fulfilled',
+    ai_service: checks[2].status === 'fulfilled',
+    redis: checks[3].status === 'fulfilled',
+  }
+
+  const failedChecks = Object.values(results).filter(check => !check).length
+  const status = failedChecks === 0 ? 'healthy' : 
+                 failedChecks <= 1 ? 'degraded' : 'unhealthy'
+
+  return {
+    status,
+    checks: results,
+    timestamp: new Date().toISOString(),
+  }
 }
 ```
 

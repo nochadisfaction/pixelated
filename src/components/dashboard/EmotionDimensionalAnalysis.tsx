@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react'
+import { useState, useEffect, useCallback, Suspense, lazy } from 'react'
 import { useMultidimensionalEmotions } from '@/lib/hooks/useMultidimensionalEmotions'
 const MultidimensionalEmotionChart = lazy(
   () => import('@/components/session/MultidimensionalEmotionChart'),
@@ -65,15 +65,21 @@ export default function EmotionDimensionalAnalysis({
   const [isLoadingSessions, setIsLoadingSessions] = useState<boolean>(false)
   const [sessionError, setSessionError] = useState<string | null>(null)
 
+  // Create options object for the hook
+  const hookOptions: { clientId?: string; sessionId?: string } = {}
+  if (analysisScope === 'client' && userId) {
+    hookOptions.clientId = userId
+  }
+  if (analysisScope === 'session' && selectedSessionId) {
+    hookOptions.sessionId = selectedSessionId
+  }
+
   // Fetch emotion data based on scope and filters
   const { dimensionalMaps, patterns, isLoading, error, refetch } =
-    useMultidimensionalEmotions({
-      clientId: analysisScope === 'client' ? userId : undefined,
-      sessionId: analysisScope === 'session' ? selectedSessionId : undefined,
-    })
+    useMultidimensionalEmotions(hookOptions)
 
   // Fetch sessions from API
-  const fetchSessions = async () => {
+  const fetchSessions = useCallback(async () => {
     if (!userId) {
       return
     }
@@ -104,14 +110,12 @@ export default function EmotionDimensionalAnalysis({
     } finally {
       setIsLoadingSessions(false)
     }
-  }
+  }, [userId])
 
   // Fetch sessions on initial load
   useEffect(() => {
-    if (userId) {
-      fetchSessions()
-    }
-  }, [userId])
+    fetchSessions()
+  }, [fetchSessions])
 
   // Handle session change
   const handleSessionChange = (sessionId: string) => {
@@ -185,7 +189,7 @@ export default function EmotionDimensionalAnalysis({
             {analysisScope === 'session' && (
               <>
                 <Select
-                  value={selectedSessionId}
+                  value={selectedSessionId || ''}
                   onValueChange={handleSessionChange}
                   disabled={isLoadingSessions}
                 >
@@ -274,9 +278,9 @@ export default function EmotionDimensionalAnalysis({
 
                 {isLoading ? (
                   <div className="animate-pulse space-y-3">
-                    <div className="h-16 bg-gray-200 rounded w-full"></div>
-                    <div className="h-16 bg-gray-200 rounded w-full"></div>
-                    <div className="h-16 bg-gray-200 rounded w-full"></div>
+                    <div className="h-16 bg-gray-200 rounded w-full" />
+                    <div className="h-16 bg-gray-200 rounded w-full" />
+                    <div className="h-16 bg-gray-200 rounded w-full" />
                   </div>
                 ) : patterns.length === 0 ? (
                   <p className="text-gray-500 text-sm">
@@ -286,7 +290,7 @@ export default function EmotionDimensionalAnalysis({
                   <div className="space-y-4">
                     {patterns.map((pattern, index) => (
                       <div
-                        key={index}
+                        key={`pattern-${pattern.type}-${pattern.startTime}-${index}`}
                         className="p-3 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
                       >
                         <div className="flex justify-between items-start">
@@ -333,9 +337,9 @@ export default function EmotionDimensionalAnalysis({
 
                 {isLoading ? (
                   <div className="animate-pulse space-y-3">
-                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                    <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                    <div className="h-4 bg-gray-200 rounded w-3/4" />
+                    <div className="h-4 bg-gray-200 rounded w-1/2" />
+                    <div className="h-4 bg-gray-200 rounded w-5/6" />
                   </div>
                 ) : dimensionalMaps.length === 0 ? (
                   <p className="text-gray-500 text-sm">
@@ -425,22 +429,30 @@ function generateDominantDimensionsInsight(
   ]
 
   dimensions.sort((a, b) => b.value - a.value)
-  const dominant = dimensions[0].name.toLowerCase()
+  const dominantDimension = dimensions[0]
+  
+  if (!dominantDimension) {
+    return 'Unable to determine dominant dimension from available data.'
+  }
+  
+  const dominant = dominantDimension.name.toLowerCase()
 
   // Generate insight based on dominant dimension
   if (dominant === 'valence') {
     return avgValence > 0
       ? 'Emotional states show a prominent positive valence pattern, indicating a tendency toward positive emotional experiences.'
       : 'Emotional states show a prominent negative valence pattern, suggesting a tendency toward negative emotional experiences.'
-  } else if (dominant === 'arousal') {
+  } 
+  
+  if (dominant === 'arousal') {
     return avgArousal > 0
       ? 'Emotions exhibit high arousal levels, suggesting heightened emotional intensity and energy.'
       : 'Emotions show low arousal patterns, indicating calmer, less energetic emotional states.'
-  } else {
-    return avgDominance > 0
-      ? 'Dominant pattern in emotional control dimension, suggesting feelings of being in control during emotional experiences.'
-      : 'Submissive pattern in emotional control dimension, suggesting feelings of being controlled by emotions.'
   }
+  
+  return avgDominance > 0
+    ? 'Dominant pattern in emotional control dimension, suggesting feelings of being in control during emotional experiences.'
+    : 'Submissive pattern in emotional control dimension, suggesting feelings of being controlled by emotions.'
 }
 
 // Generate insights about emotional movement through dimensional space
@@ -460,11 +472,13 @@ function generateMovementInsight(dimensionalMaps: DimensionalMap[]): string {
     const prev = sorted[i - 1]
     const curr = sorted[i]
 
+    if (!prev || !curr) continue
+
     // Calculate Euclidean distance between points in 3D space
     const distance = Math.sqrt(
-      Math.pow(curr.valence - prev.valence, 2) +
-        Math.pow(curr.arousal - prev.arousal, 2) +
-        Math.pow(curr.dominance - prev.dominance, 2),
+      (curr.valence - prev.valence) ** 2 +
+        (curr.arousal - prev.arousal) ** 2 +
+        (curr.dominance - prev.dominance) ** 2,
     )
 
     totalMovement += distance
@@ -495,13 +509,15 @@ function generateMovementInsight(dimensionalMaps: DimensionalMap[]): string {
   // Generate insight based on movement patterns
   if (avgMovement < 0.2) {
     return 'Emotional states show stability with minimal movement through dimensional space, suggesting emotional consistency.'
-  } else if (avgMovement > 0.5) {
+  } 
+  
+  if (avgMovement > 0.5) {
     return avgDirectionChanges > 0.5
       ? 'Significant emotional volatility detected with frequent shifts across multiple dimensions.'
       : 'Substantial emotional progression observed, moving consistently in specific directions across dimensions.'
-  } else {
-    return 'Moderate emotional movement detected, with gradual shifts between emotional states.'
   }
+  
+  return 'Moderate emotional movement detected, with gradual shifts between emotional states.'
 }
 
 // Generate insights about quadrant distribution in valence-arousal space
@@ -517,12 +533,12 @@ function generateQuadrantInsight(dimensionalMaps: DimensionalMap[]): string {
     q4: 0, // positive valence, negative arousal (calm, content)
   }
 
-  dimensionalMaps.forEach((map) => {
+  for (const map of dimensionalMaps) {
     if (map.valence >= 0 && map.arousal >= 0) quadrants.q1++
     else if (map.valence < 0 && map.arousal >= 0) quadrants.q2++
     else if (map.valence < 0 && map.arousal < 0) quadrants.q3++
     else quadrants.q4++
-  })
+  }
 
   // Calculate percentages
   const total = dimensionalMaps.length

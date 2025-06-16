@@ -1,6 +1,6 @@
 ---
-title: 'Core Architecture'
-description: 'Understanding Gradiants core architecture and components'
+title: "Core Architecture"
+description: "Understanding the system architecture and component design"
 pubDate: '2025-01-01'
 author: 'Pixelated Empathy Team'
 draft: false
@@ -13,11 +13,19 @@ share: true
 Pixelated is built on a modern, scalable architecture that prioritizes security, real-time communication, and AI integration. The system consists of several key components working together to provide a seamless experience.
 
 <Frame>
-  ``` mermaid graph TD Client[Client Application] --> API[API Gateway] API -->
-  Auth[Authentication Service] API --> Session[Session Service] API --> AI[AI
-  Service] Session --> WebSocket[WebSocket Server] Session --> DB[(Supabase
-  Database)] AI --> LLM[Language Models] LLM --> OpenAI[OpenAI] LLM -->
-  Anthropic[Anthropic] LLM --> GoogleAI[Google AI] ```
+```mermaid
+graph TD
+  Client[Client Application] --> API[API Gateway]
+  API --> Auth[Authentication Service]
+  API --> Session[Session Service]
+  API --> AI[AI Service]
+  Session --> WebSocket[WebSocket Server]
+  Session --> DB[(Supabase Database)]
+  AI --> LLM[Language Models]
+  LLM --> OpenAI[OpenAI]
+  LLM --> Anthropic[Anthropic]
+  LLM --> GoogleAI[Google AI]
+```
 </Frame>
 
 ## Core Components
@@ -95,10 +103,19 @@ Uses Supabase (PostgreSQL) for:
 ### Authentication Flow
 
 <Frame>
-  ``` mermaid sequenceDiagram participant Client participant API participant
-  Auth participant DB Client->>API: Login Request API->>Auth: Validate
-  Credentials Auth->>DB: Check User DB-->>Auth: User Data Auth-->>API: JWT Token
-  API-->>Client: Session Token ```
+```mermaid
+sequenceDiagram
+  participant Client
+  participant API
+  participant Auth
+  participant DB
+  Client->>API: Login Request
+  API->>Auth: Validate Credentials
+  Auth->>DB: Check User
+  DB-->>Auth: User Data
+  Auth-->>API: JWT Token
+  API-->>Client: Session Token
+```
 </Frame>
 
 ### Data Security
@@ -127,9 +144,15 @@ Uses Supabase (PostgreSQL) for:
 ### Model Pipeline
 
 <Frame>
-  ``` mermaid graph LR Input[User Input] --> Preprocess[Preprocessing]
-  Preprocess --> Models[AI Models] Models --> Analysis[Analysis] Models -->
-  Generation[Generation] Analysis --> Output[Response] Generation --> Output ```
+```mermaid
+graph LR
+  Input[User Input] --> Preprocess[Preprocessing]
+  Preprocess --> Models[AI Models]
+  Models --> Analysis[Analysis]
+  Models --> Generation[Generation]
+  Analysis --> Output[Response]
+  Generation --> Output
+```
 </Frame>
 
 ### Model Selection

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { SkeletonChartBar, SkeletonChartLine } from '@/components/ui/skeleton'
 
 interface ChartProps {
@@ -31,11 +31,11 @@ export function Chart({
           <div className="h-full flex items-end">
             {dataPoints.map((value, index) => {
               const percentage = (value / maxValue) * 100
-              const prevValue = index > 0 ? dataPoints[index - 1] : value
+              const prevValue = index > 0 ? (dataPoints[index - 1] ?? 0) : value
               const prevPercentage = (prevValue / maxValue) * 100
 
               return (
-                <div key={index} className="flex-1 flex flex-col items-center">
+                <div key={`line-${labels[index]}-${value}`} className="flex-1 flex flex-col items-center">
                   <div className="relative w-full h-full flex items-end justify-center">
                     {/* Line connecting points */}
                     {index > 0 && (
@@ -100,9 +100,9 @@ export function Chart({
                   'conic-gradient(transparent 0deg, transparent 360deg)',
               }}
             >
-              {segments.map((segment, index) => (
+              {segments.map((segment) => (
                 <div
-                  key={index}
+                  key={`pie-segment-${segment.label}-${segment.value}`}
                   className="absolute inset-0"
                   style={{
                     background: segment.color,
@@ -122,8 +122,8 @@ export function Chart({
             </div>
 
             <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-              {segments.map((segment, index) => (
-                <div key={index} className="flex items-center">
+              {segments.map((segment) => (
+                <div key={`pie-legend-${segment.label}-${segment.value}`} className="flex items-center">
                   <div
                     className="w-3 h-3 rounded-full mr-2"
                     style={{ backgroundColor: segment.color }}
@@ -138,14 +138,13 @@ export function Chart({
           </div>
         )
       }
-      case 'bar':
       default:
         return (
           <div className="h-full flex items-end">
             {dataPoints.map((value, index) => {
               const percentage = (value / maxValue) * 100
               return (
-                <div key={index} className="flex-1 flex flex-col items-center">
+                <div key={`bar-${labels[index]}-${value}`} className="flex-1 flex flex-col items-center">
                   <div className="relative h-full w-full flex items-end justify-center">
                     <div
                       className="w-8 bg-primary/70 hover:bg-primary transition-colors rounded-t relative group"
@@ -192,18 +191,25 @@ export function AnalyticsCharts() {
   const [period, setPeriod] = useState<'daily' | 'weekly' | 'monthly'>('weekly')
   const [isLoading, setIsLoading] = useState(true)
 
-  // Simulate loading state
-  useEffect(() => {
-    // Show loading state when period changes
+  // Handle period changes with loading state
+  const handlePeriodChange = (newPeriod: 'daily' | 'weekly' | 'monthly') => {
     setIsLoading(true)
-
+    setPeriod(newPeriod)
+    
     // Simulate data loading
+    setTimeout(() => {
+      setIsLoading(false)
+    }, 1200)
+  }
+
+  // Initial loading state
+  useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false)
     }, 1200)
 
     return () => clearTimeout(timer)
-  }, [period])
+  }, [])
 
   // Sample data
   const chartData = {
@@ -271,32 +277,35 @@ export function AnalyticsCharts() {
         <h3 className="text-lg font-medium">Analytics</h3>
         <div className="flex space-x-2">
           <button
+            type="button"
             className={`px-3 py-1 text-xs rounded-md ${
               period === 'daily'
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-card hover:bg-accent'
             }`}
-            onClick={() => setPeriod('daily')}
+            onClick={() => handlePeriodChange('daily')}
           >
             Daily
           </button>
           <button
+            type="button"
             className={`px-3 py-1 text-xs rounded-md ${
               period === 'weekly'
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-card hover:bg-accent'
             }`}
-            onClick={() => setPeriod('weekly')}
+            onClick={() => handlePeriodChange('weekly')}
           >
             Weekly
           </button>
           <button
+            type="button"
             className={`px-3 py-1 text-xs rounded-md ${
               period === 'monthly'
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-card hover:bg-accent'
             }`}
-            onClick={() => setPeriod('monthly')}
+            onClick={() => handlePeriodChange('monthly')}
           >
             Monthly
           </button>

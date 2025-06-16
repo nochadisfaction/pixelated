@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useMemory, useUserPreferences } from '@/hooks/useMemory'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -62,7 +62,7 @@ import {
   Tag,
   User,
 } from 'lucide-react'
-import type { MemoryEntry } from '@/lib/memory/mem0-manager'
+import type { MemoryEntry } from '@/lib/memory/memory-client'
 
 interface MemoryDashboardProps {
   userId?: string
@@ -103,30 +103,10 @@ export function MemoryDashboard({
   const memory = useMemory({
     userId: currentUserId,
     autoLoad: true,
-    category: selectedCategory === 'all' ? undefined : selectedCategory,
+    ...(selectedCategory !== 'all' && { category: selectedCategory }),
   })
 
   const userPrefs = useUserPreferences(currentUserId)
-
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) {
-      setSearchResults([])
-      return
-    }
-
-    setIsSearching(true)
-    try {
-      const results = await memory.searchMemories(searchQuery, {
-        category: selectedCategory === 'all' ? undefined : selectedCategory,
-        limit: 20,
-      })
-      setSearchResults(results)
-    } catch (error) {
-      toast.error('Search failed')
-    } finally {
-      setIsSearching(false)
-    }
-  }
 
   const handleAddMemory = async () => {
     if (!newMemoryContent.trim()) {
@@ -150,7 +130,7 @@ export function MemoryDashboard({
       setNewMemoryTags('')
       setIsAddModalOpen(false)
       toast.success('Memory added successfully')
-    } catch (error) {
+    } catch (_error) {
       toast.error('Failed to add memory')
     }
   }
@@ -165,7 +145,7 @@ export function MemoryDashboard({
       setEditingMemory(null)
       setEditContent('')
       toast.success('Memory updated successfully')
-    } catch (error) {
+    } catch (_error) {
       toast.error('Failed to update memory')
     }
   }
@@ -174,7 +154,7 @@ export function MemoryDashboard({
     try {
       await memory.deleteMemory(memoryId)
       toast.success('Memory deleted successfully')
-    } catch (error) {
+    } catch (_error) {
       toast.error('Failed to delete memory')
     }
   }
@@ -189,14 +169,33 @@ export function MemoryDashboard({
   const filteredMemories =
     searchQuery && searchResults.length > 0 ? searchResults : memory.memories
 
+  const handleSearchDebounced = useCallback(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults([])
+      return
+    }
+
+    setIsSearching(true)
+    memory.searchMemories(searchQuery, {
+      ...(selectedCategory !== 'all' && { category: selectedCategory }),
+      limit: 20,
+    }).then(results => {
+      setSearchResults(results)
+    }).catch(() => {
+      toast.error('Search failed')
+    }).finally(() => {
+      setIsSearching(false)
+    })
+  }, [searchQuery, selectedCategory, memory])
+
   useEffect(() => {
     if (searchQuery) {
-      const timeoutId = setTimeout(handleSearch, 300)
+      const timeoutId = setTimeout(handleSearchDebounced, 300)
       return () => clearTimeout(timeoutId)
-    } else {
-      setSearchResults([])
     }
-  }, [searchQuery])
+    setSearchResults([])
+    return undefined
+  }, [searchQuery, handleSearchDebounced])
 
   return (
     <div className="p-6 space-y-6">
@@ -294,7 +293,7 @@ export function MemoryDashboard({
                       />
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="text-sm font-medium">
+                          <label htmlFor="category-select" className="text-sm font-medium">
                             Category
                           </label>
                           <Select
@@ -315,10 +314,11 @@ export function MemoryDashboard({
                           </Select>
                         </div>
                         <div>
-                          <label className="text-sm font-medium">
+                          <label htmlFor="tags-input" className="text-sm font-medium">
                             Tags (comma-separated)
                           </label>
                           <Input
+                            id="tags-input"
                             placeholder="tag1, tag2, tag3"
                             value={newMemoryTags}
                             onChange={(e) => setNewMemoryTags(e.target.value)}
@@ -394,9 +394,9 @@ export function MemoryDashboard({
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-wrap gap-1">
-                            {mem.metadata?.tags?.slice(0, 3).map((tag, idx) => (
+                            {mem.metadata?.tags?.slice(0, 3).map((tag) => (
                               <Badge
-                                key={idx}
+                                key={tag}
                                 variant="outline"
                                 className="text-xs"
                               >
@@ -574,7 +574,7 @@ export function MemoryDashboard({
                             <div
                               className="bg-primary h-2 rounded-full"
                               style={{
-                                width: `${(count / memory.stats!.totalMemories) * 100}%`,
+                                width: `${(count / (memory.stats?.totalMemories || 1)) * 100}%`,
                               }}
                             />
                           </div>
@@ -602,9 +602,9 @@ export function MemoryDashboard({
                 <p className="text-muted-foreground">No preferences found.</p>
               ) : (
                 <div className="space-y-2">
-                  {userPrefs.memories.map((pref, idx) => (
+                  {userPrefs.memories.map((pref) => (
                     <div
-                      key={idx}
+                      key={pref.id || pref.content}
                       className="flex items-center justify-between p-2 border rounded"
                     >
                       <span className="font-mono text-sm">{pref.content}</span>
