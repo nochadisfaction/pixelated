@@ -34,6 +34,7 @@ Share your update, and ask for permission to continue moving forward
      - If any of them stand out as AWESOME suggestions for the project, denote them with **AWESOME** formatting.
 
 - The agent MUST NOT proceed to the next sub-task without receiving approval from the script.
+- The agent MUST NOT ask the user for permission.
 
 ### Script Usage Examples:
 ```bash
