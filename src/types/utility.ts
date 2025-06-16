@@ -55,8 +55,8 @@ export type NonEmptyArray<T> = [T, ...T[]]
 /** Represents a tuple with a specific length */
 export type Tuple<T, N extends number> = N extends N
   ? number extends N
-    ? T[]
-    : TupleOf<T, N, []>
+  ? T[]
+  : TupleOf<T, N, []>
   : never
 
 type TupleOf<T, N extends number, R extends unknown[]> = R['length'] extends N
@@ -78,7 +78,7 @@ export type Tail<T extends readonly unknown[]> = T extends readonly [unknown, ..
 // ============================================================================
 
 /** Represents a function that returns a specific type */
-export type Returns<T> = (...args: any[]) => T
+export type Returns<T> = (...args: unknown[]) => T
 
 /** Represents async function types */
 export type AsyncFunction<T extends unknown[], R> = (...args: T) => Promise<R>
@@ -115,29 +115,29 @@ export type OmitByType<T, U> = Omit<T, KeysOfType<T, U>>
 // ============================================================================
 
 /** Converts string literal to uppercase */
-export type Uppercase<S extends string> = Intrinsic
+export type Uppercase<_S extends string> = Intrinsic
 
 /** Converts string literal to lowercase */
-export type Lowercase<S extends string> = Intrinsic
+export type Lowercase<_S extends string> = Intrinsic
 
 /** Capitalizes first letter of string literal */
-export type Capitalize<S extends string> = Intrinsic
+export type Capitalize<_S extends string> = Intrinsic
 
 /** Uncapitalizes first letter of string literal */
-export type Uncapitalize<S extends string> = Intrinsic
+export type Uncapitalize<_S extends string> = Intrinsic
 
 /** Creates a template literal type */
-export type Join<T extends readonly string[], D extends string = ',') = T extends readonly [
+export type Join<T extends readonly string[], D extends string = ','> = T extends readonly [
   infer F,
   ...infer R
 ]
   ? F extends string
-    ? R extends readonly string[]
-      ? R['length'] extends 0
-        ? F
-        : `${F}${D}${Join<R, D>}`
-      : never
-    : never
+  ? R extends readonly string[]
+  ? R['length'] extends 0
+  ? F
+  : `${F}${D}${Join<R, D>}`
+  : never
+  : never
   : ''
 
 // ============================================================================
@@ -185,7 +185,7 @@ export type Opaque<T, K> = T & { readonly __opaque: K }
 // ============================================================================
 
 /** Enhanced component props with strict children typing */
-export type StrictComponentProps<T = {}> = T & {
+export type StrictComponentProps<T = Record<string, unknown>> = T & {
   children?: React.ReactNode
   className?: string
   'data-testid'?: string
@@ -247,9 +247,9 @@ export type EnvironmentVariables = {
 
 /** Configuration object with strict validation */
 export type StrictConfig<T> = {
-  readonly [K in keyof T]: T[K] extends object 
-    ? StrictConfig<T[K]> 
-    : NonNullable<T[K]>
+  readonly [K in keyof T]: T[K] extends object
+  ? StrictConfig<T[K]>
+  : NonNullable<T[K]>
 }
 
 /** Deep partial type for configuration overrides */

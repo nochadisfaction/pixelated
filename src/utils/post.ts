@@ -7,7 +7,6 @@ export interface PostData {
   pubDate: Date
   share?: boolean
   toc?: boolean
-  ogImage?: boolean
   lastModDate?: Date
   updatedDate?: Date
   tags?: string[]

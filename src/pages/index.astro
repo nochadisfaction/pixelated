@@ -1,25 +1,226 @@
 ---
-import Stats from '@components/tailus/Stats.astro';
-import HeroSection from '@components/tailus/HeroSection.astro';
-import TailusLayout from '@layouts/TailusLayout.astro';
-import Testimonials from '@components/tailus/Testimonials.astro';
-import CallToAction from '@components/tailus/CallToAction.astro';
-import BentoGrid from '@components/tailus/BentoGrid.astro';
-import SpeedSection from '@components/tailus/SpeedSection.astro';
-import AboutSection from '@components/tailus/AboutSection.astro';
+import Layout from '../layouts/Layout.astro'
 
 // Add prerender directive to generate static HTML during build
-export const prerender = true;
+export const prerender = true
 ---
 
-<TailusLayout title="Pixelated Empathy - AI-Powered Mental Health Support">
-	<main class="space-y-16 sm:space-y-28 lg:space-y-32 pb-40 overflow-clip">
-		<HeroSection/>
-		<AboutSection />
-		<BentoGrid />
-		<SpeedSection />
-		<Stats/>
-		<Testimonials/>
-		<CallToAction/>
-	</main>
-</TailusLayout>
+<Layout
+  title="Pixelated Empathy - AI-Powered Mental Health Platform"
+  description="Advanced AI-powered mental health platform providing personalized therapy, research insights, and empathetic support."
+>
+  <div class="min-h-screen mental-health-gradient">
+    <!-- Hero Section -->
+    <section class="py-20 px-4">
+      <div class="container mx-auto text-center">
+        <h1 class="text-5xl font-bold mb-6 text-mental-health animate-fade-in">
+          AI-Powered Mental Health Platform
+        </h1>
+        <p
+          class="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto animate-slide-up"
+        >
+          Experience personalized therapy, cutting-edge research insights, and
+          empathetic AI support designed to enhance your mental wellness
+          journey.
+        </p>
+        <div
+          class="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up"
+        >
+          <a
+            href="/demo"
+            class="btn bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+          >
+            Try Demo
+          </a>
+          <a
+            href="/get-started"
+            class="btn bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+          >
+            Get Started
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-16 px-4" id="features">
+      <div class="container mx-auto">
+        <h2
+          class="text-3xl font-bold text-center mb-12 text-gray-900 dark:text-white"
+        >
+          Platform Features
+        </h2>
+        <div class="grid md:grid-cols-3 gap-8">
+          <div class="card therapy-card card-hover">
+            <div class="text-therapy text-3xl mb-4">🧠</div>
+            <h3 class="text-xl font-semibold mb-3 text-therapy">AI Therapy</h3>
+            <p class="text-gray-600 dark:text-gray-300">
+              Personalized therapeutic conversations powered by advanced AI
+              models trained on evidence-based practices.
+            </p>
+          </div>
+          <div class="card research-card card-hover">
+            <div class="text-research text-3xl mb-4">📊</div>
+            <h3 class="text-xl font-semibold mb-3 text-research">
+              Research Insights
+            </h3>
+            <p class="text-gray-600 dark:text-gray-300">
+              Access cutting-edge mental health research and data-driven
+              insights to inform your wellness journey.
+            </p>
+          </div>
+          <div class="card ai-card card-hover">
+            <div class="text-ai text-3xl mb-4">🤖</div>
+            <h3 class="text-xl font-semibold mb-3 text-ai">Empathetic AI</h3>
+            <p class="text-gray-600 dark:text-gray-300">
+              Experience compassionate AI interactions designed to understand
+              and support your emotional needs.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Solutions Section -->
+    <section class="py-16 px-4 bg-white/50 dark:bg-gray-800/50" id="solution">
+      <div class="container mx-auto">
+        <h2
+          class="text-3xl font-bold text-center mb-12 text-gray-900 dark:text-white"
+        >
+          Our Solutions
+        </h2>
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <h3 class="text-2xl font-semibold mb-6 text-mental-health">
+              Comprehensive Mental Health Support
+            </h3>
+            <div class="space-y-4">
+              <div class="flex items-start gap-3">
+                <div class="text-therapy text-xl">✓</div>
+                <div>
+                  <h4 class="font-semibold text-therapy">24/7 AI Support</h4>
+                  <p class="text-gray-600 dark:text-gray-300">
+                    Always available when you need someone to talk to
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <div class="text-research text-xl">✓</div>
+                <div>
+                  <h4 class="font-semibold text-research">
+                    Evidence-Based Approaches
+                  </h4>
+                  <p class="text-gray-600 dark:text-gray-300">
+                    Grounded in proven therapeutic methodologies
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <div class="text-ai text-xl">✓</div>
+                <div>
+                  <h4 class="font-semibold text-ai">Personalized Experience</h4>
+                  <p class="text-gray-600 dark:text-gray-300">
+                    Tailored to your unique needs and preferences
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="card bg-gradient-to-br from-blue-100 to-teal-100 dark:from-blue-900/30 dark:to-teal-900/30"
+          >
+            <div class="text-center">
+              <div class="text-6xl mb-4">🌟</div>
+              <h4 class="text-xl font-semibold mb-2 text-mental-health">
+                Start Your Journey
+              </h4>
+              <p class="text-gray-600 dark:text-gray-300 mb-4">
+                Join thousands who have found support and growth
+              </p>
+              <a
+                href="/get-started"
+                class="btn bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+              >
+                Get Started Today
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="py-16 px-4" id="reviews">
+      <div class="container mx-auto">
+        <h2
+          class="text-3xl font-bold text-center mb-12 text-gray-900 dark:text-white"
+        >
+          What Our Users Say
+        </h2>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div class="card">
+            <div class="mb-4">
+              <div class="flex text-yellow-400 mb-2">★★★★★</div>
+              <p class="text-gray-600 dark:text-gray-300 italic">
+                "This platform has been a game-changer for my mental health
+                journey. The AI support feels genuinely caring."
+              </p>
+            </div>
+            <div class="text-sm text-gray-500">- Sarah M.</div>
+          </div>
+          <div class="card">
+            <div class="mb-4">
+              <div class="flex text-yellow-400 mb-2">★★★★★</div>
+              <p class="text-gray-600 dark:text-gray-300 italic">
+                "The research insights have helped me understand my patterns and
+                make positive changes."
+              </p>
+            </div>
+            <div class="text-sm text-gray-500">- Michael R.</div>
+          </div>
+          <div class="card">
+            <div class="mb-4">
+              <div class="flex text-yellow-400 mb-2">★★★★★</div>
+              <p class="text-gray-600 dark:text-gray-300 italic">
+                "Having 24/7 support available has given me confidence to work
+                through difficult moments."
+              </p>
+            </div>
+            <div class="text-sm text-gray-500">- Emma L.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section
+      class="py-20 px-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white"
+    >
+      <div class="container mx-auto text-center">
+        <h2 class="text-4xl font-bold mb-6">
+          Ready to Transform Your Mental Health Journey?
+        </h2>
+        <p class="text-xl mb-8 max-w-2xl mx-auto opacity-90">
+          Join thousands of users who have found support, insights, and growth
+          through our AI-powered platform.
+        </p>
+        <div
+          class="text-center space-y-4 sm:space-y-0 sm:space-x-4 sm:flex sm:justify-center"
+        >
+          <a
+            href="/demo"
+            class="btn bg-white text-blue-600 hover:bg-gray-100 transition-colors"
+          >
+            Try Demo
+          </a>
+          <a
+            href="/get-started"
+            class="btn border-2 border-white text-white hover:bg-white hover:text-blue-600 transition-colors"
+          >
+            Start Your Journey
+          </a>
+        </div>
+      </div>
+    </section>
+  </div>
+</Layout>

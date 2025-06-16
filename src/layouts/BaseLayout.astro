@@ -24,15 +24,15 @@ import { getUrl } from '@/utils/common'
 import type { BgType } from '@/types'
 
 // Get the CSP nonce from Astro.locals (set by middleware)
-const cspNonce = (Astro.locals as any).cspNonce || '';
+const cspNonce = (Astro.locals as { cspNonce?: string } | undefined)?.cspNonce || '';
 
 // Get Sentry DSN from environment variables
+// biome-ignore lint/complexity/useLiteralKeys: <explanation>
 const sentryDsn = (import.meta.env['PUBLIC_SENTRY_DSN'] as string) || '';
 
 interface Props {
   title?: string
   description?: string
-  ogImage?: string | boolean
   bgType?: BgType | false
   pubDate?: string
   lastModDate?: string
@@ -58,14 +58,12 @@ const {
   contentClass = 'pt-16 pb-2 px-4 flex-grow',
   bgType,
   transitionMode = 'slide',
-  ogImage,
   pubDate,
   lastModDate,
-  optimizeImages = true,
   isLoginPage = false
 } = Astro.props
 
-let style: Record<string, string> = {}
+const style: Record<string, string> = {}
 
 const { slideEnterAnim } = FEATURES
 const enableSlideEnterAnim = Array.isArray(slideEnterAnim) && slideEnterAnim[0]
@@ -117,7 +115,6 @@ const isAuthPage = isLoginPage ||
     <Head
       title={title ?? undefined}
       description={description ?? undefined}
-      ogImage={ogImage ?? undefined}
       pubDate={pubDate ?? undefined}
       lastModDate={lastModDate ?? undefined}
       transitionMode={transitionMode ?? undefined}
@@ -199,11 +196,6 @@ const isAuthPage = isLoginPage ||
 
     <!-- Progress Bar & Image Zoom -->
     <script src="/js/nprogress-and-zoom.js" is:inline></script>
-
-    <!-- Image Optimization -->
-    {optimizeImages && (
-      <script src="/js/image-optimization.js" is:inline></script>
-    )}
 
     <!-- Vercel Speed Insights with conflict prevention approach -->
     <script src="/js/vercel-speed-insights.js" is:inline></script>

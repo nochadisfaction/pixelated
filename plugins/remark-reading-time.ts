@@ -1,6 +1,6 @@
-import { toString } from 'mdast-util-to-string'
-import getReadingTime from 'reading-time'
 import type { Root } from 'mdast'
+import { toString as mdastToString } from 'mdast-util-to-string'
+import getReadingTime from 'reading-time'
 import type { VFile } from 'vfile'
 
 /**
@@ -12,14 +12,16 @@ function remarkReadingTime() {
   //
   return (tree: Root, file: VFile) => {
     const frontmatter = file.data.astro?.frontmatter
-    if (!frontmatter || frontmatter.minutesRead || frontmatter.minutesRead === 0) {
+    // biome-ignore lint/complexity/useLiteralKeys: <explanation>
+    if (!frontmatter || frontmatter['minutesRead'] || frontmatter['minutesRead'] === 0) {
       return
     }
 
-    const textOnPage = toString(tree)
+    const textOnPage = mdastToString(tree)
     const readingTime = getReadingTime(textOnPage)
 
-    frontmatter.minutesRead = Math.max(1, Math.round(readingTime.minutes))
+    // biome-ignore lint/complexity/useLiteralKeys: <explanation>
+    frontmatter['minutesRead'] = Math.max(1, Math.round(readingTime.minutes))
   }
 }
 

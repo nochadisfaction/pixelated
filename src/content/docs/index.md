@@ -7,7 +7,6 @@ pubDate: 2024-01-15
 lastModDate: 2024-01-15
 toc: true
 share: false
-ogImage: false
 draft: false
 ---
 

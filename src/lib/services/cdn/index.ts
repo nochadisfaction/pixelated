@@ -179,12 +179,6 @@ export class CdnService {
         logger.info('Enabling resource hints')
         // Configure resource hints
       }
-
-      // Configure image optimization
-      if (performance.imageOptimization.isEnabled) {
-        logger.info('Configuring image optimization')
-        // Configure image optimization
-      }
     } catch (error: unknown) {
       const errorData =
         error instanceof Error
@@ -247,9 +241,9 @@ export class CdnService {
     }
   }
 
-  public async getEdgeMetrics(): Promise<Record<string, any>> {
+  public async getEdgeMetrics(): Promise<Record<string, unknown>> {
     try {
-      const metrics: Record<string, any> = {}
+      const metrics: Record<string, unknown> = {}
 
       // Collect metrics from each edge location
       for (const location of this.config.edgeLocations) {
@@ -285,10 +279,6 @@ export class CdnService {
     },
   ): Promise<string> {
     try {
-      if (!this.config.performance.imageOptimization.isEnabled) {
-        return url
-      }
-
       // Here you would typically make API calls to your CDN provider
       // to optimize the image with the specified options
       return `${url}?w=${options.width}&h=${options.height}&q=${options.quality}&f=${options.format}`

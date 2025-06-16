@@ -1,26 +1,32 @@
 ---
-import {
-    SITE_TITLE,
-    SITE_DESCRIPTION,
-    SITE_IMAGE,
-} from "../../consts"
+import { SITE_TITLE, SITE_DESCRIPTION } from '../../consts'
 
 export interface Props {
-	title?: string;
-	description?: string;
-	image?: string;
-    url? : string;
+  title?: string
+  description?: string
+  image?: string
+  url?: string
 }
 
-const { title=SITE_TITLE, description=SITE_DESCRIPTION, image = SITE_IMAGE } = Astro.props;
+const { title = SITE_TITLE, description = SITE_DESCRIPTION } = Astro.props
 ---
 
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width" />
 
 <!-- Favicons for different themes and devices -->
-<link rel="icon" type="image/svg+xml" href="/favicon.svg" media="(prefers-color-scheme: light)" />
-<link rel="icon" type="image/svg+xml" href="/darkfavicon.svg" media="(prefers-color-scheme: dark)" />
+<link
+  rel="icon"
+  type="image/svg+xml"
+  href="/favicon.svg"
+  media="(prefers-color-scheme: light)"
+/>
+<link
+  rel="icon"
+  type="image/svg+xml"
+  href="/darkfavicon.svg"
+  media="(prefers-color-scheme: dark)"
+/>
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
 <link rel="icon" type="image/x-icon" href="/favicon.ico" />
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
@@ -35,17 +41,3 @@ const { title=SITE_TITLE, description=SITE_DESCRIPTION, image = SITE_IMAGE } = A
 <title>{title}</title>
 <meta name="title" content={title} />
 <meta name="description" content={description} />
-
-<!-- Open Graph / Facebook -->
-<meta property="og:type" content="website" />
-<meta property="og:url" content={Astro.url} />
-<meta property="og:title" content={title} />
-<meta property="og:description" content={description} />
-<meta property="og:image" content={new URL(image, Astro.url)} />
-
-<!-- Twitter -->
-<meta property="twitter:card" content="summary_large_image" />
-<meta property="twitter:url" content={Astro.url} />
-<meta property="twitter:title" content={title} />
-<meta property="twitter:description" content={description} />
-<meta property="twitter:image" content={new URL(image, Astro.url)} />

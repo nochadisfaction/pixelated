@@ -1,6 +1,11 @@
-import { defineConfig } from 'astro-vitesse/theme'
+import { defineConfig, presetAttributify, presetTypography, presetUno } from 'unocss'
 
 export default defineConfig({
+  presets: [
+    presetUno(),
+    presetAttributify(),
+    presetTypography(),
+  ],
   shortcuts: [
     // Base buttons with mental health theme
     [
@@ -33,14 +38,14 @@ export default defineConfig({
       'hover:shadow-md hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-200',
     ],
 
-    // Mental health specific styles
+    // Professional gradient styles
     [
       'mental-health-gradient',
-      'bg-gradient-to-br from-blue-50 to-teal-50 dark:from-blue-900/20 dark:to-teal-900/20',
+      'bg-gradient-to-br from-blue-50 to-gray-50 dark:from-blue-900/10 dark:to-gray-900/10',
     ],
     [
       'therapy-card',
-      'bg-gradient-to-br from-emerald-50 to-blue-50 dark:from-emerald-900/20 dark:to-blue-900/20 border-l-4 border-emerald-500',
+      'bg-gradient-to-br from-blue-50 to-gray-50 dark:from-blue-900/10 dark:to-gray-900/10 border-l-4 border-blue-500',
     ],
     [
       'research-card',

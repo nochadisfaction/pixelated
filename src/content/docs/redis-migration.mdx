@@ -9,15 +9,6 @@ tags: ['redis', 'migration', 'data-transfer']
 author: 'Pixelated Team'
 ---
 
-import {
-  Steps,
-  Tabs,
-  TabItem,
-  Card,
-  CardGrid,
-  LinkCard,
-} from '@astrojs/starlight/components'
-
 ## Redis Migration Guide
 
 ## Overview
@@ -74,27 +65,26 @@ maintaining system stability.
    // Before
    import { createClient } from 'redis'
 
-// After
-import { RedisService } from '@/lib/services/redis'
-
-````bash
+   // After
+   import { RedisService } from '@/lib/services/redis'
+   ```
 
 2. Update Service Constructor
-```typescript
-// Before
-export class CacheInvalidationService {
-  private readonly redis: ReturnType<typeof createClient>
+   ```typescript
+   // Before
+   export class CacheInvalidationService {
+     private readonly redis: ReturnType<typeof createClient>
 
-  constructor() {
-    this.redis = createClient()
-  }
-}
+     constructor() {
+       this.redis = createClient()
+     }
+   }
 
-// After
-export class CacheInvalidationService {
-  constructor(private readonly redis: RedisService) {}
-}
-````
+   // After
+   export class CacheInvalidationService {
+     constructor(private readonly redis: RedisService) {}
+   }
+   ```
 
 3. Update Cache Operations
 
@@ -141,27 +131,26 @@ export class CacheInvalidationService {
    // Before
    import Redis from 'ioredis'
 
-// After
-import { RedisService } from '@/lib/services/redis'
-
-````bash
+   // After
+   import { RedisService } from '@/lib/services/redis'
+   ```
 
 2. Update Service Constructor
-```typescript
-// Before
-export class AnalyticsService {
-  private readonly redis: Redis
+   ```typescript
+   // Before
+   export class AnalyticsService {
+     private readonly redis: Redis
 
-  constructor() {
-    this.redis = new Redis()
-  }
-}
+     constructor() {
+       this.redis = new Redis()
+     }
+   }
 
-// After
-export class AnalyticsService {
-  constructor(private readonly redis: RedisService) {}
-}
-````
+   // After
+   export class AnalyticsService {
+     constructor(private readonly redis: RedisService) {}
+   }
+   ```
 
 3. Update Event Tracking
 
@@ -209,27 +198,26 @@ export class AnalyticsService {
    // Before
    import { RedisClient } from 'redis'
 
-// After
-import { RedisService } from '@/lib/services/redis'
-
-````bash
+   // After
+   import { RedisService } from '@/lib/services/redis'
+   ```
 
 2. Update Service Constructor
-```typescript
-// Before
-export class PatternRecognitionService {
-  private readonly redis: RedisClient
+   ```typescript
+   // Before
+   export class PatternRecognitionService {
+     private readonly redis: RedisClient
 
-  constructor() {
-    this.redis = new RedisClient()
-  }
-}
+     constructor() {
+       this.redis = new RedisClient()
+     }
+   }
 
-// After
-export class PatternRecognitionService {
-  constructor(private readonly redis: RedisService) {}
-}
-````
+   // After
+   export class PatternRecognitionService {
+     constructor(private readonly redis: RedisService) {}
+   }
+   ```
 
 3. Update Pattern Storage
 
@@ -283,27 +271,26 @@ export class PatternRecognitionService {
    // Before
    import Redis from 'ioredis'
 
-// After
-import { RedisService } from '@/lib/services/redis'
-
-````bash
+   // After
+   import { RedisService } from '@/lib/services/redis'
+   ```
 
 2. Update Service Constructor
-```typescript
-// Before
-export class NotificationService {
-  private readonly redis: Redis
+   ```typescript
+   // Before
+   export class NotificationService {
+     private readonly redis: Redis
 
-  constructor() {
-    this.redis = new Redis()
-  }
-}
+     constructor() {
+       this.redis = new Redis()
+     }
+   }
 
-// After
-export class NotificationService {
-  constructor(private readonly redis: RedisService) {}
-}
-````
+   // After
+   export class NotificationService {
+     constructor(private readonly redis: RedisService) {}
+   }
+   ```
 
 3. Update Notification Storage
 
@@ -357,27 +344,26 @@ export class NotificationService {
    // Before
    import Redis from 'ioredis'
 
-// After
-import { RedisService } from '@/lib/services/redis'
-
-````bash
+   // After
+   import { RedisService } from '@/lib/services/redis'
+   ```
 
 2. Update Server Constructor
-```typescript
-// Before
-export class WebSocketServer {
-  private readonly redis: Redis
+   ```typescript
+   // Before
+   export class WebSocketServer {
+     private readonly redis: Redis
 
-  constructor() {
-    this.redis = new Redis()
-  }
-}
+     constructor() {
+       this.redis = new Redis()
+     }
+   }
 
-// After
-export class WebSocketServer {
-  constructor(private readonly redis: RedisService) {}
-}
-````
+   // After
+   export class WebSocketServer {
+     constructor(private readonly redis: RedisService) {}
+   }
+   ```
 
 3. Update Session Management
 

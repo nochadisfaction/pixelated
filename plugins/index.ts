@@ -10,10 +10,9 @@ import remarkDirective from 'remark-directive'
 import remarkImgattr from 'remark-imgattr'
 import remarkMath from 'remark-math'
 import { visit } from 'unist-util-visit'
-import { FEATURES, UI } from '../src/config'
+import { UI } from '../src/config'
 import remarkDirectiveSugar from './remark-directive-sugar'
 
-import remarkGenerateOgImage from './remark-generate-og-image'
 
 import remarkImageContainer from './remark-image-container'
 import remarkReadingTime from './remark-reading-time'
@@ -28,9 +27,6 @@ export const remarkPlugins: RemarkPlugins = [
   // https://github.com/remarkjs/remark-math/tree/main/packages/remark-math
   remarkMath,
   remarkReadingTime,
-  ...(Array.isArray(FEATURES.ogImage) && FEATURES.ogImage[0]
-    ? [remarkGenerateOgImage]
-    : []),
 ]
 
 export const rehypePlugins: RehypePlugins = [
@@ -61,6 +57,7 @@ export const rehypePlugins: RehypePlugins = [
             hasImage = true
             return false
           }
+          return undefined
         })
         if (hasImage) {
           return null
@@ -82,6 +79,7 @@ export const rehypePlugins: RehypePlugins = [
             hasImage = true
             return false
           }
+          return undefined
         })
         if (hasImage) {
           return null
@@ -95,21 +93,21 @@ export const rehypePlugins: RehypePlugins = [
       },
       properties: (el: Parameters<CreateProperties>[0]) => {
         const props: Record<string, unknown> = {}
-        const href = el.properties?.href
+        const href = el.properties?.['href']
 
         if (!href || typeof href !== 'string') {
           return props
         }
 
         if (UI.externalLink.newTab) {
-          props.target = '_blank'
-          props.ariaLabel = 'Open in new tab'
+          props['target'] = '_blank'
+          props['ariaLabel'] = 'Open in new tab'
           if (
             UI.externalLink.cursorType.length > 0 &&
             UI.externalLink.cursorType !== 'pointer'
           ) {
-            props.className = Array.isArray(el.properties?.className)
-              ? [...el.properties.className, 'external-link-cursor']
+            props['className'] = Array.isArray(el.properties?.['className'])
+              ? [...el.properties['className'], 'external-link-cursor']
               : ['external-link-cursor']
           }
         }

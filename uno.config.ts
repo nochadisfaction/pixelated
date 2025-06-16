@@ -1,20 +1,29 @@
 import {
   defineConfig,
-  presetIcons,
-  presetUno,
   presetAttributify,
+  presetIcons,
   presetTypography,
+  presetUno,
 } from 'unocss'
 
 export default defineConfig({
   shortcuts: [
+    // Button shortcuts now work with the standardized button system
     [
-      'btn',
-      'px-4 py-1 rounded inline-block bg-teal-600 text-white cursor-pointer hover:bg-teal-700 disabled:cursor-default disabled:bg-gray-600 disabled:opacity-50',
+      'btn-primary',
+      'btn bg-teal-600 text-white hover:bg-teal-700',
+    ],
+    [
+      'btn-secondary',
+      'btn bg-gray-600 text-white hover:bg-gray-700',
+    ],
+    [
+      'btn-outline',
+      'btn border border-gray-300 bg-transparent text-gray-700 hover:bg-gray-50',
     ],
     [
       'icon-btn',
-      'text-[0.9em] inline-block cursor-pointer select-none opacity-75 transition duration-200 ease-in-out hover:opacity-100 hover:text-teal-600',
+      'btn-icon text-[0.9em] cursor-pointer select-none opacity-75 transition duration-200 ease-in-out hover:opacity-100 hover:text-teal-600',
     ],
     // Responsive layout shortcuts
     ['container-responsive', 'w-full mx-auto px-4 sm:px-6 lg:px-8'],

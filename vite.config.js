@@ -123,11 +123,10 @@ export default defineConfig({
           }
         `,
         manualChunks: {
-          // Fix circular dependency warnings by grouping related modules
-          astroMiddleware: [
-            'astro/dist/core/middleware/sequence',
-            'astro/dist/core/middleware/index',
-            'astro-internal:middleware'
+          // Fix circular dependency warnings by isolating middleware modules
+          astroCore: [
+            'astro/dist/core/app/index.js',
+            'astro/dist/core/render/index.js'
           ],
           // Split vendor libraries into separate chunks
           react: ['react', 'react-dom', 'react/jsx-runtime'],

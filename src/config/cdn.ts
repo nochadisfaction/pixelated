@@ -76,12 +76,6 @@ export const cdnConfigSchema = z.object({
     earlyHints: z.boolean(),
     // Enable preload/prefetch
     resourceHints: z.boolean(),
-    // Enable image optimization
-    imageOptimization: z.object({
-      isEnabled: z.boolean(),
-      quality: z.number().min(1).max(100),
-      formats: z.array(z.enum(['webp', 'avif'])),
-    }),
   }),
 })
 
@@ -156,10 +150,5 @@ export const defaultCdnConfig: CdnConfig = {
     http3: true,
     earlyHints: true,
     resourceHints: true,
-    imageOptimization: {
-      isEnabled: true,
-      quality: 85,
-      formats: ['webp', 'avif'],
-    },
   },
 }

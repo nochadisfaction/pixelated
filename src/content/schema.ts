@@ -32,12 +32,6 @@ export const pageSchema = z.object({
     .describe(
       'Controls whether the table of contents (TOC) is generated for the page.',
     ),
-  ogImage: z
-    .union([z.string(), z.boolean()])
-    .default(true)
-    .describe(
-      'Specifies the Open Graph (OG) image for social media sharing. To auto-generate OG image, delete the field or set to `true`. To disable it, set the field to `false`. To use a custom image, provide the full filename from `/public/og-images/`.',
-    ),
 })
 
 export type PageSchema = z.infer<typeof pageSchema>
@@ -131,12 +125,6 @@ export const postSchema = z.object({
     .default(true)
     .describe(
       'Controls whether social sharing options are available for the post.',
-    ),
-  ogImage: z
-    .union([z.string(), z.boolean()])
-    .default(true)
-    .describe(
-      'Specifies the Open Graph (OG) image for social media sharing. To auto-generate OG image, delete the field or set to `true`. To disable it, set the field to `false`. To use a custom image, provide the full filename from `/public/og-images/`.',
     ),
   redirect: z
     .string()

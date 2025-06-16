@@ -1,1 +1,167 @@
-import { getLogger } from \'@/lib/utils/logger\';\nimport type {\n  CrisisAlertContext,\n  ICrisisNotificationHandler,\n} from \'./NotificationService\';\nimport { config } from \'@/config/env.config\'; // For accessing Slack webhook URL\n\nconst logger = getLogger(\'SlackNotificationService\');\n\ninterface SlackBlock {\n  type: string;\n  text?: {\n    type: string;\n    text: string;\n    emoji?: boolean;\n  };\n  fields?: Array<{\n    type: string;\n    text: string;\n  }>;\n  accessory?: {\n    type: string;\n    image_url: string;\n    alt_text: string;\n  };\n}\n\ninterface SlackMessagePayload {\n  text: string; // Fallback text for notifications\n  blocks: SlackBlock[];\n  username?: string;\n  icon_emoji?: string;\n  channel?: string; // Optional: can be set in webhook settings or here\n}\n\nexport class SlackNotificationService implements ICrisisNotificationHandler {\n  private webhookUrl: string;\n\n  constructor(webhookUrl?: string) {\n    const url = webhookUrl || config.notifications.slackWebhookUrl();\n    if (!url) {\n      const errorMsg = \'Slack webhook URL is not configured. SlackNotificationService cannot operate.\';\n      logger.error(errorMsg);\n      throw new Error(errorMsg);\n    }\n    this.webhookUrl = url;\n    logger.info(\'SlackNotificationService initialized.\');\n  }\n\n  private formatCrisisAlertToSlack(alertContext: CrisisAlertContext): SlackMessagePayload {\n    const { userId, sessionId, sessionType, explicitTaskHint, timestamp, textSample, decisionDetails } = alertContext;\n\n    const blocks: SlackBlock[] = [\n      {\n        type: \'header\',\n        text: {\n          type: \'plain_text\',\n          text: \'🚨 CRITICAL CRISIS ALERT 🚨\',\n          emoji: true,\n        },\n      },\n      {\n        type: \'section\',\n        text: {\n          type: \'mrkdwn\',\n          text: `A potential user crisis was detected by the MentalLLaMA system. *Urgent review required.*`,\n        },\n      },\n      {\n        type: \'divider\',\n      },\n      {\n        type: \'section\',\n        fields: [\n          { type: \'mrkdwn\', text: `*Timestamp:*\n${new Date(timestamp).toLocaleString()}` },\n          { type: \'mrkdwn\', text: `*User ID:*\n${userId || \'N/A\'}` },\n          { type: \'mrkdwn\', text: `*Session ID:*\n${sessionId || \'N/A\'}` },\n          { type: \'mrkdwn\', text: `*Session Type:*\n${sessionType || \'N/A\'}` },\n          { type: \'mrkdwn\', text: `*Explicit Task Hint:*\n${typeof explicitTaskHint === \'string\' ? explicitTaskHint : \'N/A\'}` },\n        ],\n      },\n      {\n        type: \'section\',\n        text: {\n          type: \'mrkdwn\',\n          text: `*Text Sample (first 500 chars):*\n\`\`\`${textSample}\`\`\``,\n        },\n      },\n    ];\n\n    if (decisionDetails) {\n      blocks.push({\n        type: \'section\',\n        text: {\n          type: \'mrkdwn\',\n          text: `*Routing Decision Details:*\n\`\`\`${JSON.stringify(decisionDetails, null, 2)}\`\`\``,\n        },\n      });\n    }\n    \n    blocks.push({\n      type: \'context\',\n      elements: [\n        {\n          type: \'mrkdwn\',\n          text: `This alert was generated at ${new Date().toISOString()}. Please investigate immediately.`,\n        },\n      ],\n    });\n\n    return {\n      text: `CRITICAL CRISIS ALERT: User ID ${userId || \'N/A\'}, Session ID ${sessionId || \'N/A\'}. Urgent review required.`,\n      blocks,\n      username: \'MentalLLaMA Crisis Monitor\',\n      icon_emoji: \':rotating_light:\',\n      // channel: \'#crisis-alerts\', // Can be set here or in webhook config\n    };\n  }\n\n  async sendCrisisAlert(alertContext: CrisisAlertContext): Promise<void> {\n    logger.warn(\'Dispatching crisis alert via SlackNotificationService:\', {\n      userId: alertContext.userId,\n      sessionId: alertContext.sessionId,\n      timestamp: alertContext.timestamp,\n    });\n\n    const slackPayload = this.formatCrisisAlertToSlack(alertContext);\n\n    try {\n      const response = await fetch(this.webhookUrl, {\n        method: \'POST\',\n        headers: {\n          \'Content-Type\': \'application/json\',\n        },\n        body: JSON.stringify(slackPayload),\n      });\n\n      if (!response.ok) {\n        const responseBody = await response.text();\n        logger.error(\'Failed to send Slack crisis alert. Non-OK response.\', {\n          statusCode: response.status,\n          statusText: response.statusText,\n          responseBody,\n          webhookUrl: this.webhookUrl.substring(0, this.webhookUrl.indexOf(\'/services/\') + \'/services/\'.length) + \'...\', // Log only part of URL\n        });\n        throw new Error(\n          `Slack API error: ${response.status} ${response.statusText} - ${responseBody}`,\n        );\n      }\n      logger.info(\'Crisis alert successfully sent to Slack.\', {\n        userId: alertContext.userId,\n        sessionId: alertContext.sessionId,\n      });\n    } catch (error) {\n      logger.error(\'Exception while sending Slack crisis alert:\', {\n        error: error instanceof Error ? error.message : String(error),\n        stack: error instanceof Error ? error.stack : undefined,\n        webhookUrl: this.webhookUrl.substring(0, this.webhookUrl.indexOf(\'/services/\') + \'/services/\'.length) + \'...\',\n      });\n      // Rethrow to indicate failure to dispatch, allowing caller (MentalLLaMAAdapter) to handle\n      throw new Error(\n        `Failed to dispatch crisis alert via SlackNotificationService: ${error instanceof Error ? error.message : String(error)}`,\n        { cause: error },\n      );\n    }\n  }\n}\n 
+import { config } from '@/config/env.config'; // For accessing Slack webhook URL
+import { getLogger } from '@/lib/utils/logger';
+import type {
+    CrisisAlertContext,
+    ICrisisNotificationHandler,
+} from './NotificationService';
+
+const logger = getLogger('SlackNotificationService');
+
+interface SlackBlock {
+    type: string;
+    text?: {
+        type: string;
+        text: string;
+        emoji?: boolean;
+    };
+    fields?: Array<{
+        type: string;
+        text: string;
+    }>;
+    accessory?: {
+        type: string;
+        image_url: string;
+        alt_text: string;
+    };
+}
+
+interface SlackMessagePayload {
+    text: string; // Fallback text for notifications
+    blocks: SlackBlock[];
+    username?: string;
+    icon_emoji?: string;
+    channel?: string; // Optional: can be set in webhook settings or here
+}
+
+export class SlackNotificationService implements ICrisisNotificationHandler {
+    private webhookUrl: string;
+
+    constructor(webhookUrl?: string) {
+        const url = webhookUrl || config.notifications.slackWebhookUrl();
+        if (!url) {
+            const errorMsg = 'Slack webhook URL is not configured. SlackNotificationService cannot operate.';
+            logger.error(errorMsg);
+            throw new Error(errorMsg);
+        }
+        this.webhookUrl = url;
+        logger.info('SlackNotificationService initialized.');
+    }
+
+    private formatCrisisAlertToSlack(alertContext: CrisisAlertContext): SlackMessagePayload {
+        const { userId, sessionId, sessionType, explicitTaskHint, timestamp, textSample, decisionDetails } = alertContext;
+
+        const blocks: SlackBlock[] = [
+            {
+                type: 'header',
+                text: {
+                    type: 'plain_text',
+                    text: '🚨 CRITICAL CRISIS ALERT 🚨',
+                    emoji: true,
+                },
+            },
+            {
+                type: 'section',
+                text: {
+                    type: 'mrkdwn',
+                    text: `A potential user crisis was detected by the MentalLLaMA system. *Urgent review required.*`,
+                },
+            },
+            {
+                type: 'divider',
+            },
+            {
+                type: 'section',
+                fields: [
+                    { type: 'mrkdwn', text: `*Timestamp:*\n${new Date(timestamp).toLocaleString()}` },
+                    { type: 'mrkdwn', text: `*User ID:*\n${userId || 'N/A'}` },
+                    { type: 'mrkdwn', text: `*Session ID:*\n${sessionId || 'N/A'}` },
+                    { type: 'mrkdwn', text: `*Session Type:*\n${sessionType || 'N/A'}` },
+                    { type: 'mrkdwn', text: `*Explicit Task Hint:*\n${typeof explicitTaskHint === 'string' ? explicitTaskHint : 'N/A'}` },
+                ],
+            },
+            {
+                type: 'section',
+                text: {
+                    type: 'mrkdwn',
+                    text: `*Text Sample (first 500 chars):*\n\`\`\`${textSample}\`\`\``,
+                },
+            },
+        ];
+
+        if (decisionDetails) {
+            blocks.push({
+                type: 'section',
+                text: {
+                    type: 'mrkdwn',
+                    text: `*Routing Decision Details:*\n\`\`\`${JSON.stringify(decisionDetails, null, 2)}\`\`\``,
+                },
+            });
+        }
+
+        blocks.push({
+            type: 'context',
+            elements: [
+                {
+                    type: 'mrkdwn',
+                    text: `This alert was generated at ${new Date().toISOString()}. Please investigate immediately.`,
+                },
+            ],
+        });
+
+        return {
+            text: `CRITICAL CRISIS ALERT: User ID ${userId || 'N/A'}, Session ID ${sessionId || 'N/A'}. Urgent review required.`,
+            blocks,
+            username: 'MentalLLaMA Crisis Monitor',
+            icon_emoji: ':rotating_light:',
+            // channel: '#crisis-alerts', // Can be set here or in webhook config
+        };
+    }
+
+    async sendCrisisAlert(alertContext: CrisisAlertContext): Promise<void> {
+        logger.warn('Dispatching crisis alert via SlackNotificationService:', {
+            userId: alertContext.userId,
+            sessionId: alertContext.sessionId,
+            timestamp: alertContext.timestamp,
+        });
+
+        const slackPayload = this.formatCrisisAlertToSlack(alertContext);
+
+        try {
+            const response = await fetch(this.webhookUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(slackPayload),
+            });
+
+            if (!response.ok) {
+                const responseBody = await response.text();
+                logger.error('Failed to send Slack crisis alert. Non-OK response.', {
+                    statusCode: response.status,
+                    statusText: response.statusText,
+                    responseBody,
+                    webhookUrl: this.webhookUrl.substring(0, this.webhookUrl.indexOf('/services/') + '/services/'.length) + '...', // Log only part of URL
+                });
+                throw new Error(
+                    `Slack API error: ${response.status} ${response.statusText} - ${responseBody}`,
+                );
+            }
+            logger.info('Crisis alert successfully sent to Slack.', {
+                userId: alertContext.userId,
+                sessionId: alertContext.sessionId,
+            });
+        } catch (error) {
+            logger.error('Exception while sending Slack crisis alert:', {
+                error: error instanceof Error ? error.message : String(error),
+                stack: error instanceof Error ? error.stack : undefined,
+                webhookUrl: this.webhookUrl.substring(0, this.webhookUrl.indexOf('/services/') + '/services/'.length) + '...',
+            });
+            // Rethrow to indicate failure to dispatch, allowing caller (MentalLLaMAAdapter) to handle
+            throw new Error(
+                `Failed to dispatch crisis alert via SlackNotificationService: ${error instanceof Error ? error.message : String(error)}`,
+                { cause: error },
+            );
+        }
+    }
+}

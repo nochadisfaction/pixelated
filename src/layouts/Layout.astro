@@ -1,6 +1,8 @@
 ---
 import SpeedInsights from '@vercel/speed-insights/astro'
 import Analytics from '@vercel/analytics/astro'
+import ThemeSwitcher from '../components/ThemeSwitcher.astro'
+import '../styles/main.css'
 
 interface Props {
   title: string
@@ -23,32 +25,34 @@ const {
     <title>{title}</title>
     <meta name="description" content={description} />
 
-    <!-- Social media meta tags -->
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content={Astro.url} />
-    <meta name="twitter:card" content="summary_large_image" />
     <Analytics />
 
     <!-- Font stylesheets -->
     <link rel="stylesheet" href="/css/fonts.css" />
     <link rel="stylesheet" href="/css/font-fix.css" />
-    
+
     <!-- Background and UI fixes -->
     <link rel="stylesheet" href="/css/background-fixes.css" />
-    
-    <!-- Polyfill detection script -->
+    <link rel="stylesheet" href="/css/button-fixes.css" />
+
+    <!-- Dark mode initialization script -->
+    <script is:inline>
+      // Initialize theme before page loads to prevent flash
+      ;(function () {
+        const savedTheme =
+          localStorage.getItem('theme') ||
+          (window.matchMedia('(prefers-color-scheme: dark)').matches
+            ? 'dark'
+            : 'light')
+        document.documentElement.classList.toggle('dark', savedTheme === 'dark')
+      })()
+    </script>
+
+    <!-- Only load essential scripts to reduce import warnings -->
     <script src="/js/polyfill-detector.js" is:inline></script>
-    
-    <!-- Module preloader -->
-    <script src="/js/module-loader.js" defer></script>
-    
-    <!-- Background and font loader -->
-    <script src="/js/background-loader.js" defer></script>
   </head>
   <body
-    class="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+    class="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200"
   >
     <!-- Skip to content link for accessibility -->
     <a
@@ -67,7 +71,7 @@ const {
           class="text-2xl font-bold text-primary-600 dark:text-primary-400"
           >Pixelated Empathy</a
         >
-        <nav>
+        <nav class="flex items-center space-x-6">
           <ul class="flex space-x-6">
             <li>
               <a
@@ -98,6 +102,7 @@ const {
               >
             </li>
           </ul>
+          <ThemeSwitcher />
         </nav>
       </div>
     </header>
@@ -152,12 +157,6 @@ const {
         </div>
       </div>
     </footer>
-    <script is:inline>
-      function speedInsightsBeforeSend(data) {
-        console.log('Speed Insights before send', data)
-        return data
-      }
-    </script>
     <SpeedInsights />
   </body>
 </html>

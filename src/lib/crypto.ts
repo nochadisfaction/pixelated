@@ -94,6 +94,16 @@ export function createCryptoSystem(options: CryptoSystemOptions): CryptoSystem {
   }
 }
 
+// Default crypto system instance
+const defaultCrypto = createCryptoSystem({ namespace: 'pixelated' })
+
+// Export convenience functions
+export const encrypt = defaultCrypto.encrypt.bind(defaultCrypto)
+export const decrypt = defaultCrypto.decrypt.bind(defaultCrypto)
+export const hash = defaultCrypto.hash.bind(defaultCrypto)
+export const sign = defaultCrypto.sign.bind(defaultCrypto)
+export const verify = defaultCrypto.verify.bind(defaultCrypto)
+
 // Example PHI audit logging - uncomment and customize as needed
 // logger.info('Accessing PHI data', {
 //   userId: 'user-id-here',

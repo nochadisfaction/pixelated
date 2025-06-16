@@ -2,7 +2,6 @@
 import BaseHead from '@/components/base/Head.astro'
 import Header from '@/components/layout/Header.astro'
 import Footer from '@/components/layout/Footer.astro'
-import BaseLayout from './BaseLayout.astro'
 import { BlogSearch } from '@/components/BlogSearch'
 import SpeedInsights from '@vercel/speed-insights/astro'
 import Analytics from '@vercel/analytics/astro'
@@ -11,7 +10,6 @@ interface Props {
   title: string
   description?: string
   image?: string
-  canonicalURL?: string
   pubDate?: Date
   author?: string
   tags?: string[]
@@ -21,7 +19,6 @@ const {
   title,
   description = 'A blog post',
   image = '/images/blog-default.jpg',
-  canonicalURL = new URL(Astro.url.pathname, Astro.site).href,
   pubDate,
   author,
   tags = [],
@@ -38,7 +35,7 @@ const formattedDate = pubDate?.toLocaleDateString('en-us', {
 <!doctype html>
 <html lang="en" class="scroll-smooth">
   <head>
-    <BaseHead {title} {description} ogImage={image} />
+    <BaseHead {title} {description} />
     <Analytics />
 
     <!-- Structured data for blog post -->

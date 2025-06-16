@@ -1,10 +1,5 @@
-import { defineConfig, devices } from '@playwright/test'
-import 'dotenv/config'
-import path from 'path'
-import { fileURLToPath } from 'url'
-
-// Convert import.meta.url to a directory path (ES modules replacement for __dirname)
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
+import { defineConfig, devices } from '@playwright/test';
+import 'dotenv/config';
 
 /**
  * Playwright configuration for browser testing
@@ -23,16 +18,19 @@ export default defineConfig({
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
-  forbidOnly: !!process.env.CI,
+    // biome-ignore lint/complexity/useLiteralKeys: <explanation>
+  forbidOnly: !!process.env['CI'],
   /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
+    // biome-ignore lint/complexity/useLiteralKeys: <explanation>
+  retries: process.env['CI'] ? 2 : 0,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: process.env.CI
+  // biome-ignore lint/complexity/useLiteralKeys: <explanation>
+    reporter: process.env['CI']
     ? [
-        ['html'],
-        ['github'],
-        ['json', { outputFile: 'test-results/test-results.json' }],
-      ]
+      ['html'],
+      ['github'],
+      ['json', { outputFile: 'test-results/test-results.json' }],
+    ]
     : [['html'], ['list']],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
@@ -71,7 +69,8 @@ export default defineConfig({
   webServer: {
     command: 'pnpm run dev',
     url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
+      // biome-ignore lint/complexity/useLiteralKeys: <explanation>
+    reuseExistingServer: !process.env['CI'],
     timeout: 120000,
   },
   /* Output test artifacts to this directory */

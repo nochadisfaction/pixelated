@@ -195,26 +195,26 @@ if (typeof window !== 'undefined') {
   // Make client available globally
   window.searchClient = proxyClient
 
-  // Dynamically load the browser implementation
-  // Using top-level await in an IIFE to avoid blocking
-  ;(async () => {
-    try {
-      // Dynamic import with explicit .ts extension to help bundlers
-      const { initBrowserSearch } = await import('./search-browser.js')
-      const realClient = await initBrowserSearch()
+    // Dynamically load the browser implementation
+    // Using top-level await in an IIFE to avoid blocking
+    ; (async () => {
+      try {
+        // Dynamic import with explicit .ts extension to help bundlers
+        const { initBrowserSearch } = await import('./search-browser.js')
+        const realClient = await initBrowserSearch()
 
-      // Import any pending documents
-      if (window._pendingSearchDocs.length > 0) {
-        realClient.importDocuments(window._pendingSearchDocs)
-        window._pendingSearchDocs = []
+        // Import any pending documents
+        if (window._pendingSearchDocs.length > 0) {
+          realClient.importDocuments(window._pendingSearchDocs)
+          window._pendingSearchDocs = []
+        }
+
+        // Update the instance
+        searchClientInstance = realClient
+      } catch (error) {
+        console.error('Failed to load search implementation:', error)
       }
-
-      // Update the instance
-      searchClientInstance = realClient
-    } catch (error) {
-      console.error('Failed to load search implementation:', error)
-    }
-  })()
+    })()
 
   // Export the proxy client
   searchClientInstance = proxyClient
@@ -223,18 +223,7 @@ if (typeof window !== 'undefined') {
 // Export the client instance
 export const searchClient = searchClientInstance
 
-// Add CommonJS compatibility for server contexts that may use require()
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = {
-    // Use the already-exported blogSearch
-    get blogSearch() {
-      return blogSearch
-    },
-    get searchClient() {
-      return searchClient
-    },
-    get createSearchDocument() {
-      return createSearchDocument
-    },
-  }
-}
+// Note: This module is designed for ESM environments (Astro, Vite, etc.)
+// All exports are available as named exports for modern import syntax
+// For legacy CommonJS environments, use dynamic imports instead:
+// const { blogSearch, searchClient, createSearchDocument } = await import('./search.js')

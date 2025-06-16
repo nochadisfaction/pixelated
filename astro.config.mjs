@@ -10,9 +10,7 @@ import flexsearchIntegration from './src/integrations/search.js'
 import expressiveCode from 'astro-expressive-code'
 import icon from 'astro-icon'
 import sentry from '@sentry/astro'
-import flexsearchSSRPlugin from './src/plugins/vite-plugin-flexsearch-ssr'
-import vitesse from 'astro-vitesse'
-import tailwind from '@astrojs/tailwind'
+import flexsearchSSRPlugin from './src/plugins/vite-plugin-flexsearch-ssr.js'
 
 // Check build environment
 const isProduction = process.env.NODE_ENV === 'production'
@@ -34,38 +32,20 @@ const disableWebFonts =
 
 // Disable resource-intensive features on Vercel
 const vercelIntegrations = isVercel ? [
-  tailwind(),
   react(),
   mdx(),
-  // UnoCSS({
-  //   injectReset: true,
-  //   mode: 'global',
-  //   safelist: ['font-sans', 'font-mono', 'font-condensed'],
-  //   configFile: './uno.config.vitesse.ts',
-  //   content: {
-  //     filesystem: [
-  //       'src/**/*.{astro,js,ts,jsx,tsx,vue,mdx}',
-  //       'components/**/*.{astro,js,ts,jsx,tsx,vue}',
-  //     ],
-  //   },
-  //   transformers: [
-  //     {
-  //       name: 'unocss:reset',
-  //       transform(code) {
-  //         if (!code || typeof code !== 'string') {
-  //           return code
-  //         }
-  //         if (code.includes('@unocss/reset/reset.css')) {
-  //           return code.replace(
-  //             '@unocss/reset/reset.css',
-  //             '@unocss/reset/tailwind.css',
-  //           )
-  //         }
-  //         return code
-  //       },
-  //     },
-  //   ],
-  // }),
+  UnoCSS({
+    injectReset: false,
+    mode: 'global',
+    safelist: ['font-sans', 'font-mono', 'font-condensed'],
+    configFile: './uno.config.vitesse.ts',
+    content: {
+      filesystem: [
+        'src/**/*.{astro,js,ts,jsx,tsx,vue,mdx}',
+        'components/**/*.{astro,js,ts,jsx,tsx,vue}',
+      ],
+    },
+  }),
   icon({
     include: {
       lucide: ['*'],
@@ -73,21 +53,17 @@ const vercelIntegrations = isVercel ? [
     svgdir: './src/icons',
   }),
 ] : [
-  tailwind(),
-  vitesse({
-    title: 'Pixelated Empathy',
-    description: 'AI-Powered Mental Health Research & Innovation',
-    disable404Route: true,
-  }),
-  sentry({
+  // Disable Sentry in development to prevent import-in-the-middle warnings
+  ...(isProduction ? [sentry({
     dsn: process.env.SENTRY_DSN,
     sendDefaultPii: true,
     telemetry: false,
     sourceMapsUploadOptions: {
-      project: 'pixelated',
+      org: process.env.SENTRY_ORG || 'pixelated-empathy-dq',
+      project: 'pixel-astro',
       authToken: process.env.SENTRY_AUTH_TOKEN,
     },
-  }),
+  })] : []),
   expressiveCode({
     themes: ['github-dark', 'github-light'],
     styleOverrides: {
@@ -98,36 +74,24 @@ const vercelIntegrations = isVercel ? [
     },
   }),
   react(),
-  mdx(),
-  // UnoCSS({
-  //   injectReset: true,
-  //   mode: 'global',
-  //   safelist: ['font-sans', 'font-mono', 'font-condensed'],
-  //   configFile: './uno.config.vitesse.ts',
-  //   content: {
-  //     filesystem: [
-  //       'src/**/*.{astro,js,ts,jsx,tsx,vue,mdx}',
-  //       'components/**/*.{astro,js,ts,jsx,tsx,vue}',
-  //     ],
-  //   },
-  //   transformers: [
-  //     {
-  //       name: 'unocss:reset',
-  //       transform(code) {
-  //         if (!code || typeof code !== 'string') {
-  //           return code
-  //         }
-  //         if (code.includes('@unocss/reset/reset.css')) {
-  //           return code.replace(
-  //             '@unocss/reset/reset.css',
-  //             '@unocss/reset/tailwind.css',
-  //           )
-  //         }
-  //         return code
-  //       },
-  //     },
-  //   ],
-  // }),
+  mdx({
+    remarkPlugins: [],
+    rehypePlugins: [],
+    optimize: true,
+    extendMarkdownConfig: true,
+  }),
+  UnoCSS({
+    injectReset: false,
+    mode: 'global',
+    safelist: ['font-sans', 'font-mono', 'font-condensed'],
+    configFile: './uno.config.vitesse.ts',
+    content: {
+      filesystem: [
+        'src/**/*.{astro,js,ts,jsx,tsx,vue,mdx}',
+        'components/**/*.{astro,js,ts,jsx,tsx,vue}',
+      ],
+    },
+  }),
   icon({
     include: {
       lucide: ['*'],
@@ -144,6 +108,9 @@ const vercelOptimizations = isVercel ? {
     exclude: ['**/*'], // Exclude everything from optimization
     force: false, // Don't force re-optimization
     holdUntilCrawlEnd: false, // Don't wait for crawling to end
+  },
+  server: {
+    hmr: false, // Disable HMR completely on Vercel
   },
   define: {
     'import.meta.env.VITE_DISABLE_DEPS_OPTIMIZATION': 'true',
@@ -189,8 +156,8 @@ const vercelOptimizations = isVercel ? {
   // Normal development/production configuration
   optimizeDeps: {
     noDiscovery: false, // Allow discovery in non-Vercel environments
-    include: ['react', 'react-dom', 'buffer'],
-    exclude: ['@unocss/astro', 'flexsearch'],
+    include: ['react', 'react-dom'],
+    exclude: ['@unocss/astro', 'flexsearch', '@astrojs/mdx', '@astrojs/react', '@vercel/analytics', '@vercel/speed-insights'],
     esbuildOptions: {
       platform: 'node',
       target: 'node18',
@@ -203,8 +170,14 @@ const vercelOptimizations = isVercel ? {
       },
     },
   },
+  server: {
+    hmr: {
+      overlay: false, // Reduce HMR overhead in development
+      port: 24678, // Use a different port for HMR
+    },
+  },
   build: {
-    chunkSizeWarningLimit: 1500,
+    chunkSizeWarningLimit: 3000, // Increased to reduce warnings
     cssCodeSplit: true,
     minify: isProduction ? 'esbuild' : false,
     cssMinify: isProduction,
@@ -236,16 +209,23 @@ const vercelOptimizations = isVercel ? {
       ],
       output: {
         manualChunks: (id) => {
-          if (id.includes('/components/chat/AnalyticsDashboardReact.')) {
-            return 'analytics-dashboard'
-          }
-          if (id.includes('/components/MentalHealthChatDemoReact.')) {
-            return 'mental-health-chat'
-          }
-          if (id.includes('/components/chat/TherapyChatSystem.')) {
-            return 'therapy-chat-system'
+          // Handle Astro middleware modules to prevent circular dependencies
+          if (id.includes('astro/dist/core/middleware/') ||
+              id.includes('astro-internal:middleware') ||
+              id === 'virtual:patched-middleware' ||
+              id === 'virtual:sequence-module') {
+            return 'astro-middleware'
           }
 
+          // Group major React components together
+          if (id.includes('/components/chat/') ||
+              id.includes('AnalyticsDashboardReact') ||
+              id.includes('MentalHealthChatDemoReact') ||
+              id.includes('TherapyChatSystem')) {
+            return 'chat-components'
+          }
+
+          // Group React core libraries
           if (
             id.includes('node_modules/react/') ||
             id.includes('node_modules/react-dom/') ||
@@ -253,79 +233,24 @@ const vercelOptimizations = isVercel ? {
           ) {
             return 'react-core'
           }
-          if (id.includes('node_modules/@radix-ui/')) {
-            return 'radix-ui'
-          }
-          if (id.includes('node_modules/framer-motion/')) {
-            return 'motion'
-          }
-          if (id.includes('node_modules/lucide-react/')) {
-            return 'icons'
-          }
-          if (
-            id.includes('node_modules/chart.js/') ||
-            id.includes('node_modules/react-chartjs-2/')
-          ) {
-            return 'chartjs'
-          }
+
+          // Group major vendor libraries that are actually used
           if (id.includes('node_modules/@tensorflow/')) {
             return 'tensorflow'
           }
-          if (
-            id.includes('node_modules/@supabase/') ||
-            id.includes('node_modules/convex/') ||
-            id.includes('node_modules/postgres/') ||
-            id.includes('node_modules/redis/') ||
-            id.includes('node_modules/ioredis/') ||
-            id.includes('node_modules/@upstash/redis/')
-          ) {
-            return 'db-clients'
-          }
-          if (
-            id.includes('node_modules/openai/') ||
-            id.includes('node_modules/ai/') ||
-            id.includes('node_modules/@ai-sdk/') ||
-            id.includes('node_modules/@langchain/')
-          ) {
-            return 'ai-ml'
+          if (id.includes('node_modules/@supabase/')) {
+            return 'supabase'
           }
           if (id.includes('node_modules/three/')) {
             return 'three-js'
           }
-          if (
-            id.includes('node_modules/remark/') ||
-            id.includes('node_modules/rehype/') ||
-            id.includes('node_modules/react-markdown/') ||
-            id.includes('node_modules/unified/')
-          ) {
-            return 'content-processing'
-          }
-          if (id.includes('node_modules/@unocss/')) {
-            return 'unocss'
-          }
-          if (
-            id.includes('node_modules/jotai/') ||
-            id.includes('node_modules/zustand/')
-          ) {
-            return 'state-management'
-          }
-          if (
-            id.includes('node_modules/zod/') ||
-            id.includes('node_modules/nanoid/') ||
-            id.includes('node_modules/uuid/') ||
-            id.includes('node_modules/clsx/') ||
-            id.includes('node_modules/tailwind-merge/')
-          ) {
-            return 'utilities'
-          }
-          if (
-            id.includes('node_modules/ws/') ||
-            id.includes('node_modules/web-streams-polyfill/')
-          ) {
-            return 'web-standards'
-          }
           if (id.includes('node_modules/flexsearch/')) {
             return 'flexsearch'
+          }
+
+          // Group all other node_modules into a single vendor chunk
+          if (id.includes('node_modules/')) {
+            return 'vendor'
           }
 
           return undefined
@@ -340,11 +265,7 @@ export default defineConfig({
   output: 'server',
   logLevel: verboseOutput ? 'info' : 'error',
   adapter: vercel(),
-  image: {
-    service: {
-      entrypoint: 'astro/assets/services/squoosh',
-    },
-  },
+
   prefetch: {
     defaultStrategy: 'hover',
     throttle: 3,
@@ -542,14 +463,14 @@ export default defineConfig({
     css: {
       devSourcemap: true,
     },
+
     server: {
       hmr: {
-        overlay: true,
+        overlay: false, // Disable overlay to reduce warnings
       },
       watch: {
-        usePolling: true,
-        interval: 1000,
-        ignored: ['**/node_modules/**', '**/dist/**', '**/.git/**'],
+        usePolling: false, // Disable polling to reduce overhead
+        ignored: ['**/node_modules/**', '**/dist/**', '**/.git/**', '**/coverage/**'],
       },
       fs: {
         strict: true,
@@ -588,7 +509,6 @@ export default defineConfig({
     strict: true,
     allowJS: true,
     reportTypeErrors: true,
-    target: 'ESNext',
   },
   compressHTML: false,
   scopedStyleStrategy: 'class',

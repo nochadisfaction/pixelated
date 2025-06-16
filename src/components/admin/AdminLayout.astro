@@ -4,7 +4,6 @@
 import { SITE } from '../../config'
 import { isAuthenticated, hasAdminRole } from '../../lib/auth/authUtils'
 import { getUser } from '../../lib/auth/sessionUtils'
-import { Icon } from 'astro-icon/components'
 import { ClientRouter } from 'astro:transitions'
 
 interface Props {
@@ -18,7 +17,6 @@ const {
   title = 'Admin Dashboard',
   description = `Admin dashboard for ${SITE.title}`,
   activeItem = 'dashboard',
-  image = '/og-image.png',
 } = Astro.props
 
 // Verify authentication and admin role
@@ -93,9 +91,6 @@ const navItems = [
 
 // Function to check if a navigation item is active
 const isActive = (navId: string) => activeItem === navId
-
-// State for mobile menu
-let isMobileMenuOpen = false
 ---
 
 <html lang={SITE.lang} transition:animate="fade">
@@ -106,18 +101,6 @@ let isMobileMenuOpen = false
     <meta name="generator" content={Astro.generator} />
     <title>{title} | Admin Dashboard</title>
     <meta name="description" content={description} />
-
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:image" content={image} />
-
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:title" content={title} />
-    <meta property="twitter:description" content={description} />
-    <meta property="twitter:image" content={image} />
 
     <ClientRouter />
   </head>

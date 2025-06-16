@@ -30,7 +30,6 @@ export const SITE = {
   description:
     'Welcome to Pixelated Empathy - the premier destination for all things related to the world of AI-assisted emotional intelligence.',
   lang: 'en',
-  ogImage: '/og-image.png',
   themeColor: '#8B5CF6',
 }
 
@@ -43,7 +42,7 @@ export const UI = {
     position: 'right', // options: 'left', 'right', 'both'
   },
   navBarLayout: {
-    left: ['logoButton'],
+    left: [],
     right: ['internalNavs', 'socialLinks', 'themeButton'],
     mergeOnMobile: true,
   } as NavBarLayout,

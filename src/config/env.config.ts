@@ -60,6 +60,8 @@ const envSchema = z.object({
 
   // Monitoring and analytics
   SENTRY_DSN: z.string().url().optional(),
+  SENTRY_ORG: z.string().optional(),
+  SENTRY_AUTH_TOKEN: z.string().optional(),
   AXIOM_DATASET: z.string().optional(),
   AXIOM_TOKEN: z.string().optional(),
   VITE_LITLYX_PROJECT_ID: z.string().optional(),
@@ -142,6 +144,7 @@ function maskEnv(env: Record<string, unknown>): Record<string, unknown> {
     'UPSTASH_REDIS_REST_TOKEN',
     'REDIS_TOKEN',
     'SENTRY_DSN',
+    'SENTRY_AUTH_TOKEN',
   ]
   return Object.fromEntries(
     Object.entries(env).map(([k, v]) => [
@@ -256,6 +259,8 @@ export const config = {
 
   monitoring: {
     sentryDsn: (): string | undefined => getEnv().SENTRY_DSN,
+    sentryOrg: (): string | undefined => getEnv().SENTRY_ORG,
+    sentryAuthToken: (): string | undefined => getEnv().SENTRY_AUTH_TOKEN,
     axiomDataset: (): string | undefined => getEnv().AXIOM_DATASET,
     axiomToken: (): string | undefined => getEnv().AXIOM_TOKEN,
     litlyxProjectId: (): string | undefined => getEnv().VITE_LITLYX_PROJECT_ID,

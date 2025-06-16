@@ -28,26 +28,31 @@ const { share, toc } = FEATURES
 
 // Format dates
 const pubDate =
-  frontmatter.pubDate instanceof Date
-    ? frontmatter.pubDate.toISOString()
-    : undefined
+  frontmatter.pubDate instanceof Date ? frontmatter.pubDate.toISOString() : null
 const updatedDate =
   frontmatter.lastModDate instanceof Date
     ? frontmatter.lastModDate.toISOString()
-    : undefined
+    : null
 
 // Warning message for unpublished posts
 const UNPUBLISHED_WARNING = `This article is not yet available.
 Please check back later.`
+
+// Prepare BaseLayout props, only including dates when they exist
+const baseLayoutProps: {
+  title: string;
+  description: string;
+  pubDate?: string;
+  lastModDate?: string;
+} = {
+  title: frontmatter.title,
+  description: frontmatter.description,
+};
+if (pubDate) baseLayoutProps.pubDate = pubDate;
+if (updatedDate) baseLayoutProps.lastModDate = updatedDate;
 ---
 
-<BaseLayout
-  title={frontmatter.title}
-  description={frontmatter.description}
-  ogImage={frontmatter.ogImage}
-  {pubDate}
-  lastModDate={updatedDate}
->
+<BaseLayout {...baseLayoutProps}>
   <StandardLayout title={frontmatter.title}>
     <div slot="head">
       {

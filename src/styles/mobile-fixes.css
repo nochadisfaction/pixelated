@@ -167,14 +167,8 @@ html {
     margin-bottom: 16px;
   }
 
-  /* Make buttons large enough for touch */
-  button,
-  .button,
-  [type='button'],
-  [type='submit'] {
-    min-height: 44px;
-    padding: 10px 16px;
-  }
+  /* Touch target sizing is now handled by button-fixes.css */
+  /* This ensures consistency with the standardized button system */
 
   /* Fix for iOS Safari keyboard appearing/disappearing */
   .ios-device .form-group {

@@ -8,7 +8,6 @@ import SpeedInsights from '@vercel/speed-insights/astro'
 interface Props {
   title?: string | undefined
   description?: string | undefined
-  ogImage?: string | boolean | undefined
   pubDate?: string | undefined
   lastModDate?: string | undefined
   transitionMode?:
@@ -36,15 +35,11 @@ const pageDescription = description || SITE.description
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site)
 
-// OG image generation disabled
-const ogImageURL = getUrl('og-images', 'og-image.png')
-
 // https://jsonld.com/blog-post/
 const blogPostingData = {
   '@context': 'https://schema.org',
   '@type': 'BlogPosting',
   'headline': pageTitle,
-  'image': ogImageURL,
   'url': canonicalURL,
   'datePublished': pubDate,
   ...(lastModDate && { dateModified: lastModDate }),
@@ -93,31 +88,6 @@ const webPageData = {
 
 <!-- Three.js is imported dynamically in components that need it -->
 
-<!-- Open Graph / Facebook -->
-<meta property="og:type" content={pubDate ? 'article' : 'website'} />
-<meta property="og:url" content={canonicalURL} />
-<meta property="og:title" content={pageTitle} />
-<meta property="og:description" content={pageDescription} />
-<meta property="og:image" content={ogImageURL} />
-<meta property="og:site_name" content={SITE.title} />
-<meta property="og:locale" content={SITE.ogLocale} />
-{
-  pubDate && (
-    <>
-      <meta property="article:author" content={SITE.author} />
-      <meta property="article:published_time" content={pubDate} />
-      <meta property="article:modified_time" content={lastModDate} />
-    </>
-  )
-}
-
-<!-- Twitter -->
-<meta property="twitter:card" content="summary_large_image" />
-<meta property="twitter:url" content={canonicalURL} />
-<meta property="twitter:title" content={pageTitle} />
-<meta property="twitter:description" content={pageDescription} />
-<meta property="twitter:image" content={ogImageURL} />
-
 <!-- Canonical URL -->
 <link rel="canonical" href={canonicalURL} />
 
@@ -128,7 +98,11 @@ const webPageData = {
 
 <!-- Manifest -->
 <link rel="manifest" href={getUrl('/manifest.webmanifest')} />
-<link rel="alternate" type="application/manifest+json" href={getUrl('/manifest.json')} />
+<link
+  rel="alternate"
+  type="application/manifest+json"
+  href={getUrl('/manifest.json')}
+/>
 
 <!-- Sitemap -->
 <link rel="sitemap" href={getUrl('/sitemap-index.xml')} />
@@ -172,8 +146,8 @@ const webPageData = {
 
 <script is:inline>
   function speedInsightsBeforeSend(data) {
-    console.log("Speed Insights before send", data)
-    return data;
+    console.log('Speed Insights before send', data)
+    return data
   }
 </script>
 <SpeedInsights />

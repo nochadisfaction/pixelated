@@ -135,13 +135,5 @@ export const FEATURES: Features = {
       displayMode: 'always',
     },
   ],
-  ogImage: [
-    false,
-    {
-      authorOrBrand: `${SITE.title}`,
-      fallbackTitle: `${SITE.description}`,
-      fallbackBgType: 'plum',
-    },
-  ],
   slideEnterAnim: [true, { enterStep: 60 }],
 }

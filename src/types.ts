@@ -639,32 +639,6 @@ interface TocConfig {
   displayMode: 'always' | 'hover'
 }
 
-interface OgImageConfig {
-  /**
-   * Defines your name or brand name that will be displayed on the OG image.
-   */
-  authorOrBrand: string
-
-  /**
-   * Sets the fallback title for OG images.
-   *
-   * Used when the `title` in the frontmatter is missing or invalid.
-   */
-  fallbackTitle: string
-
-  /**
-   * Sets the fallback background for OG images.
-   *
-   * By default, the background used for auto-generated OG images is based on the `bgType` set in frontmatter.
-   * This value is only used for the fallback OG image (stored at `/public/og-images/og-image.png`)
-   * and as the background when `bgType` is not specified.
-   *
-   * A fallback OG image is the default image used when the specified or auto-generated OG image is missing.
-   * You can delete the existing file to regenerate a new one.
-   */
-  fallbackBgType: BgType
-}
-
 interface slideEnterAnimConfig {
   /**
    * Adjusts the animation speed (ms). Smaller values speed up;
@@ -688,18 +662,6 @@ export interface Features {
    * To disable for a specific post or page, set the `toc` field in the frontmatter to `false`.
    */
   toc: FeatureConfig<TocConfig>
-
-  /**
-   * Globally controls global OG image auto-generation and related options.
-   *
-   * - Automatically generates OG images for Markdown/MDX files when:
-   *   - The `ogImage` field is absent in frontmatter, or
-   *   - The `ogImage` field is set to `true`.
-   * - To disable for a specific post, set `ogImage: false` in the frontmatter.
-   * - Generated images are saved in `/public/og-images`.
-   * - If disabled, deleting `/public/og-images/og-image.png` won't regenerate it.
-   */
-  ogImage: FeatureConfig<OgImageConfig>
 
   /**
    * Controls whether to enable slide enter animation on each page.
