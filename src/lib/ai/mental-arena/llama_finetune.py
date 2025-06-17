@@ -17,7 +17,7 @@ from transformers.modeling_utils import PreTrainedModel
 from transformers.models.auto.modeling_auto import AutoModelForCausalLM
 from transformers.models.auto.tokenization_auto import AutoTokenizer
 from transformers.tokenization_utils_base import BatchEncoding, PreTrainedTokenizerBase
-from transformers.trainer import Trainer
+from transformers.trainer import Trainer, TrainerCallback
 from transformers.training_args import TrainingArguments
 
 # Configure logging
@@ -27,6 +27,42 @@ logging.basicConfig(
     handlers=[logging.StreamHandler(sys.stdout)],
 )
 logger = logging.getLogger(__name__)
+
+
+class GradientNormMonitorCallback(TrainerCallback):
+    def on_step_end(self, args, state, control, model, optimizer, **kwargs):
+        if hasattr(args, 'enable_gradient_norm_monitoring') and args.enable_gradient_norm_monitoring:
+            # Only log at logging steps or if explicitly set to log every step
+            if state.global_step % args.logging_steps == 0:
+                total_norm = 0.0
+                for name, p in model.named_parameters():
+                    if p.grad is not None and p.requires_grad:
+                        try:
+                            # Ensure p.grad.data is a tensor
+                            if torch.is_tensor(p.grad.data):
+                                norm = p.grad.data.norm(2)
+                                total_norm += norm.item() ** 2
+                                logger.debug(f"Gradient norm for {name}: {norm.item()}")
+                            else:
+                                logger.warning(f"p.grad.data for {name} is not a tensor: {type(p.grad.data)}")
+                        except Exception as e:
+                            logger.error(f"Error calculating norm for {name}: {e}")
+
+                if total_norm > 0: # Avoid sqrt of zero if no grads
+                    total_norm = total_norm ** 0.5
+                else:
+                    total_norm = 0.0
+
+                logger.info(f"Step {state.global_step}: Total gradient norm before clipping: {total_norm}")
+
+                if hasattr(args, 'gradient_clip_val') and args.gradient_clip_val is not None and args.gradient_clip_val > 0:
+                    try:
+                        clipped_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), args.gradient_clip_val)
+                        logger.info(f"Step {state.global_step}: Gradient clipping applied. Norm before: {total_norm}, Norm after: {clipped_norm.item()}")
+                    except Exception as e:
+                        logger.error(f"Error during gradient clipping: {e}")
+                elif hasattr(args, 'gradient_clip_val') and args.gradient_clip_val is not None and args.gradient_clip_val <= 0:
+                    logger.info(f"Step {state.global_step}: Gradient clipping disabled (gradient_clip_val <= 0).")
 
 
 def parse_arguments():
@@ -79,6 +115,17 @@ def parse_arguments():
     )
     parser.add_argument(
         "--max_seq_length", type=int, default=512, help="Maximum sequence length"
+    )
+    parser.add_argument(
+        "--enable_gradient_norm_monitoring",
+        action="store_true",
+        help="Enable gradient norm monitoring and clipping.",
+    )
+    parser.add_argument(
+        "--gradient_clip_val",
+        type=float,
+        default=1.0,
+        help="Value for gradient clipping if monitoring is enabled. Set to 0 to disable clipping but keep monitoring.",
     )
 
     return parser.parse_args()
@@ -271,12 +318,18 @@ def fine_tune_model(args):
     # Create data collator
     data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
 
+    # Initialize callbacks
+    callbacks = []
+    if args.enable_gradient_norm_monitoring:
+        callbacks.append(GradientNormMonitorCallback())
+
     # Initialize trainer
     trainer = Trainer(
         model=model,
         args=training_args,
         train_dataset=train_dataset,
         data_collator=data_collator,
+        callbacks=callbacks,
     )
 
     # Start training
@@ -304,6 +357,8 @@ def fine_tune_model(args):
         "max_seq_length": args.max_seq_length,
         "dataset": "training_data",  # Avoid storing file paths that could contain sensitive info
         "use_peft": args.use_peft,
+        "enable_gradient_norm_monitoring": args.enable_gradient_norm_monitoring,
+        "gradient_clip_val": args.gradient_clip_val if args.enable_gradient_norm_monitoring else None,
     }
 
     with open(os.path.join(model_output_dir, "training_metadata.json"), "w") as f:
