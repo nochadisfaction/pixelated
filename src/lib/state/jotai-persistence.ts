@@ -13,7 +13,9 @@ import { atomWithStorage, createJSONStorage } from 'jotai/utils'
 
 import type { AsyncStorage } from 'jotai/vanilla/utils/atomWithStorage'
 import { logger } from '@/lib/logger'
-import { encrypt, decrypt } from '@/lib/crypto'
+import { createCryptoSystem } from '@/lib/crypto'
+
+const { encrypt, decrypt } = createCryptoSystem({ namespace: 'jotai' })
 
 // ============================================================================
 // Types
@@ -71,7 +73,9 @@ class EncryptedJotaiStorage<Value> implements AsyncStorage<Value> {
   private handleStorageChange = (event: StorageEvent) => {
     if (event.key === this.key && event.newValue !== event.oldValue) {
       // Notify all listeners that the state has changed in another tab
-      this.syncListeners.forEach((listener) => listener())
+      for (const listener of this.syncListeners) {
+        listener()
+      }
     }
   }
 
@@ -283,7 +287,7 @@ export function atomWithTTL<Value>(
 
 export class StatePersistenceManager {
   private static instance: StatePersistenceManager
-  private persistedAtoms: Map<string, any> = new Map()
+  private persistedAtoms: Map<string, unknown> = new Map()
   private syncSubscriptions: Map<string, () => void> = new Map()
 
   static getInstance(): StatePersistenceManager {
@@ -296,7 +300,7 @@ export class StatePersistenceManager {
   /**
    * Register an atom for persistence management
    */
-  registerAtom<T>(key: string, atom: any): void {
+  registerAtom<T>(key: string, atom: unknown): void {
     this.persistedAtoms.set(key, atom)
   }
 

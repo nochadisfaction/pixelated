@@ -122,3 +122,5 @@ tasks.json
 
 .sentryclirc
 .pnpm-store/
+
+src/lib/ai/bias-detection/bias_detection_env

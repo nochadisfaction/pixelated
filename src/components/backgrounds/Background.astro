@@ -20,11 +20,6 @@ const { type, colorScheme = 'default' } = Astro.props
   )
 }
 {type === ('plum' as BgType) && <Plum />}
-{
-  type === ('gradient' as BgType) && (
-    <div class="fixed inset-0 -z-10 bg-gradient-to-br from-gray-100 via-gray-50 to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-950" />
-  )
-}
 {type === ('pulse' as BgType) && <Particle />}
 {type === ('light' as BgType) && <div class="fixed inset-0 -z-10 bg-white" />}
 {type === ('dark' as BgType) && <div class="fixed inset-0 -z-10 bg-gray-900" />}

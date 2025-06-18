@@ -40,6 +40,23 @@ export default defineConfig({
     presetTypography(),
   ],
   theme: {
+    colors: {
+      // Design system colors using CSS custom properties
+      card: 'rgb(var(--color-card))',
+      border: 'rgb(var(--color-border))',
+      background: 'rgb(var(--color-background))',
+      foreground: 'rgb(var(--color-foreground))',
+      muted: 'rgb(var(--color-muted))',
+      primary: 'rgb(var(--color-primary))',
+      secondary: 'rgb(var(--color-secondary))',
+      accent: 'rgb(var(--color-accent))',
+      success: 'rgb(var(--color-success))',
+      info: 'rgb(var(--color-info))',
+      warning: 'rgb(var(--color-warning))',
+      error: 'rgb(var(--color-error))',
+      // Aliases for common patterns
+      'card-foreground': 'rgb(var(--color-foreground))',
+    },
     breakpoints: {
       'xs': '320px',
       'sm': '640px',

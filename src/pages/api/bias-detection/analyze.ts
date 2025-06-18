@@ -10,7 +10,6 @@ import { z } from 'zod'
 import { BiasDetectionEngine } from '@/lib/ai/bias-detection/BiasDetectionEngine'
 import {
   validateTherapeuticSession,
-  generateAnonymizedId,
 } from '@/lib/ai/bias-detection/utils'
 import { getAuditLogger } from '@/lib/ai/bias-detection/audit'
 import { getCacheManager } from '@/lib/ai/bias-detection/cache'
@@ -143,7 +142,7 @@ async function authenticateRequest(
 
     // Mock user context - in production this would come from JWT claims
     const mockUser: UserContext = {
-      userId: 'user-' + generateAnonymizedId(token),
+      userId: `user-${token.slice(0, 8)}`,
       email: 'user@example.com',
       role: {
         id: 'analyst',
@@ -175,7 +174,7 @@ function hasPermission(
   return user.permissions.some(
     (permission) =>
       permission.resource === resource &&
-      permission.actions.includes(action as any),
+      permission.actions.includes(action as string),
   )
 }
 
@@ -183,7 +182,7 @@ function hasPermission(
 // RATE LIMITING
 // =============================================================================
 
-const rateLimitMap = new Map<string, { count: number; resetTime: number }>()
+const rateLimitMap = new Map()
 
 function checkRateLimit(
   identifier: string,
