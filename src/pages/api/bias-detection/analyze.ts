@@ -186,8 +186,8 @@ const rateLimitMap = new Map()
 
 function checkRateLimit(
   identifier: string,
-  limit: number = 60,
-  windowMs: number = 60000,
+  limit = 60,
+  windowMs = 60000,
 ): boolean {
   const now = Date.now()
   const userLimit = rateLimitMap.get(identifier)
@@ -449,7 +449,7 @@ export const POST: APIRoute = async ({ request }) => {
     // Initialize bias detection engine with secure configuration
     const biasEngine = new BiasDetectionEngine({
       pythonServiceUrl:
-        process.env.PYTHON_SERVICE_URL || 'http://localhost:5000',
+        process.env['PYTHON_SERVICE_URL'] || 'http://localhost:5000',
       pythonServiceTimeout: 30000,
       thresholds: {
         warningLevel: 0.3,
@@ -739,7 +739,8 @@ export const GET: APIRoute = async ({ request }) => {
     if (!analysisResult) {
       const biasEngine = new BiasDetectionEngine({
         pythonServiceUrl:
-          process.env.PYTHON_SERVICE_URL || 'http://localhost:5000',
+          // biome-ignore lint/complexity/useLiteralKeys: <explanation>
+          process.env['PYTHON_SERVICE_URL'] || 'http://localhost:5000',
         pythonServiceTimeout: 30000,
         thresholds: {
           warningLevel: 0.3,

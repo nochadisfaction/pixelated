@@ -1,166 +1,271 @@
 ---
+// Pixelated Empathy Homepage - AI-Powered Mental Health Platform (Dark Mode Only)
 import BaseLayout from '@/layouts/BaseLayout.astro'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
-// Add prerender directive to generate static HTML during build
 export const prerender = true
 
-// Hero section data
 const heroStats = [
-  { value: "10,000+", label: "Mental Health Professionals" },
-  { value: "50,000+", label: "Patients Served" },
-  { value: "95%", label: "Improvement Rate" },
-  { value: "24/7", label: "AI Support" }
+  { value: "500+", label: "Training Programs" },
+  { value: "92%", label: "Pass Rate Increase" }, 
+  { value: "50+", label: "Client Personas" },
+  { value: "Zero", label: "Real Harm Risk" }
 ]
 
-// Features data
-const features = [
+// Add testimonials for social proof
+const testimonials = [
   {
-    title: "AI-Powered Therapy Training",
-    description: "Advanced machine learning algorithms provide personalized training experiences for mental health professionals.",
-    icon: "🧠"
+    text: "Honestly? This saved my students from making some pretty painful mistakes. They practice the hard conversations here first.",
+    author: "Dr. Sarah M.",
+    role: "Clinical Supervisor",
+    rating: 5
   },
   {
-    title: "Real-Time Emotional Analysis",
-    description: "Monitor and analyze emotional states in real-time to provide better patient care and outcomes.",
-    icon: "💡"
+    text: "I had no idea I was being dismissive with certain clients until the AI caught it. Humbling, but so grateful.",
+    author: "Mike T.", 
+    role: "Therapist in Training",
+    rating: 5
   },
   {
-    title: "Secure & HIPAA Compliant",
-    description: "Enterprise-grade security ensures patient data protection with full HIPAA compliance.",
-    icon: "🔒"
-  },
-  {
-    title: "Intelligent Interventions",
-    description: "AI-driven intervention recommendations based on evidence-based practices and patient history.",
-    icon: "⚡"
-  },
-  {
-    title: "Comprehensive Analytics",
-    description: "Deep insights into therapy sessions, patient progress, and treatment effectiveness.",
-    icon: "📊"
-  },
-  {
-    title: "Seamless Integration",
-    description: "Easy integration with existing EHR systems and clinical workflows.",
-    icon: "🔗"
+    text: "Our graduation rates went up 40% after we started using this. Students just seem... ready. Actually ready.",
+    author: "Dr. Jennifer L.",
+    role: "Program Director",
+    rating: 5
   }
 ]
 
-// Testimonials data
-const testimonials = [
+const features = [
   {
-    name: "Dr. Sarah Chen",
-    role: "Clinical Psychologist",
-    quote: "Pixelated Empathy has transformed how I approach therapy training. The AI insights are incredibly accurate.",
-    avatar: "/images/avatar-1.jpg"
+    title: "50+ Different Personalities to Learn From",
+    description: "Every challenging client type you can imagine - from the quietly withdrawn to the explosively angry. Practice until you feel ready for anything.",
+    icon: "🎭",
+    accent: "green",
+    benefit: "No real person gets hurt while you learn"
   },
   {
-    name: "Michael Rodriguez",
-    role: "Therapy Director",
-    quote: "The real-time emotional analysis has helped our team provide better patient care than ever before.",
-    avatar: "/images/avatar-2.jpg"
+    title: "Catch Your Blind Spots (Gently)", 
+    description: "We all have biases. Our AI notices when you might be reacting from your own stuff instead of helping theirs. It's like having a really wise supervisor who never judges.",
+    icon: "🪞",
+    accent: "emerald",
+    benefit: "See yourself clearly without shame"
   },
   {
-    name: "Dr. Emily Watson",
-    role: "Psychiatrist",
-    quote: "The security and compliance features give us complete confidence in using this platform.",
-    avatar: "/images/avatar-3.jpg"
+    title: "Your Mistakes Stay Private",
+    description: "Everything here is completely confidential. Make all the beginner mistakes you need to without anyone knowing except you.",
+    icon: "🤐",
+    accent: "green",
+    benefit: "Learn without fear of judgment"
+  },
+  {
+    title: "See Your Growth Over Time",
+    description: "Track how you're improving session by session. Watch yourself get more confident, more skilled, more ready to help real people heal.",
+    icon: "🌱",
+    accent: "emerald",
+    benefit: "Actual proof you're getting better at this"
+  },
+  {
+    title: "Try Wild New Ideas Safely",
+    description: "Read about some new technique? Wondered if art therapy might work? Test it here first. No ethics boards to worry about, just learning.",
+    icon: "🎨",
+    accent: "green",
+    benefit: "Innovation without consequences"
+  },
+  {
+    title: "Practice the Really Hard Stuff",
+    description: "Suicidal clients. Trauma responses. Full meltdowns. The scenarios that keep you up at night worrying - practice them until you feel steady.",
+    icon: "💪",
+    accent: "emerald",
+    benefit: "Ready for anything life throws at you"
   }
 ]
 ---
 
 <BaseLayout
-  title="Pixelated Empathy - AI-Powered Mental Health Training"
-  description="The premier destination for AI-assisted emotional intelligence and therapy training. Transform mental health care with advanced AI technology."
+  title="Pixelated Empathy - AI Therapist Training Platform"
+  description="Safe AI role-play training for therapists. Practice with difficult client personas, get bias detection feedback, and build confidence without real-world risk."
   bgType="plum"
 >
-  <div class="relative min-h-screen">
+  <div class="relative min-h-screen text-white">
+    <!-- Floating Particles -->
+    <div class="particles-container absolute inset-0 overflow-hidden pointer-events-none">
+      <div class="particle particle-1"></div>
+      <div class="particle particle-2"></div>
+      <div class="particle particle-3"></div>
+      <div class="particle particle-4"></div>
+      <div class="particle particle-5"></div>
+    </div>
+
     <!-- Hero Section -->
-    <section class="relative py-20 lg:py-32 overflow-hidden">
+    <section class="relative py-8 lg:py-12 z-10">
       <div class="relative container mx-auto px-4">
-        <div class="max-w-4xl mx-auto text-center">
-          <!-- Badge -->
-          <div class="mb-8 animate-fade-in">
-            <Badge variant="outline" className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium">
-              <span class="relative flex h-2 w-2">
-                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+        <div class="w-full">
+          <!-- Status Badge -->
+          <div class="mb-12 animate-breathe text-center">
+            <Badge className="inline-flex items-center gap-3 px-6 py-3 text-sm bg-green-500/20 border border-green-400/40 text-green-200 rounded-full backdrop-blur-md bg-black/10">
+              <span class="relative flex h-3 w-3">
+                <span class="animate-pulse absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
               </span>
-              Now in Production
+              AI Training Simulator Active
             </Badge>
           </div>
 
-          <!-- Main headline -->
-          <h1 class="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight mb-8 animate-slide-up text-gray-900 dark:text-white" style="animation-delay: 0.2s;">
-            The Future of<br />
-            <span class="text-gray-800 dark:text-gray-100">
-              AI-Assisted Therapy
-            </span>
-          </h1>
-
-          <!-- Description -->
-          <p class="text-xl lg:text-2xl text-gray-600 dark:text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed animate-slide-up" style="animation-delay: 0.4s;">
-            Transform mental health care with advanced AI technology. Train therapists, analyze emotions, and provide intelligent interventions with unprecedented accuracy and insight.
-          </p>
-
-          <!-- CTA Buttons -->
-          <div class="flex flex-col sm:flex-row gap-4 justify-center mb-16 animate-slide-up" style="animation-delay: 0.6s;">
-            <Button size="lg" className="bg-gray-800 hover:bg-gray-700 dark:bg-gray-200 dark:hover:bg-gray-100 text-white dark:text-gray-900 px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200">
-              Start Free Trial
-            </Button>
-            <Button variant="outline" size="lg" className="px-8 py-4 text-lg font-semibold rounded-xl border-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200">
-              Watch Demo
-            </Button>
+          <!-- Power Headlines with Value Proposition -->
+          <div class="text-center mb-8">
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-wide mb-4 organic-text-glow leading-tight max-w-6xl mx-auto">
+              Practice Makes Perfect
+              <br />
+              <span class="text-green-400 golden-shimmer">But Practice Safely</span>
+            </h1>
+            <!-- Value Proposition Subheading -->
+            <p class="text-xl lg:text-2xl text-green-200/90 font-medium mb-6 max-w-4xl mx-auto">
+              When you're learning to help people heal, every conversation matters. Practice with our AI clients first.
+            </p>
+            <!-- Social Proof -->
+            <div class="flex items-center justify-center gap-4 text-green-300/80 text-sm">
+              <span>💛💛💛💛💛</span>
+              <span>Loved by therapy schools everywhere</span>
+              <span class="hidden sm:inline">•</span>
+              <span class="hidden sm:inline">Your secrets stay safe</span>
+            </div>
           </div>
 
-          <!-- Stats -->
-          <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 mt-16 animate-slide-up" style="animation-delay: 0.8s;">
+          <!-- Two-column layout: Description/Buttons LEFT + Image RIGHT -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 mb-20 w-full items-center">
+            <!-- Left column: Benefits and CTA -->
+            <div class="text-left">
+              <!-- Key Benefits List -->
+              <ul class="space-y-4 mb-8 text-green-100">
+                <li class="flex items-start gap-3">
+                  <span class="text-green-400 text-xl">💝</span>
+                  <span class="text-lg">Learn from clients who won't judge your mistakes</span>
+                </li>
+                <li class="flex items-start gap-3">
+                  <span class="text-green-400 text-xl">🌱</span>
+                  <span class="text-lg">Try that new approach you read about in a safe space</span>
+                </li>
+                <li class="flex items-start gap-3">
+                  <span class="text-green-400 text-xl">🪞</span>
+                  <span class="text-lg">See your blind spots before they hurt someone real</span>
+                </li>
+                <li class="flex items-start gap-3">
+                  <span class="text-green-400 text-xl">💪</span>
+                  <span class="text-lg">Walk into your first tough session feeling ready</span>
+                </li>
+              </ul>
+
+              <!-- Urgency-Driven CTA -->
+              <div class="space-y-4">
+                <!-- Primary CTA with urgency -->
+                <Button size="lg" className="w-full lg:w-auto bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-gray-900 px-12 py-6 text-lg font-bold rounded-full shadow-lg shadow-green-500/25 hover:shadow-green-400/40 transform hover:scale-105 transition-all duration-300 organic-button">
+                  Try it free (we believe in you) →
+                </Button>
+                
+                <!-- Risk Reversal -->
+                <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
+                  <Button variant="outline" size="lg" className="px-8 py-4 text-base font-semibold rounded-full border-2 border-green-400 text-green-300 hover:bg-green-400/10 hover:shadow-green-400/25 transition-all duration-300 backdrop-blur-md bg-black/10">
+                    See how it works
+                  </Button>
+                  <p class="text-sm text-green-300/70">
+                    No pressure • Made for people who care
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right column: Image -->
+            <div class="flex justify-center items-center">
+              <div class="relative w-60 h-60 lg:w-72 lg:h-72">
+                <div class="absolute inset-0 bg-gradient-to-br from-green-400/20 to-emerald-500/20 rounded-3xl backdrop-blur-md bg-black/10 border border-green-500/30 flex items-center justify-center">
+                  <!-- Mental health & AI illustration -->
+                  <div class="text-center">
+                    <div class="text-8xl mb-4 text-green-400 opacity-60">🧠</div>
+                    <div class="text-6xl mb-4 text-emerald-400 opacity-50">💭</div>
+                    <div class="text-4xl text-green-300 opacity-40">🤖</div>
+                  </div>
+                </div>
+                <!-- Floating organic particles around the image -->
+                <div class="absolute -top-4 -left-4 w-4 h-4 bg-green-400/60 rounded-full animate-pulse"></div>
+                <div class="absolute -bottom-6 -right-6 w-6 h-6 bg-emerald-400/50 rounded-full animate-pulse" style="animation-delay: 1s;"></div>
+                <div class="absolute top-1/4 -right-8 w-3 h-3 bg-green-300/40 rounded-full animate-pulse" style="animation-delay: 2s;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Social Proof Stats -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
             {heroStats.map((stat) => (
-              <div class="text-center">
-                <div class="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">
+              <div class="text-center p-6 rounded-2xl border border-green-600/30 hover:border-green-400/50 transition-all duration-500 stat-card backdrop-blur-md bg-black/10">
+                <div class="text-3xl lg:text-4xl font-bold text-green-400 mb-2 organic-counter">
                   {stat.value}
                 </div>
-                <div class="text-sm lg:text-base text-gray-600 dark:text-gray-400">
+                <div class="text-sm lg:text-base text-green-200/80 tracking-wide">
                   {stat.label}
                 </div>
               </div>
             ))}
+          </div>
+
+          <!-- Testimonials Section -->
+          <div class="max-w-6xl mx-auto">
+            <h3 class="text-2xl lg:text-3xl font-bold text-center text-green-100 mb-12">
+              Here's what people are saying (and we're pretty proud of it)
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {testimonials.map((testimonial) => (
+                <div class="p-6 rounded-2xl border border-green-600/30 backdrop-blur-md bg-black/10 hover:border-green-400/50 transition-all duration-300">
+                  <div class="flex gap-1 mb-4">
+                    {Array.from({length: testimonial.rating}).map((_) => (
+                      <span class="text-green-400">⭐</span>
+                    ))}
+                  </div>
+                  <p class="text-green-100 mb-4 italic">"{testimonial.text}"</p>
+                  <div class="text-green-300">
+                    <div class="font-semibold">{testimonial.author}</div>
+                    <div class="text-sm text-green-300/70">{testimonial.role}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
     </section>
 
     <!-- Features Section -->
-    <section class="py-20 lg:py-32 bg-white dark:bg-gray-900">
-      <div class="container mx-auto px-4">
-        <div class="max-w-3xl mx-auto text-center mb-16">
-          <h2 class="text-3xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-6">
-            Powerful Features for 
-            <span class="text-gray-800 dark:text-gray-100">
-              Modern Healthcare
+    <section class="py-24 lg:py-40 relative z-10">
+      <div class="container mx-auto px-4 relative">
+        <div class="max-w-4xl mx-auto text-center mb-20">
+          <h2 class="text-4xl lg:text-6xl font-bold text-white mb-8 organic-text-glow">
+            Why This Actually
+            <span class="text-green-400 golden-shimmer">
+              Helps
             </span>
           </h2>
-          <p class="text-xl text-gray-600 dark:text-gray-300">
-            Our AI-powered platform provides comprehensive tools for mental health professionals to deliver exceptional patient care.
+          <p class="text-xl text-green-100/90">
+            Because learning to heal people is hard enough without the fear of messing up
           </p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature) => (
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-white dark:bg-gray-800 group">
-              <CardHeader className="pb-4">
-                <div class="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">
+            <Card className={`border border-green-600/30 hover:border-green-400/60 rounded-2xl overflow-hidden group hover:shadow-lg hover:shadow-green-500/20 transition-all duration-700 organic-card backdrop-blur-md bg-black/10`}>
+              <CardHeader className="pb-4 relative">
+                <div class={`text-5xl mb-4 group-hover:scale-110 transition-transform duration-700 ${feature.accent === 'green' ? 'organic-icon-green' : feature.accent === 'emerald' ? 'organic-icon-emerald' : ''}`}>
                   {feature.icon}
                 </div>
-                <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white">
+                <CardTitle className="text-xl font-bold text-green-100 tracking-wide mb-3">
                   {feature.title}
                 </CardTitle>
+                <!-- Benefit highlight -->
+                <div class="text-sm text-green-400/90 font-medium bg-green-500/10 px-3 py-1 rounded-full border border-green-500/20">
+                  {feature.benefit}
+                </div>
               </CardHeader>
               <CardContent>
-                <CardDescription className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                <CardDescription className="text-green-200/80 leading-relaxed">
                   {feature.description}
                 </CardDescription>
               </CardContent>
@@ -170,71 +275,54 @@ const testimonials = [
       </div>
     </section>
 
-    <!-- Testimonials Section -->
-    <section class="py-20 lg:py-32">
-      <div class="container mx-auto px-4">
-        <div class="max-w-3xl mx-auto text-center mb-16">
-          <h2 class="text-3xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-6">
-            Trusted by Healthcare 
-            <span class="text-gray-800 dark:text-gray-100">
-              Professionals
-            </span>
-          </h2>
-          <p class="text-xl text-gray-600 dark:text-gray-300">
-            See what mental health professionals are saying about our platform.
-          </p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {testimonials.map((testimonial) => (
-            <Card className="border-0 shadow-lg bg-white dark:bg-gray-800 hover:shadow-xl transition-all duration-300">
-              <CardContent className="pt-6">
-                <blockquote class="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">
-                  "{testimonial.quote}"
-                </blockquote>
-                <div class="flex items-center gap-4">
-                  <div class="w-12 h-12 bg-gray-600 dark:bg-gray-400 rounded-full flex items-center justify-center text-white dark:text-gray-900 font-semibold">
-                    {testimonial.name.split(' ').map(n => n[0]).join('')}
-                  </div>
-                  <div>
-                    <div class="font-semibold text-gray-900 dark:text-white">
-                      {testimonial.name}
-                    </div>
-                    <div class="text-sm text-gray-600 dark:text-gray-400">
-                      {testimonial.role}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    </section>
-
-    <!-- CTA Section -->
-    <section class="py-20 lg:py-32 bg-gray-800 dark:bg-gray-900 relative overflow-hidden">
-      <!-- Background pattern -->
-      <div class="absolute inset-0 opacity-10">
-        <div class="absolute inset-0" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 32px 32px;"></div>
-      </div>
-      
+    <!-- Final CTA Section -->
+    <section class="py-24 lg:py-40 relative z-10">
       <div class="relative container mx-auto px-4 text-center">
-        <div class="max-w-4xl mx-auto">
-          <h2 class="text-4xl lg:text-6xl font-bold text-white mb-6">
-            Ready to Transform 
-            <br />Mental Healthcare?
-          </h2>
-          <p class="text-xl lg:text-2xl text-gray-300 mb-12 leading-relaxed">
-            Join thousands of mental health professionals who are already using AI to provide better patient care.
-          </p>
-          <div class="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" variant="outline" className="bg-white text-gray-800 hover:bg-gray-50 px-8 py-4 text-lg font-semibold rounded-xl border-0 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200">
-              Start Free Trial
-            </Button>
-            <Button size="lg" className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-gray-800 px-8 py-4 text-lg font-semibold rounded-xl transition-all duration-200">
-              Contact Sales
-            </Button>
+        <div class="max-w-5xl mx-auto">
+          <div class="rounded-3xl border border-green-500/40 p-12 lg:p-16 organic-window backdrop-blur-md bg-black/10">
+            <!-- AI ornament -->
+            <div class="flex justify-center mb-8">
+              <div class="text-6xl text-green-400 organic-ornament">🤖</div>
+            </div>
+            
+            <!-- Urgency Badge -->
+            <div class="mb-6">
+              <Badge className="inline-flex items-center gap-2 px-4 py-2 text-sm bg-red-500/20 border border-red-400/40 text-red-200 rounded-full backdrop-blur-md bg-black/10">
+                <span class="animate-pulse w-2 h-2 bg-red-400 rounded-full"></span>
+                We can only onboard a few programs at a time
+              </Badge>
+            </div>
+
+            <h2 class="text-4xl lg:text-6xl font-bold text-green-100 mb-8 organic-text-glow">
+              Ready to Give Your Students
+              <br />
+              <span class="text-green-400 golden-shimmer">Something Better?</span>
+            </h2>
+            
+            <p class="text-xl lg:text-2xl text-green-200/90 mb-8 leading-relaxed">
+              Your future therapists deserve to feel confident and prepared. Let's help them get there together.
+            </p>
+
+            <!-- Risk-Free Guarantee -->
+            <div class="bg-green-500/10 border border-green-400/30 rounded-2xl p-6 mb-8 backdrop-blur-md">
+              <h4 class="text-lg font-bold text-green-200 mb-2">💛 Our Promise to You</h4>
+              <p class="text-green-200/80">Try it with your program for 30 days. If your students aren't more confident, we'll refund every penny.</p>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-6 justify-center items-center mb-6">
+              <Button size="lg" className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-gray-900 px-12 py-6 text-xl font-bold rounded-full shadow-lg shadow-green-500/25 hover:shadow-green-400/40 transform hover:scale-105 transition-all duration-300 w-auto">
+                Let's talk about your program →
+              </Button>
+              <Button size="lg" className="bg-transparent border-2 border-green-400 text-green-300 hover:bg-green-400/10 px-10 py-5 text-lg font-semibold rounded-full transition-all duration-300 w-auto backdrop-blur-md bg-black/10">
+                Watch a quick demo
+              </Button>
+            </div>
+
+            <!-- Final social proof -->
+            <p class="text-sm text-green-300/70">
+              💛 Loved by therapy schools everywhere • 🔒 Your data stays safe • 🎓 Made by therapists, for therapists
+            </p>
+            </div>
           </div>
         </div>
       </div>
@@ -243,57 +331,237 @@ const testimonials = [
 </BaseLayout>
 
 <style>
-  @keyframes fade-in {
-    from {
-      opacity: 0;
+  /* Organic Particles */
+  .particles-container {
+    overflow: hidden;
+  }
+
+  .particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: radial-gradient(circle, #10b981, transparent);
+    border-radius: 50%;
+    animation: float-organic 12s ease-in-out infinite;
+    opacity: 0.6;
+  }
+
+  .particle-1 {
+    top: 20%;
+    left: 10%;
+    animation-delay: 0s;
+    animation-duration: 15s;
+  }
+
+  .particle-2 {
+    top: 40%;
+    right: 20%;
+    animation-delay: 3s;
+    animation-duration: 18s;
+  }
+
+  .particle-3 {
+    bottom: 30%;
+    left: 25%;
+    animation-delay: 6s;
+    animation-duration: 12s;
+  }
+
+  .particle-4 {
+    top: 60%;
+    right: 40%;
+    animation-delay: 9s;
+    animation-duration: 20s;
+  }
+
+  .particle-5 {
+    bottom: 10%;
+    right: 10%;
+    animation-delay: 12s;
+    animation-duration: 16s;
+  }
+
+  @keyframes float-organic {
+    0%, 100% { 
+      transform: translateY(0px) translateX(0px) scale(1);
+      opacity: 0.6;
     }
-    to {
-      opacity: 1;
+    25% { 
+      transform: translateY(-30px) translateX(20px) scale(1.2);
+      opacity: 0.8;
+    }
+    50% { 
+      transform: translateY(-10px) translateX(-15px) scale(0.9);
+      opacity: 0.4;
+    }
+    75% { 
+      transform: translateY(20px) translateX(10px) scale(1.1);
+      opacity: 0.7;
     }
   }
 
-  @keyframes slide-up {
-    from {
-      opacity: 0;
-      transform: translateY(30px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  /* Text Effects */
+  .organic-text-glow {
+    text-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
   }
 
-  .animate-fade-in {
-    animation: fade-in 0.8s ease-out forwards;
-    opacity: 0;
-  }
-
-  .animate-slide-up {
-    animation: slide-up 0.8s ease-out forwards;
-    opacity: 0;
-  }
-
-  /* Smooth scrolling */
-  html {
-    scroll-behavior: smooth;
-  }
-
-  /* Custom gradient text animation */
-  @keyframes gradient-shift {
-    0%, 100% {
-      background-position: 0% 50%;
-    }
-    50% {
-      background-position: 100% 50%;
-    }
-  }
-
-  .gradient-text-animated {
-    background: #181825;
-    background-size: 400% 400%;
-    animation: gradient-shift 3s ease infinite;
+  .golden-shimmer {
+    background: linear-gradient(45deg, #10b981, #059669, #047857);
+    background-size: 200% 200%;
+    animation: shimmer 3s ease-in-out infinite;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-</style>
+
+  @keyframes shimmer {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  /* Button Effects */
+  .organic-button {
+    box-shadow: 
+      0 0 30px rgba(16, 185, 129, 0.3),
+      inset 0 0 20px rgba(16, 185, 129, 0.1);
+  }
+
+  .organic-button:hover {
+    box-shadow: 
+      0 0 40px rgba(16, 185, 129, 0.5),
+      inset 0 0 30px rgba(16, 185, 129, 0.2);
+  }
+
+  /* Card Effects */
+  .organic-card {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .organic-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.1), transparent 50%);
+    animation: organic-pulse 4s ease-in-out infinite;
+    transform: scale(0);
+  }
+
+  .organic-card:hover::before {
+    transform: scale(1);
+  }
+
+  @keyframes organic-pulse {
+    0%, 100% { transform: scale(0) rotate(0deg); opacity: 0; }
+    50% { transform: scale(1) rotate(180deg); opacity: 1; }
+  }
+
+  /* Icon Effects */
+  .organic-icon-green {
+    filter: drop-shadow(0 0 15px rgba(16, 185, 129, 0.7));
+    animation: gentle-glow 3s ease-in-out infinite;
+  }
+
+  .organic-icon-emerald {
+    filter: drop-shadow(0 0 15px rgba(5, 150, 105, 0.7));
+    animation: gentle-glow 3s ease-in-out infinite;
+    animation-delay: 1.5s;
+  }
+
+  @keyframes gentle-glow {
+    0%, 100% { filter: drop-shadow(0 0 15px rgba(16, 185, 129, 0.7)); }
+    50% { filter: drop-shadow(0 0 25px rgba(16, 185, 129, 0.9)); }
+  }
+
+  /* Stats Counter */
+  .organic-counter {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.05em;
+    animation: organic-count 2s ease-out;
+  }
+
+  @keyframes organic-count {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .stat-card {
+    animation: organic-fade-in 1s ease-out;
+    animation-fill-mode: both;
+  }
+
+  .stat-card:nth-child(1) { animation-delay: 0.1s; }
+  .stat-card:nth-child(2) { animation-delay: 0.2s; }
+  .stat-card:nth-child(3) { animation-delay: 0.3s; }
+  .stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+  @keyframes organic-fade-in {
+    0% { transform: translateY(30px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+
+  /* Organic Window Effects */
+  .organic-window {
+    box-shadow: 
+      inset 0 0 60px rgba(16, 185, 129, 0.1),
+      0 0 80px rgba(0, 0, 0, 0.4);
+    position: relative;
+  }
+
+  .organic-window::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 1.5rem;
+    padding: 2px;
+    background: linear-gradient(45deg, #10b981, transparent, #059669);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    animation: organic-border 6s linear infinite;
+  }
+
+  @keyframes organic-border {
+    0%, 100% { background: linear-gradient(45deg, #10b981, transparent, #059669); }
+    25% { background: linear-gradient(135deg, #059669, transparent, #047857); }
+    50% { background: linear-gradient(225deg, #047857, transparent, #10b981); }
+    75% { background: linear-gradient(315deg, #10b981, transparent, #059669); }
+  }
+
+  /* Ornament Animation */
+  .organic-ornament {
+    animation: gentle-sway 4s ease-in-out infinite;
+  }
+
+  @keyframes gentle-sway {
+    0%, 100% { transform: rotate(-5deg) scale(1); }
+    50% { transform: rotate(5deg) scale(1.1); }
+  }
+
+  /* Breathing Animation */
+  .animate-breathe {
+    animation: breathe 3s ease-in-out infinite;
+  }
+
+  @keyframes breathe {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.9; }
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .particle {
+      width: 3px;
+      height: 3px;
+    }
+    
+    .organic-window::before {
+      padding: 1px;
+    }
+  }
+</style> 
