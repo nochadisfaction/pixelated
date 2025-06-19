@@ -17,7 +17,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select.tsx'
+} from '@/components/ui/select'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
@@ -136,7 +136,7 @@ export default function SyntheticTherapyDemo() {
     }
   }
 
-  const selectedConversation = conversations[selectedConversationIndex]
+  const selectedConversation = conversations[selectedConversationIndex] || null
 
   return (
     <div className="flex flex-col w-full max-w-6xl mx-auto gap-6">
@@ -181,7 +181,7 @@ export default function SyntheticTherapyDemo() {
                 step={1}
                 value={[config.numSessions]}
                 onValueChange={(value) =>
-                  setConfig({ ...config, numSessions: value[0] })
+                  setConfig({ ...config, numSessions: value[0] ?? 1 })
                 }
               />
 
@@ -199,7 +199,7 @@ export default function SyntheticTherapyDemo() {
                 step={1}
                 value={[config.maxTurns]}
                 onValueChange={(value) =>
-                  setConfig({ ...config, maxTurns: value[0] })
+                  setConfig({ ...config, maxTurns: value[0] ?? 3 })
                 }
               />
 
@@ -233,7 +233,7 @@ export default function SyntheticTherapyDemo() {
             <div className="space-y-2">
               <Label>Disorders</Label>
               <div className="flex flex-wrap gap-2">
-                {Object.values(DisorderCategory)
+                {(Object.values(DisorderCategory) as string[])
                   .slice(0, 5)
                   .map((disorder) => (
                     <Badge
@@ -293,7 +293,7 @@ export default function SyntheticTherapyDemo() {
         </Card>
 
         <div className="md:col-span-3 space-y-6">
-          {conversations.length > 0 ? (
+          {conversations.length > 0 && selectedConversation ? (
             <>
               <Tabs defaultValue="conversation" className="w-full">
                 <TabsList className="w-full justify-start">
