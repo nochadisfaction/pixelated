@@ -1,18 +1,14 @@
 ---
-import Link from '@/components/base/Link.astro'
-import { SITE } from '@/config'
-
 const currentYear = new Date().getFullYear()
-const copyrightText = `© ${currentYear} ${SITE.author}`
 ---
 
 <footer class="site-footer">
   <div class="container mx-auto px-4 text-center">
-    <p>&copy; {currentYear} Pixelated Empathy. All rights reserved.</p>
+    <p class="theme-text-secondary">&copy; {currentYear} Pixelated Empathy. All rights reserved.</p>
     <div class="footer-links">
-      <a href="/privacy" class="footer-link">Privacy Policy</a>
-      <a href="/terms" class="footer-link">Terms of Service</a>
-      <a href="/contact" class="footer-link">Contact</a>
+      <a href="/privacy" class="footer-link theme-text-muted hover:theme-text-accent">Privacy Policy</a>
+      <a href="/terms" class="footer-link theme-text-muted hover:theme-text-accent">Terms of Service</a>
+      <a href="/contact" class="footer-link theme-text-muted hover:theme-text-accent">Contact</a>
     </div>
   </div>
 </footer>

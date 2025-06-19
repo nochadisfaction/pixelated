@@ -4,7 +4,6 @@
 import { SITE } from '../../config'
 import { isAuthenticated, hasAdminRole } from '../../lib/auth/authUtils'
 import { getUser } from '../../lib/auth/sessionUtils'
-import { Icon } from 'astro-icon/components'
 import { ClientRouter } from 'astro:transitions'
 
 interface Props {
@@ -94,8 +93,6 @@ const navItems = [
 // Function to check if a navigation item is active
 const isActive = (navId: string) => activeItem === navId
 
-// State for mobile menu
-let isMobileMenuOpen = false
 ---
 
 <html lang={SITE.lang} transition:animate="fade">

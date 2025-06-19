@@ -22,13 +22,13 @@ export const GET: APIRoute = async () => {
       messagesSent,
       activeSecurityLevel,
     ] = await Promise.all([
-      client.query(api.metrics.getActiveUsers),
-      client.query(api.metrics.getActiveSessions),
-      client.query(api.metrics.getAverageResponseTime),
-      client.query(api.metrics.getSystemLoad),
-      client.query(api.metrics.getStorageUsed),
-      client.query(api.metrics.getMessagesSent),
-      client.query(api.metrics.getActiveSecurityLevel),
+      client.query(api['metrics']['getActiveUsers']),
+      client.query(api['metrics']['getActiveSessions']),
+      client.query(api['metrics']['getAverageResponseTime']),
+      client.query(api['metrics']['getSystemLoad']),
+      client.query(api['metrics']['getStorageUsed']),
+      client.query(api['metrics']['getMessagesSent']),
+      client.query(api['metrics']['getActiveSecurityLevel']),
     ])
 
     return new Response(

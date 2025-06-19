@@ -3,6 +3,7 @@ import {
   getAllModels,
   getModelsByCapability,
   getModelsByProvider,
+  type AIModel,
 } from '../../../lib/ai/models/registry'
 import { getSession } from '../../../lib/auth/session'
 
@@ -24,13 +25,13 @@ export const GET: APIRoute = async ({ request, url }) => {
     const provider = url.searchParams.get('provider')
     const capability = url.searchParams.get('capability')
 
-    let models
+    let models: AIModel[]
 
     // Filter models based on query parameters
     if (provider === 'together') {
       if (capability) {
         // Filter together models by capability
-        models = getModelsByProvider('together').filter((model) =>
+        models = getModelsByProvider('together').filter((model: AIModel) =>
           model.capabilities.includes(
             capability as
               | 'chat'

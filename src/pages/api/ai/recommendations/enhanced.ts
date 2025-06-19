@@ -79,7 +79,7 @@ export const POST: APIRoute = async ({ request }) => {
       return createErrorResponse({
         status: 400,
         message: 'Invalid request',
-        errors: validationError?.details,
+        ...(validationError && { errors: validationError.details }),
       })
     }
 
@@ -109,7 +109,9 @@ export const POST: APIRoute = async ({ request }) => {
     // Generate enhanced recommendations
     const recommendations =
       await recommendationService.generateEnhancedRecommendations(clientId, {
-        personalizationOptions: includePersonalization ? {} : undefined,
+        ...(includePersonalization
+          ? { personalizationOptions: {} as Record<string, unknown> }
+          : {}),
         includeEfficacyStats,
         includeAlternatives: includeAlternativeApproaches,
         maxMediaRecommendations,

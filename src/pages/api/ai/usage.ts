@@ -1,8 +1,7 @@
-import type { AuditMetadata } from '@/lib/audit/types'
 import type { APIRoute } from 'astro'
-import { createAuditLog } from '@/lib/audit'
-import { getAIUsageStats } from '../../../lib/ai/analytics'
-import { handleApiError } from '../../../lib/ai/error-handling'
+import { createAuditLog, AuditEventType, AuditEventStatus } from '@/lib/audit'
+import { getAIUsageStats } from '@/lib/ai/analytics'
+import { handleApiError } from '@/lib/ai/error-handling'
 import { getSession } from '../../../lib/auth/session'
 import { validateQueryParams } from '../../../lib/validation/index'
 import { UsageStatsRequestSchema } from '../../../lib/validation/schemas'
@@ -85,15 +84,16 @@ export const GET: APIRoute = async ({ request }) => {
     if (validationError) {
       // Create audit log for validation error
       await createAuditLog(
-        session?.user?.id || 'anonymous',
+        AuditEventType.AI_OPERATION,
         'ai.usage.validation_error',
+        session?.user?.id || 'anonymous',
         'ai_usage',
         {
           error: validationError.error,
           details: JSON.stringify(validationError.details),
           status: 'error',
-        } as AuditMetadata,
-        request,
+        },
+        AuditEventStatus.FAILURE,
       )
 
       return new Response(JSON.stringify(validationError), {
@@ -122,8 +122,9 @@ export const GET: APIRoute = async ({ request }) => {
 
     // Create audit log for the request
     await createAuditLog(
-      session?.user?.id || 'anonymous',
+      AuditEventType.AI_OPERATION,
       'ai.usage.request',
+      session?.user?.id || 'anonymous',
       'ai_usage',
       {
         period: params!.period,
@@ -132,16 +133,21 @@ export const GET: APIRoute = async ({ request }) => {
         endDate: params!.endDate,
         status: 'success',
       },
-      request,
+      AuditEventStatus.SUCCESS,
     )
 
     // Get usage statistics
-    const stats = await getAIUsageStats({
+    const statsOptions: any = {
       period: params!.period,
-      userId: params!.allUsers ? undefined : session?.user?.id,
       startDate: params!.startDate ? new Date(params!.startDate) : undefined,
       endDate: params!.endDate ? new Date(params!.endDate) : undefined,
-    })
+    }
+    
+    if (!params!.allUsers && session?.user?.id) {
+      statsOptions.userId = session.user.id
+    }
+    
+    const stats = await getAIUsageStats(statsOptions)
 
     return new Response(JSON.stringify(stats), {
       status: 200,
@@ -158,15 +164,16 @@ export const GET: APIRoute = async ({ request }) => {
 
     // Create audit log for the error
     await createAuditLog(
-      session?.user?.id || 'anonymous',
+      AuditEventType.AI_OPERATION,
       'ai.usage.error',
+      session?.user?.id || 'anonymous',
       'ai_usage',
       {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         status: 'error',
       },
-      request,
+      AuditEventStatus.FAILURE,
     )
 
     // Use standardized error handling

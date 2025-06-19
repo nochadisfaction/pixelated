@@ -127,7 +127,7 @@ export type Capitalize<S extends string> = Intrinsic
 export type Uncapitalize<S extends string> = Intrinsic
 
 /** Creates a template literal type */
-export type Join<T extends readonly string[], D extends string = ',') = T extends readonly [
+export type Join<T extends readonly string[], D extends string = ','> = T extends readonly [
   infer F,
   ...infer R
 ]

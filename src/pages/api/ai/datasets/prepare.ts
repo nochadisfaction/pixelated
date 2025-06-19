@@ -4,6 +4,7 @@ import {
   prepareForOpenAI,
   prepareForHuggingFace,
   preparedDatasetsExist,
+  type DatasetPaths,
 } from '../../../../lib/ai/datasets/prepare-fine-tuning'
 import { mergedDatasetExists } from '../../../../lib/ai/datasets/merge-datasets'
 import { appLogger as logger } from '../../../../lib/logging'
@@ -69,14 +70,17 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // Prepare datasets based on the requested format
-    let result
+    let result: DatasetPaths | null = null
     if (format === 'all') {
+// sourcery skip: dont-self-assign-variables
       result = await prepareAllFormats()
     } else if (format === 'openai') {
       const openaiPath = await prepareForOpenAI()
+// sourcery skip: dont-self-assign-variables
       result = { openai: openaiPath, huggingface: null }
     } else if (format === 'huggingface') {
       const huggingfacePath = await prepareForHuggingFace()
+// sourcery skip: dont-self-assign-variables
       result = { openai: null, huggingface: huggingfacePath }
     } else {
       return new Response(
@@ -92,7 +96,12 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // Check if preparation was successful
-    if (!result.openai && !result.huggingface) {
+    if (
+      !result ||
+      (format === 'all' && (!result.openai || !result.huggingface)) ||
+      (format === 'openai' && !result.openai) ||
+      (format === 'huggingface' && !result.huggingface)
+    ) {
       logger.error('Dataset preparation failed via API call')
       return new Response(
         JSON.stringify({

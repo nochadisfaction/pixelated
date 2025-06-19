@@ -12,6 +12,7 @@ import icon from 'astro-icon'
 import sentry from '@sentry/astro'
 import flexsearchSSRPlugin from './src/plugins/vite-plugin-flexsearch-ssr'
 
+
 // Environment detection
 const isProduction = process.env.NODE_ENV === 'production'
 const isVercel = process.env.VERCEL === '1'
@@ -31,7 +32,7 @@ const integrations = [
     injectReset: true,
     mode: 'global',
     safelist: ['font-sans', 'font-mono', 'font-condensed'],
-    configFile: './uno.config.vitesse.ts',
+    configFile: './uno.config.ts',
     content: {
       filesystem: [
         'src/**/*.{astro,js,ts,jsx,tsx,vue,mdx}',
@@ -73,7 +74,6 @@ export default defineConfig({
   site: 'https://pixelatedempathy.com',
   output: 'server',
   adapter: vercel(),
-  
   image: {
     service: {
       entrypoint: 'astro/assets/services/sharp',
@@ -127,6 +127,11 @@ export default defineConfig({
 
   vite: {
     logLevel: 'error', // Suppress warnings during build
+    
+    // Prevent UnoCSS timeout issues
+    moduleRunner: {
+      timeout: 120000, // 2 minutes instead of 1 minute
+    },
     resolve: {
       alias: {
         '~': path.resolve('./src'),
@@ -144,7 +149,7 @@ export default defineConfig({
     build: {
       chunkSizeWarningLimit: 1500,
       target: 'node18',
-      sourcemap: false, // Disable sourcemaps to avoid warnings during build
+      sourcemap: true, // Disable sourcemaps to avoid warnings during build
       rollupOptions: {
         // Only essential externals
         external: [
@@ -164,9 +169,15 @@ export default defineConfig({
         },
         onwarn: (warning, warn) => {
           // Suppress sourcemap warnings
-          if (warning.code === 'SOURCEMAP_ERROR') return
-          if (warning.message?.includes('sourcemap')) return
-          if (warning.message?.includes('Can\'t resolve original location')) return
+          if (warning.code === 'SOURCEMAP_ERROR') {
+            return
+          }
+          if (warning.message?.includes('sourcemap')) {
+            return
+          }
+          if (warning.message?.includes('Can\'t resolve original location')) {
+            return
+          }
           warn(warning)
         },
       },
@@ -180,6 +191,13 @@ export default defineConfig({
     optimizeDeps: {
       include: ['react', 'react-dom'],
       exclude: ['@unocss/astro', 'flexsearch'],
+    },
+
+    // UnoCSS timeout prevention
+    server: {
+      fs: {
+        strict: false,
+      },
     },
   },
 

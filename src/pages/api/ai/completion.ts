@@ -169,9 +169,9 @@ export const POST: APIRoute = async ({ request }) => {
 
     // Create AI service
     const aiService = createTogetherAIService({
-      apiKey: import.meta.env.TOGETHER_API_KEY || 'example-api-key',
-      togetherApiKey: import.meta.env.TOGETHER_API_KEY,
-      togetherBaseUrl: import.meta.env.TOGETHER_BASE_URL,
+      apiKey: import.meta.env['TOGETHER_API_KEY'] || 'example-api-key',
+      togetherApiKey: import.meta.env['TOGETHER_API_KEY'],
+      togetherBaseUrl: import.meta.env['TOGETHER_BASE_URL'],
     })
 
     // Create audit log for the request

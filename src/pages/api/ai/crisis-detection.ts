@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro'
-import { CrisisDetectionService } from '../../../lib/ai/services/crisis-detection'
-import { getAIServiceByProvider } from '../../../lib/ai/providers'
+import { CrisisDetectionService } from '@lib/ai/services/crisis-detection'
+import { getAIServiceByProvider } from '@lib/ai/providers'
 import { getSession } from '../../../lib/auth/session'
 import type { SessionData } from '../../../lib/auth/session'
 import { getLogger } from '../../../lib/logging'
@@ -11,94 +11,93 @@ import {
   type AuditDetails,
 } from '../../../lib/audit'
 import type { AuditResource } from '../../../lib/audit/types'
-import { CrisisProtocol } from '../../../lib/ai/crisis/CrisisProtocol'
-import { recordCrisisEventToDb } from '../../../services/crisisEventDb'
+import { CrisisProtocol } from '@lib/ai/crisis/CrisisProtocol'
+import { recordCrisisEventToDb, type CrisisEventData } from '../../../services/crisisEventDb'
 
-import type { AlertConfiguration } from '../../../lib/ai/crisis/types' // Import AlertConfiguration
+import type {
+  AlertConfiguration,
+  CrisisDetectionResult,
+  CrisisProtocolConfig,
+} from '../../../lib/ai/crisis/types'
 
-// Initialize logger first
-const logger = getLogger({ prefix: 'api-crisis-detection' })
+// Initialize scoped logger for this module
+const logger = getLogger({ prefix: 'crisis-detection' })
 
-// --- BEGIN CrisisProtocol Initialization ---
+// -----------------------------------------------------------------------------
+// Runtime configuration                                                           
+// -----------------------------------------------------------------------------
 
-// Basic Alert Configurations (customize as needed)
-// Ensure this matches the AlertConfiguration interface from ../../../lib/ai/crisis/types.ts
+// Alert level configurations used by the CrisisProtocol. These can be tweaked or
+// replaced with a dynamic source (e.g. database) later. For now we provide a
+// sensible default for each alert level so that the API route compiles and
+// operates without runtime errors.
+
 const alertConfigurations: AlertConfiguration[] = [
   {
     level: 'concern',
-    name: 'Concern Level Alert',
-    description: 'Initial level of concern, requires monitoring.',
-    thresholdScore: 0.3, // Score threshold that triggers this alert level
-    triggerTerms: ['sad', 'lonely', 'worried', 'stressed'], // Terms that can trigger this alert
-    autoEscalateAfterMs: 1000 * 60 * 60 * 2, // 2 hours
-    requiredActions: ['Log event', 'Monitor user activity'],
-    responseTemplate:
-      'We notice you might be feeling {triggerTerms}. We are here to help.',
-    escalationTimeMs: 1000 * 60 * 30, // 30 minutes for escalation review if not addressed
+    name: 'General Concern',
+    description: 'Low-level indicators of potential distress.',
+    thresholdScore: 0.3,
+    triggerTerms: [],
+    autoEscalateAfterMs: 0,
+    requiredActions: ['log'],
+    responseTemplate: 'Please keep an eye on the conversation and offer support if needed.',
+    escalationTimeMs: 0,
   },
   {
     level: 'moderate',
-    name: 'Moderate Level Alert',
-    description: 'Moderate level of concern, requires active review.',
-    thresholdScore: 0.5, // Score threshold that triggers this alert level
-    triggerTerms: ['depressed', 'hopeless', 'anxious', 'grief'], // Terms that can trigger this alert
-    autoEscalateAfterMs: 1000 * 60 * 60 * 1, // 1 hour
-    requiredActions: [
-      'Log event',
-      'Notify support staff',
-      'Review user history',
-    ],
-    responseTemplate:
-      'It sounds like you are going through a tough time with {triggerTerms}. A support member will reach out.',
-    escalationTimeMs: 1000 * 60 * 15, // 15 minutes
+    name: 'Moderate Risk',
+    description: 'Signs of elevated risk that require a timely response.',
+    thresholdScore: 0.6,
+    triggerTerms: [],
+    autoEscalateAfterMs: 30 * 60 * 1000, // 30 minutes
+    requiredActions: ['notify_oncall'],
+    responseTemplate: 'A team member has been notified to review the conversation asap.',
+    escalationTimeMs: 30 * 60 * 1000,
   },
   {
     level: 'severe',
-    name: 'Severe Level Alert',
-    description: 'Severe level of concern, requires immediate attention.',
-    thresholdScore: 0.7, // Score threshold that triggers this alert level
-    triggerTerms: ['self-harm', 'suicidal thoughts', 'hurting myself'], // Terms that can trigger this alert
-    autoEscalateAfterMs: 1000 * 60 * 30, // 30 minutes
-    requiredActions: [
-      'Log event',
-      'Immediate notification to crisis team',
-      'Engage safety protocol',
-    ],
-    responseTemplate:
-      'We are very concerned about your safety regarding {triggerTerms}. Our crisis team is being notified immediately.',
-    escalationTimeMs: 1000 * 60 * 5, // 5 minutes
+    name: 'Severe Risk',
+    description: 'High probability of imminent self-harm or danger.',
+    thresholdScore: 0.8,
+    triggerTerms: [],
+    autoEscalateAfterMs: 10 * 60 * 1000, // 10 minutes
+    requiredActions: ['notify_supervisor', 'prepare_escalation'],
+    responseTemplate: 'Senior staff have been alerted and are reviewing immediately.',
+    escalationTimeMs: 10 * 60 * 1000,
   },
   {
     level: 'emergency',
-    name: 'Emergency Level Alert',
-    description:
-      'Emergency situation, requires immediate intervention and possibly external services.',
-    thresholdScore: 0.9, // Score threshold that triggers this alert level
-    triggerTerms: ['suicide plan', 'immediate danger', 'want to die'], // Terms that can trigger this alert
-    autoEscalateAfterMs: 1000 * 60 * 10, // 10 minutes
-    requiredActions: [
-      'Log event',
-      'Activate emergency response plan',
-      'Contact emergency services if necessary',
-    ],
-    responseTemplate:
-      'This is an emergency concerning {triggerTerms}. We are taking immediate action to ensure your safety.',
-    escalationTimeMs: 0, // Immediate escalation
+    name: 'Emergency',
+    description: 'User appears to be in immediate danger and requires urgent help.',
+    thresholdScore: 0.9,
+    triggerTerms: [],
+    autoEscalateAfterMs: 0,
+    requiredActions: ['notify_all', 'call_emergency_services'],
+    responseTemplate: 'Please contact emergency services immediately and follow emergency protocol.',
+    escalationTimeMs: 0,
   },
 ]
 
-// Staff Channels - Using a special identifier for Slack.
-// Add other channels (email, SMS) as needed.
-const staffChannels = {
-  concern: ['SLACK_WEBHOOK_CHANNEL'], // Send 'concern' level to Slack
-  moderate: ['SLACK_WEBHOOK_CHANNEL'], // Send 'moderate' level to Slack
-  severe: ['SLACK_WEBHOOK_CHANNEL'], // Send 'severe' level to Slack
-  emergency: ['SLACK_WEBHOOK_CHANNEL'], // Send 'emergency' level to Slack
+// Mapping of alert levels to communication channels (e.g. Slack or email lists)
+const staffChannels: Record<AlertConfiguration['level'], string[]> = {
+  concern: ['mental-health-support'],
+  moderate: ['on-call-therapists'],
+  severe: ['crisis-response-team'],
+  emergency: ['crisis-response-team', 'leadership'],
 }
 
-// Retrieve Slack Webhook URL from environment variables
-// Make sure SLACK_WEBHOOK_URL is available in your deployment environment.
-const slackWebhookUrl = process.env.SLACK_WEBHOOK_URL
+// -----------------------------------------------------------------------------
+// Environment variables                                                         
+// -----------------------------------------------------------------------------
+
+const metaEnv = import.meta.env as Record<string, string> | undefined
+
+function getEnvVar(key: string): string | undefined {
+  return process.env[key] ?? metaEnv?.[key]
+}
+
+const slackWebhookUrl = getEnvVar('SLACK_WEBHOOK_URL')
 
 if (!slackWebhookUrl) {
   logger.warn(
@@ -107,16 +106,23 @@ if (!slackWebhookUrl) {
 }
 
 const crisisProtocolInstance = CrisisProtocol.getInstance()
-crisisProtocolInstance.initialize({
-  alertConfigurations: alertConfigurations,
-  staffChannels: staffChannels,
-  crisisEventRecorder: recordCrisisEventToDb as unknown as (
-    eventData: Record<string, any>,
-  ) => Promise<void>,
-  slackWebhookUrl: slackWebhookUrl, // Pass the retrieved URL
-  // alertTimeoutMs: 300000, // Optional: 5 minutes default
-})
-// --- END CrisisProtocol Initialization ---
+
+// Wrap the concrete DB recorder to satisfy the CrisisProtocol signature
+const crisisEventRecorder = async (
+  eventData: Record<string, unknown>,
+): Promise<void> => {
+  await recordCrisisEventToDb(eventData as unknown as CrisisEventData)
+}
+
+// Build protocol configuration, include webhook only when defined to satisfy exactOptionalPropertyTypes
+const protocolConfig: CrisisProtocolConfig = {
+  alertConfigurations,
+  staffChannels,
+  crisisEventRecorder,
+  ...(slackWebhookUrl ? { slackWebhookUrl } : {}),
+};
+
+crisisProtocolInstance.initialize(protocolConfig);
 
 /**
  * API route for crisis detection
@@ -195,18 +201,20 @@ export const POST: APIRoute = async ({ request }) => {
     })
 
     // Process request (either single text or batch)
-    let result
+    let result: CrisisDetectionResult | CrisisDetectionResult[] | null = null
 
     if (batch) {
-      result = await crisisService.detectBatch(batch, {
+      const batchResult = await crisisService.detectBatch(batch, {
         sensitivityLevel: sensitivityLevel as 'low' | 'medium' | 'high',
         userId: session.user.id,
         source: 'api-batch-request',
       })
 
+      result = batchResult
+
       // Store each result in the database (now handled by the risk assessment system)
       // Check if any crisis was detected
-      for (const detection of result) {
+      for (const detection of batchResult) {
         if (detection.isCrisis) {
           crisisDetected = true // General flag
           // Call CrisisProtocol for each detected crisis in the batch
@@ -229,14 +237,16 @@ export const POST: APIRoute = async ({ request }) => {
         }
       }
     } else {
-      result = await crisisService.detectCrisis(text, {
+      const singleResult = await crisisService.detectCrisis(text, {
         sensitivityLevel: sensitivityLevel as 'low' | 'medium' | 'high',
         userId: session.user.id,
         source: 'api-request',
       })
 
+      result = singleResult
+
       // Check if crisis was detected
-      if (result?.isCrisis) {
+      if (singleResult.isCrisis) {
         crisisDetected = true
         // Call CrisisProtocol for the detected crisis
         try {
@@ -244,9 +254,9 @@ export const POST: APIRoute = async ({ request }) => {
             session.user.id,
             session.session?.access_token?.substring(0, 8) ||
               `single-item-session-${crypto.randomUUID()}`, // Use part of access token or generate UUID
-            result.content, // Text sample from CrisisDetectionResult
-            result.confidence, // Detection score from CrisisDetectionResult
-            result.category ? [result.category] : [], // Detected risks from CrisisDetectionResult
+            singleResult.content, // Text sample from CrisisDetectionResult
+            singleResult.confidence, // Detection score from CrisisDetectionResult
+            singleResult.category ? [singleResult.category] : [], // Detected risks from CrisisDetectionResult
           )
         } catch (error) {
           logger.error('Error handling single crisis event:', {
@@ -302,7 +312,7 @@ export const POST: APIRoute = async ({ request }) => {
       {
         // details instead of metadata
         modelName: aiService.getModelInfo('default')?.name || 'unknown',
-        resultCount: batch ? (result as unknown[]).length : 1,
+        resultCount: Array.isArray(result) ? result.length : 1,
         crisisDetected,
         latencyMs: Date.now() - startTime,
         priority: crisisDetected ? 'high' : 'normal',

@@ -5,8 +5,8 @@ import { protectRoute } from '../../../lib/auth/serverAuth'
 import { AIRepository } from '../../../lib/db/ai/repository'
 import { MultidimensionalEmotionMapper } from '../../../lib/ai/emotions/MultidimensionalEmotionMapper'
 import { TemporalAnalysisAlgorithm } from '../../../lib/ai/temporal/TemporalAnalysisAlgorithm'
-import type { EmotionAnalysis as TypesEmotionAnalysis } from '@/lib/ai/emotions/types'
-import type { APIContext } from 'astro'
+import type { EmotionAnalysis as TypesEmotionAnalysis } from '../../../lib/ai/emotions/types'
+import type { AuthAPIContext } from '../../../lib/auth/apiRouteTypes'
 
 const logger = createLogger({ context: 'multidimensional-emotions-api' })
 
@@ -21,7 +21,7 @@ const logger = createLogger({ context: 'multidimensional-emotions-api' })
  * - timeRange: Time range in days (default: 30)
  * - dataPoints: Number of data points to return (default: 100)
  */
-export const GET = protectRoute()(async (context: APIContext) => {
+export const GET = protectRoute()(async (context: AuthAPIContext) => {
   try {
     const { locals } = context
     const { user } = locals

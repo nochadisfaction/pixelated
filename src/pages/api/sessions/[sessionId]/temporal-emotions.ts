@@ -2,9 +2,9 @@ export const prerender = false
 
 import type { APIRoute } from 'astro'
 import { createLogger } from '../../../../utils/logger'
-import { protectRoute } from '../../../../lib/auth/serverAuth'
-import { AIRepository } from '../../../../lib/db/ai/repository'
-import { EmotionTemporalAnalyzer } from '../../../../lib/ai/temporal/EmotionTemporalAnalyzer'
+import { protectRoute } from '../../../../lib/auth/serverAuth.js'
+import { AIRepository } from '../../../../lib/db/ai/repository.js'
+import { EmotionTemporalAnalyzer } from '../../../../lib/ai/temporal/EmotionTemporalAnalyzer.js'
 
 const logger = createLogger({ context: 'temporal-emotions-api' })
 

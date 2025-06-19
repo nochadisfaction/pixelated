@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro'
-import { MentalLLaMAFactory } from '../../../../lib/ai/mental-llama/MentalLLaMAFactory'
+import { MentalLLaMAFactory } from '../../../../lib/ai/mental-llama'
 import { createLogger } from '@utils/logger'
 
 const logger = createLogger({ context: 'MentalHealthAnalysisAPI' })
@@ -61,11 +61,14 @@ export const POST: APIRoute = async ({ request }) => {
     analysisMs: -1,
     totalMs: -1,
   }
+  
+  let requestBody: any = null
+  let text = ''
 
   try {
     let startTime = Date.now()
     // Parse request body
-    const requestBody = await request.json()
+    requestBody = await request.json()
     timing.requestParsingMs = Date.now() - startTime
 
     // Validate request
@@ -85,7 +88,7 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // Sanitize text (basic sanitization)
-    const text = requestBody.text.trim().substring(0, 2000) // Limit to 2000 chars
+    text = requestBody.text.trim().substring(0, 2000) // Limit to 2000 chars
 
     // Get useExpertGuidance parameter
     const useExpertGuidance = requestBody.useExpertGuidance !== false // Default to true
@@ -112,7 +115,7 @@ export const POST: APIRoute = async ({ request }) => {
     startTime = Date.now()
     // Analyze the text with or without expert guidance based on the parameter
     const analysis = useExpertGuidance
-      ? await adapter.analyzeMentalHealthWithExpertGuidance(text, true)
+      ? await adapter.analyzeMentalHealthWithExpertGuidance()
       : await adapter.analyzeMentalHealth(text)
     timing.analysisMs = Date.now() - startTime
 
@@ -148,7 +151,7 @@ export const POST: APIRoute = async ({ request }) => {
     logger.error('Error analyzing mental health', {
       error,
       timing,
-      textLength: text?.length,
+      textLength: requestBody?.text?.length,
     })
 
     return new Response(

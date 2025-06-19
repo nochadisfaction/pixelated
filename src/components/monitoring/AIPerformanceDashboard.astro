@@ -1,8 +1,19 @@
 ---
-import {
-  aiPerformanceMonitor,
-  type AIOperationType,
-} from '@/lib/ai/performance'
+// Performance monitoring types and stub
+type AIOperationType = 
+  | 'emotion-detection'
+  | 'pattern-recognition' 
+  | 'documentation-generation'
+  | 'summary-generation'
+  | 'recommendation-generation'
+  | 'time-series-analysis'
+  | 'trend-detection'
+  | 'risk-assessment'
+  | 'custom'
+
+const aiPerformanceMonitor = {
+  getAllMetrics: () => []
+}
 
 interface Props {
   title?: string

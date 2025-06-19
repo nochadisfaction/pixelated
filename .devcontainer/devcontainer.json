@@ -7,14 +7,11 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "ms-python.python",
-        "ms-python.vscode-pylance",
         "ms-azuretools.vscode-docker",
         "coenraads.bracket-pair-colorizer-2",
         "cschleiden.vscode-github-actions",
         "eamodio.gitlens",
         "github.vscode-pull-request-github",
-        "ms-vsliveshare.vsliveshare",
         "vscode-icons-team.vscode-icons",
         "visualstudioexptteam.vscodeintellicode"
       ],
@@ -29,5 +26,5 @@
       }
     }
   },
-  "postCreateCommand": "conda init bash && . /opt/conda/etc/profile.d/conda.sh && conda activate base"
+  "postCreateCommand": "conda init bash && . /opt/conda/etc/profile.d/conda.sh && conda activate pixel"
 }

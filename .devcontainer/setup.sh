@@ -8,15 +8,21 @@ apt-get install -y \
 	sudo \
 	zsh
 
-# set-up and install yarn
-curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
-echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
-apt-get update && apt-get install yarn -y
+# set-up and install fnm (Fast Node Manager)
+curl -fsSL https://fnm.vercel.app/install | bash
+export PATH="/root/.local/share/fnm:$PATH"
+eval "$(fnm env --use-on-cd)"
+fnm install 22
+fnm use 22
+fnm default 22
 
-# instsal nvm
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash
+# set-up and install pnpm
+npm i -g npm
+npm i -g pnpm
+pnpm setup
 
 # setup and install oh-my-zsh
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
 cp -R /root/.oh-my-zsh /home/$USERNAME
 cp /root/.zshrc /home/$USERNAME

@@ -1,20 +1,41 @@
 import type { APIRoute } from 'astro'
 import { emotionValidationPipeline } from '../../../../lib/ai/emotions/EmotionValidationPipeline'
 import { getLogger } from '../../../../lib/logging'
-import { isAuthenticated } from '../../../../lib/auth'
+import { getCurrentUser } from '../../../../lib/auth'
+import type { AstroCookies } from 'astro'
 import {
   createAuditLog,
   AuditEventType,
   AuditEventStatus,
 } from '../../../../lib/audit'
 
+// Helper function to convert Request to AstroCookies
+function getCookiesFromRequest(request: Request): AstroCookies {
+  const cookieHeader = request.headers.get('cookie') || ''
+  return {
+    get: (name: string) => {
+      const match = cookieHeader.match(new RegExp(`${name}=([^;]+)`))
+      return match ? { value: match[1] } : undefined
+    },
+    // Add required methods for AstroCookies interface
+    has: (name: string) => {
+      return cookieHeader.includes(`${name}=`)
+    },
+    set: () => {},
+    delete: () => {},
+  } as unknown as AstroCookies
+}
+
 export const POST: APIRoute = async ({ request }) => {
   const logger = getLogger({ prefix: 'validation-api' })
 
   try {
+    // Get cookies from request
+    const cookies = getCookiesFromRequest(request)
+    
     // Authenticate the request
-    const authResult = await isAuthenticated(request)
-    if (!authResult.authenticated) {
+    const user = await getCurrentUser(cookies)
+    if (!user) {
       return new Response(
         JSON.stringify({
           error: 'Unauthorized',
@@ -30,16 +51,17 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // Check user permissions (must be admin)
-    if (!authResult.user?.isAdmin) {
+    if (user.role !== 'admin') {
       // Create audit log for unauthorized access attempt
       await createAuditLog(
-        AuditEventType.SECURITY_EVENT,
+        AuditEventType.SECURITY,
         'validation-pipeline-stop-unauthorized',
-        authResult.user?.id || 'unknown',
+        user.id,
         'validation-api',
         {
-          userId: authResult.user?.id,
-          email: authResult.user?.email,
+          userId: user.id,
+          email: user.email,
+          role: user.role,
         },
         AuditEventStatus.FAILURE,
       )
@@ -66,11 +88,11 @@ export const POST: APIRoute = async ({ request }) => {
     await createAuditLog(
       AuditEventType.AI_OPERATION,
       'validation-pipeline-stop',
-      authResult.user?.id || 'system',
+      user.id,
       'validation-api',
       {
-        userId: authResult.user?.id,
-        username: authResult.user?.username || authResult.user?.email,
+        userId: user.id,
+        username: user.fullName || user.email,
       },
       AuditEventStatus.SUCCESS,
     )

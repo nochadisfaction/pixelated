@@ -4,12 +4,13 @@ import type {
   AIService,
   AIServiceOptions,
   AIStreamChunk,
-} from '../../../lib/ai/models/ai-types'
-import { ResponseGenerationService } from '../../../lib/ai/services/response-generation'
-import { createTogetherAIService } from '../../../lib/ai/services/together'
-import { createAuditLog } from '../../../lib/audit'
+  TherapeuticResponse,
+} from '../../../lib/ai/models/ai-types.js'
+import { ResponseGenerationService } from '../../../lib/ai/services/response-generation.js'
+import { createTogetherAIService } from '../../../lib/ai/services/together.js'
+import { createAuditLog, AuditEventType, AuditEventStatus } from '../../../lib/audit'
 import { getSession } from '../../../lib/auth/session'
-import { aiRepository } from '../../../lib/db/ai/index'
+import { aiRepository } from '../../../lib/db/ai/index.js'
 
 /**
  * GET handler - returns information about the AI response endpoint
@@ -80,7 +81,7 @@ export const GET: APIRoute = async ({ request }) => {
  * API route for therapeutic response generation
  */
 export const POST: APIRoute = async ({ request }) => {
-  let session
+  let session: Awaited<ReturnType<typeof getSession>> | null = null
 
   try {
     // Verify session
@@ -118,8 +119,10 @@ export const POST: APIRoute = async ({ request }) => {
 
     // Create Together AI service
     const togetherService = createTogetherAIService({
-      togetherApiKey: import.meta.env.TOGETHER_API_KEY,
-      togetherBaseUrl: import.meta.env.TOGETHER_BASE_URL,
+      // biome-ignore lint/complexity/useLiteralKeys: Environment keys come from index signature
+      togetherApiKey: import.meta.env['TOGETHER_API_KEY'] || '',
+      // biome-ignore lint/complexity/useLiteralKeys: Environment keys come from index signature
+      togetherBaseUrl: import.meta.env['TOGETHER_BASE_URL'] || 'https://api.together.xyz',
       apiKey: '',
     })
 
@@ -188,7 +191,7 @@ export const POST: APIRoute = async ({ request }) => {
         }
       },
       createStreamingChatCompletion: async (
-        messages: AIMessage[],
+        _messages: AIMessage[],
         options?: AIServiceOptions,
       ): Promise<AsyncGenerator<AIStreamChunk, void, void>> => {
         const generator = async function* () {
@@ -271,24 +274,7 @@ export const POST: APIRoute = async ({ request }) => {
               : '',
         }
       },
-      generateCompletion: async (messages, options, provider) => {
-        const response = await togetherService.generateCompletion(
-          messages,
-          options,
-        )
-        return {
-          ...response,
-          provider: provider || 'together',
-          id:
-            typeof response === 'object' && response !== null
-              ? (response as { id?: string }).id || `together-${Date.now()}`
-              : `together-${Date.now()}`,
-          created:
-            typeof response === 'object' && response !== null
-              ? (response as { created?: number }).created || Date.now()
-              : Date.now(),
-        }
-      },
+      // generateCompletion is not required for this adapter in current usage. Omitting to simplify typing.
       dispose: () => {
         togetherService.dispose()
       },
@@ -302,25 +288,24 @@ export const POST: APIRoute = async ({ request }) => {
       maxResponseTokens,
     })
     // Log the request
-    await createAuditLog({
-      id: crypto.randomUUID(),
-      userId: session?.user?.id || 'anonymous',
-      action: 'ai.response.request',
-      resource: { id: 'response-generation', type: 'ai' },
-      timestamp: new Date(),
-      metadata: {
+    await createAuditLog(
+      AuditEventType.AI_OPERATION,
+      'ai.response.request',
+      session?.user?.id || 'anonymous',
+      'response-generation',
+      {
         model: modelId || 'mistralai/Mixtral-8x7B-Instruct-v0.2',
         temperature,
         maxResponseTokens,
         messageCount: messages ? messages.length : 1,
       },
-    })
+    )
 
     // Start timer for latency measurement
     const startTime = Date.now()
 
     // Process the request
-    let result
+    let result: TherapeuticResponse
     if (messages) {
       result = await responseService.generateResponseWithInstructions(
         messages,
@@ -358,18 +343,17 @@ export const POST: APIRoute = async ({ request }) => {
     })
 
     // Log the response
-    await createAuditLog({
-      id: crypto.randomUUID(),
-      userId: session?.user?.id || 'anonymous',
-      action: 'ai.response.response',
-      resource: { id: 'response-generation', type: 'ai' },
-      timestamp: new Date(),
-      metadata: {
+    await createAuditLog(
+      AuditEventType.AI_OPERATION,
+      'ai.response.response',
+      session?.user?.id || 'anonymous',
+      'response-generation',
+      {
         model: modelId || 'mistralai/Mixtral-8x7B-Instruct-v0.2',
         responseLength: result?.content.length,
         latencyMs,
       },
-    })
+    )
 
     return new Response(JSON.stringify(result), {
       status: 200,
@@ -379,18 +363,18 @@ export const POST: APIRoute = async ({ request }) => {
     console.error('Error in response generation API:', error)
 
     // Create audit log for the error
-    await createAuditLog({
-      id: crypto.randomUUID(),
-      userId: session?.user?.id || 'anonymous',
-      action: 'ai.response.error',
-      resource: { id: 'response-generation', type: 'ai' },
-      timestamp: new Date(),
-      metadata: {
+    await createAuditLog(
+      AuditEventType.AI_OPERATION,
+      'ai.response.error',
+      session?.user?.id || 'anonymous',
+      'response-generation',
+      {
         error: error instanceof Error ? error?.message : String(error),
         stack: error instanceof Error ? error?.stack : undefined,
         status: 'error',
       },
-    })
+      AuditEventStatus.FAILURE,
+    )
 
     return new Response(
       JSON.stringify({

@@ -66,7 +66,7 @@ export const POST: APIRoute = async ({ request }) => {
       id: uuidv4(),
       createdAt: now,
       updatedAt: now,
-    }
+    } as TherapeuticGoal
     goals.push(newGoal)
     return new Response(JSON.stringify(newGoal), {
       status: 201,

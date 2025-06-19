@@ -102,7 +102,7 @@ interface AuditServiceConfig {
   enabled: boolean
   localStorageEnabled: boolean
   remoteStorageEnabled: boolean
-  remoteEndpoint?: string
+  remoteEndpoint?: string | undefined
   encryptLogs: boolean
   retentionDays: number
   batchSize: number
@@ -114,7 +114,7 @@ const DEFAULT_CONFIG: AuditServiceConfig = {
   enabled: true,
   localStorageEnabled: true,
   remoteStorageEnabled: getEnvVar('NODE_ENV') === 'production',
-  remoteEndpoint: getEnvVar('AUDIT_LOG_ENDPOINT'),
+  remoteEndpoint: getEnvVar('AUDIT_LOG_ENDPOINT') ?? undefined,
   encryptLogs: getEnvVar('NODE_ENV') === 'production',
   retentionDays: 90, // HIPAA requires 6 years, but for this app we'll use 90 days
   batchSize: 100,
@@ -329,7 +329,7 @@ export async function createAuditLog(
     resource,
     eventType: type,
     status,
-    details,
+    ...(details !== undefined ? { details } : {}),
   })
 }
 
@@ -348,7 +348,7 @@ export function logAuditEvent(
     action,
     resource: resourceId || 'unknown',
     eventType,
-    details,
+    ...(details !== undefined ? { details } : {}),
   }).catch((error) => {
     logger.error('Failed to log audit event', error)
   })
@@ -374,24 +374,29 @@ export async function createHIPAACompliantAuditLog(params: {
   const eventType = params.eventType || AuditEventType.SYSTEM
   const status = params.status || AuditEventStatus.SUCCESS
 
-  // Create log entry
-  const logEntry: AuditLogEntry = {
+  // Base log entry with required fields
+  const baseEntry = {
     id: generateAuditId(),
     timestamp: new Date().toISOString(),
     userId: params.userId,
-    userRole: params.userRole,
     action: params.action,
     eventType,
     status,
     resource: params.resource,
-    resourceId: params.resourceId,
-    details: params.details,
     ipAddress: getClientIp(),
     userAgent: getUserAgent(),
     sessionId: getSessionId(),
-    patientId: params.patientId,
-    organizationId: params.organizationId,
-    notes: params.notes,
+  }
+
+  // Conditionally include optional fields to satisfy exactOptionalPropertyTypes
+  const logEntry: AuditLogEntry = {
+    ...baseEntry,
+    ...(params.userRole !== undefined ? { userRole: params.userRole } : {}),
+    ...(params.resourceId !== undefined ? { resourceId: params.resourceId } : {}),
+    ...(params.details !== undefined ? { details: params.details } : {}),
+    ...(params.patientId !== undefined ? { patientId: params.patientId } : {}),
+    ...(params.organizationId !== undefined ? { organizationId: params.organizationId } : {}),
+    ...(params.notes !== undefined ? { notes: params.notes } : {}),
   }
 
   // Store locally if enabled
@@ -492,13 +497,12 @@ export function configureAuditService(
  * TODO: Implement this function based on its intended usage.
  */
 export async function createResourceAuditLog(
-  eventType: AuditEventType, // Assuming similar params to other log functions
+  eventType: AuditEventType,
   userId: string,
-  resource: { id: string; type: string }, // Based on usage in performance-tracker.ts
+  resource: { id: string; type: string },
   details?: AuditDetails,
   status: AuditEventStatus = AuditEventStatus.SUCCESS,
-): Promise<AuditLogEntry | void> {
-  // Return void or a log entry
+): Promise<AuditLogEntry | undefined> {
   logger.warn(
     'createResourceAuditLog is a placeholder and needs full implementation.',
     {
@@ -509,9 +513,7 @@ export async function createResourceAuditLog(
       status,
     },
   )
-  // For now, let's make it behave somewhat like createAuditLog if needed
-  // Or simply return nothing / a generic response
-  // This is a STUB - replace with actual logic
+
   if (config.enabled) {
     return createHIPAACompliantAuditLog({
       userId,
@@ -519,11 +521,11 @@ export async function createResourceAuditLog(
       resource: resource.id,
       eventType,
       status,
-      details,
+      ...(details !== undefined ? { details } : {}),
       notes: 'Placeholder log from createResourceAuditLog stub',
     })
   }
-  return Promise.resolve() // Or a more specific void return if that's the intent
+  return Promise.resolve(undefined)
 }
 
 // Auto-initialize the service

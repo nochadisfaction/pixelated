@@ -3,16 +3,18 @@
  * Provides React components for visualizing objective evaluation results and alignment metrics
  */
 
-import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
+import React from 'react';
 import { LineChart, PieChart } from '@/components/ui/charts';
-import type {
-  AlignmentMetrics,
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { 
+  ObjectiveMetrics, 
+  AlignmentMetrics, 
   CriteriaMetrics,
-  ObjectiveMetrics,
-  TimestampedEvaluation
+  EvaluationTrend,
+  TimestampedEvaluation 
 } from '../core/objective-metrics';
-import type { ObjectiveDefinition } from '../core/objectives';
+import { ObjectiveDefinition } from '../core/objectives';
 
 export interface ObjectiveScoreVisualizationProps {
   objectiveMetrics: Record<string, ObjectiveMetrics>;
@@ -52,17 +54,13 @@ export function ObjectiveScoreVisualization({
   objectives,
   className = ''
 }: ObjectiveScoreVisualizationProps) {
-  const scores = objectives.map(obj => (objectiveMetrics[obj.id]?.score ?? 0));
-  // Labels are used for reference but not directly in this component
-
+  const scores = objectives.map(obj => objectiveMetrics[obj.id]?.score || 0);
+  const labels = objectives.map(obj => obj.name);
+  
   // Color code based on score: red (0-0.4), yellow (0.4-0.7), green (0.7-1.0)
   const colors = scores.map(score => {
-    if (score >= 0.7) {
-      return '#10b981'; // Green
-    }
-    if (score >= 0.4) {
-      return '#f59e0b'; // Yellow/Orange
-    }
+    if (score >= 0.7) return '#10b981'; // Green
+    if (score >= 0.4) return '#f59e0b'; // Yellow/Orange
     return '#ef4444'; // Red
   });
 
@@ -74,14 +72,14 @@ export function ObjectiveScoreVisualization({
           const metrics = objectiveMetrics[obj.id];
           const score = metrics?.score || 0;
           const confidence = metrics?.confidence || 0;
-
+          
           return (
             <div key={obj.id} className="flex items-center justify-between">
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-sm font-medium">{obj.name}</span>
                   <div className="flex items-center gap-2">
-                    <Badge variant={score >= 0.7 ? 'default' : score >= 0.4 ? 'secondary' : 'destructive'}>
+                    <Badge variant={score >= 0.7 ? 'success' : score >= 0.4 ? 'warning' : 'destructive'}>
                       {(score * 100).toFixed(1)}%
                     </Badge>
                     {confidence < 0.7 && (
@@ -146,7 +144,7 @@ export function CriteriaBreakdownVisualization({
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <Badge variant={criteria.score >= 0.7 ? 'default' : criteria.score >= 0.4 ? 'secondary' : 'destructive'}>
+                <Badge variant={criteria.score >= 0.7 ? 'success' : criteria.score >= 0.4 ? 'warning' : 'destructive'}>
                   {(criteria.score * 100).toFixed(1)}%
                 </Badge>
                 <span className="text-xs text-gray-500">
@@ -169,14 +167,14 @@ export function AlignmentTrendVisualization({
   objectiveId,
   className = ''
 }: AlignmentTrendVisualizationProps) {
-  const sortedHistory = [...evaluationHistory].sort((a, b) =>
+  const sortedHistory = [...evaluationHistory].sort((a, b) => 
     new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
   );
 
-  const labels = sortedHistory.map(evaluation =>
-    new Date(evaluation.timestamp).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric'
+  const labels = sortedHistory.map(eval => 
+    new Date(eval.timestamp).toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric' 
     })
   );
 
@@ -184,37 +182,30 @@ export function AlignmentTrendVisualization({
   let chartTitle: string;
 
   if (objectiveId) {
-    data = sortedHistory.map(evaluation =>
-      evaluation.metrics.objectiveMetrics?.[objectiveId] &&
-      typeof evaluation.metrics.objectiveMetrics[objectiveId].score === 'number'
-        ? evaluation.metrics.objectiveMetrics[objectiveId].score * 100
-        : 0
+    data = sortedHistory.map(eval => 
+      eval.metrics.objectiveMetrics[objectiveId]?.score * 100 || 0
     );
-    const firstEvaluation = sortedHistory[0];
-    const objectiveName = firstEvaluation && 
-      Object.keys(firstEvaluation.metrics.objectiveMetrics || {}).includes(objectiveId)
+    const objectiveName = Object.keys(eval.metrics.objectiveMetrics).includes(objectiveId) 
       ? objectiveId.charAt(0).toUpperCase() + objectiveId.slice(1)
       : 'Unknown Objective';
     chartTitle = `${objectiveName} Trend`;
   } else {
-    data = sortedHistory.map(evaluation => evaluation.metrics.overallScore * 100);
+    data = sortedHistory.map(eval => eval.metrics.overallScore * 100);
     chartTitle = 'Overall Alignment Trend';
   }
 
   // Determine trend direction
-  const trend =
-    data.length >= 2 && typeof data[data.length - 1] === 'number' && typeof data[0] === 'number'
-      ? (data[data.length - 1] ?? 0) - (data[0] ?? 0)
-      : 0;
-
+  const trend = data.length >= 2 ? 
+    data[data.length - 1] - data[0] : 0;
+  
   const trendColor = trend > 5 ? '#10b981' : trend < -5 ? '#ef4444' : '#f59e0b';
 
   return (
     <Card className={`p-6 ${className}`}>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold">{chartTitle}</h3>
-        <Badge
-          variant={trend > 5 ? 'default' : trend < -5 ? 'destructive' : 'secondary'}
+        <Badge 
+          variant={trend > 5 ? 'success' : trend < -5 ? 'destructive' : 'secondary'}
           className="flex items-center gap-1"
         >
           {trend > 0 ? '↗' : trend < 0 ? '↘' : '→'}
@@ -242,14 +233,12 @@ export function AlignmentComparisonVisualization({
   className = ''
 }: AlignmentComparisonProps) {
   const objectiveIds = Object.keys(beforeMetrics.objectiveMetrics);
-
+  
   const comparisonData = objectiveIds.map(id => {
-    const beforeMetric = beforeMetrics.objectiveMetrics[id];
-    const afterMetric = afterMetrics.objectiveMetrics[id];
-    const before = beforeMetric?.score ? beforeMetric.score * 100 : 0;
-    const after = afterMetric?.score ? afterMetric.score * 100 : 0;
+    const before = beforeMetrics.objectiveMetrics[id]?.score * 100 || 0;
+    const after = afterMetrics.objectiveMetrics[id]?.score * 100 || 0;
     const improvement = after - before;
-
+    
     return {
       objective: id.charAt(0).toUpperCase() + id.slice(1),
       before,
@@ -264,26 +253,26 @@ export function AlignmentComparisonVisualization({
     <Card className={`p-6 ${className}`}>
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-semibold">Before vs After Alignment</h3>
-        <Badge
-          variant={overallImprovement > 0 ? 'default' : overallImprovement < 0 ? 'destructive' : 'secondary'}
+        <Badge 
+          variant={overallImprovement > 0 ? 'success' : overallImprovement < 0 ? 'destructive' : 'secondary'}
           className="flex items-center gap-1"
         >
           Overall: {overallImprovement > 0 ? '+' : ''}{overallImprovement.toFixed(1)}%
         </Badge>
       </div>
-
+      
       <div className="space-y-4">
         {comparisonData.map(data => (
           <div key={data.objective} className="border rounded-lg p-4">
             <div className="flex items-center justify-between mb-2">
               <span className="font-medium">{data.objective}</span>
-              <Badge
-                variant={data.improvement > 0 ? 'default' : data.improvement < 0 ? 'destructive' : 'secondary'}
+              <Badge 
+                variant={data.improvement > 0 ? 'success' : data.improvement < 0 ? 'destructive' : 'secondary'}
               >
                 {data.improvement > 0 ? '+' : ''}{data.improvement.toFixed(1)}%
               </Badge>
             </div>
-
+            
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <div className="text-sm text-gray-500 mb-1">Before</div>
@@ -295,7 +284,7 @@ export function AlignmentComparisonVisualization({
                 </div>
                 <div className="text-xs text-right mt-1">{data.before.toFixed(1)}%</div>
               </div>
-
+              
               <div>
                 <div className="text-sm text-gray-500 mb-1">After</div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
@@ -325,9 +314,9 @@ export function ObjectiveInfluenceVisualization({
   const influenceData = objectives.map(obj => {
     const metrics = objectiveMetrics[obj.id];
     const score = metrics?.score || 0;
-    const { weight } = obj;
+    const weight = obj.weight;
     const contribution = score * weight * 100; // Contribution to overall score
-
+    
     return {
       name: obj.name,
       weight: weight * 100,
@@ -344,7 +333,7 @@ export function ObjectiveInfluenceVisualization({
   return (
     <Card className={`p-6 ${className}`}>
       <h3 className="text-lg font-semibold mb-4">Objective Influence on Overall Score</h3>
-
+      
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="h-64">
           <PieChart
@@ -353,7 +342,7 @@ export function ObjectiveInfluenceVisualization({
             colors={colors}
           />
         </div>
-
+        
         <div className="space-y-3">
           {influenceData.map((item, index) => (
             <div key={item.name} className="border rounded-lg p-3">
@@ -367,7 +356,7 @@ export function ObjectiveInfluenceVisualization({
                 </div>
                 <Badge variant="outline">{item.contribution.toFixed(1)}%</Badge>
               </div>
-
+              
               <div className="grid grid-cols-3 gap-2 text-xs text-gray-600">
                 <div>
                   <div>Weight</div>
@@ -399,14 +388,14 @@ export function generateAlignmentExplanation(
 ): string {
   const overallScore = metrics.overallScore * 100;
   const bestObjective = Object.entries(metrics.objectiveMetrics)
-    .reduce((best, [id, metric]) =>
-      metric.score > best.score ? { id, score: metric.score } : best,
+    .reduce((best, [id, metric]) => 
+      metric.score > best.score ? { id, score: metric.score } : best, 
       { id: '', score: 0 }
     );
-
+  
   const worstObjective = Object.entries(metrics.objectiveMetrics)
-    .reduce((worst, [id, metric]) =>
-      metric.score < worst.score ? { id, score: metric.score } : worst,
+    .reduce((worst, [id, metric]) => 
+      metric.score < worst.score ? { id, score: metric.score } : worst, 
       { id: '', score: 1 }
     );
 
@@ -414,7 +403,7 @@ export function generateAlignmentExplanation(
   const worstObjName = objectives.find(o => o.id === worstObjective.id)?.name || 'Unknown';
 
   let explanation = `The response achieved an overall alignment score of ${overallScore.toFixed(1)}%. `;
-
+  
   if (overallScore >= 80) {
     explanation += "This represents excellent alignment with mental health objectives. ";
   } else if (overallScore >= 60) {
@@ -437,5 +426,9 @@ export function generateAlignmentExplanation(
  * Export all visualization components
  */
 export {
-  AlignmentComparisonVisualization as AlignmentComparison, AlignmentTrendVisualization as AlignmentTrend, CriteriaBreakdownVisualization as CriteriaBreakdown, ObjectiveInfluenceVisualization as ObjectiveInfluence, ObjectiveScoreVisualization as ObjectiveScores
-};
+  ObjectiveScoreVisualization as ObjectiveScores,
+  CriteriaBreakdownVisualization as CriteriaBreakdown,
+  AlignmentTrendVisualization as AlignmentTrend,
+  AlignmentComparisonVisualization as AlignmentComparison,
+  ObjectiveInfluenceVisualization as ObjectiveInfluence
+}; 

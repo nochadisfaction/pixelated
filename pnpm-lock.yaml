@@ -154,8 +154,11 @@ importers:
         specifier: ^9.1.2
         version: 9.1.2(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(three@0.177.0)
       '@sentry/astro':
-        specifier: ^9.28.1
-        version: 9.28.1(astro@5.9.2(@capacitor/preferences@7.0.1(@capacitor/core@7.2.0))(@types/node@24.0.1)(@upstash/redis@1.35.0)(aws4fetch@1.0.20)(encoding@0.1.13)(ioredis@5.6.1)(jiti@2.4.2)(lightningcss@1.30.1)(rollup@4.41.0)(terser@5.42.0)(tsx@4.20.2)(typescript@5.8.3)(yaml@2.8.0))(encoding@0.1.13)
+        specifier: ^9.30.0
+        version: 9.30.0(astro@5.9.2(@capacitor/preferences@7.0.1(@capacitor/core@7.2.0))(@types/node@24.0.1)(@upstash/redis@1.35.0)(aws4fetch@1.0.20)(encoding@0.1.13)(ioredis@5.6.1)(jiti@2.4.2)(lightningcss@1.30.1)(rollup@4.41.0)(terser@5.42.0)(tsx@4.20.2)(typescript@5.8.3)(yaml@2.8.0))(encoding@0.1.13)
+      '@sentry/browser':
+        specifier: ^9.30.0
+        version: 9.30.0
       '@supabase/ssr':
         specifier: ^0.6.1
         version: 0.6.1(@supabase/supabase-js@2.50.0(bufferutil@4.0.9))
@@ -847,6 +850,9 @@ importers:
       tsx:
         specifier: ^4.20.2
         version: 4.20.2
+      tw-animate-css:
+        specifier: ^1.3.4
+        version: 1.3.4
       typescript:
         specifier: ^5.8.3
         version: 5.8.3
@@ -4167,24 +4173,24 @@ packages:
   '@selderee/plugin-htmlparser2@0.11.0':
     resolution: {integrity: sha512-P33hHGdldxGabLFjPPpaTxVolMrzrcegejx+0GxjrIb9Zv48D8yAIA/QTDR2dFl7Uz7urX8aX6+5bCZslr+gWQ==}
 
-  '@sentry-internal/browser-utils@9.28.1':
-    resolution: {integrity: sha512-P/FEZkT7UqTw9P/2n/Y4Aa1OtGP6dnCvyqzPPkjiRdVa7Ep7S5ElBJloGv7077TLLBtAfCsEUVRlM1F6/jQoaA==}
+  '@sentry-internal/browser-utils@9.30.0':
+    resolution: {integrity: sha512-e6ZlN8oWheCB0YJSGlBNUlh6UPnY5Ecj1P+/cgeKBhNm7c3bIx4J50485hB8LQsu+b7Q11L2o/wucZ//Pb6FCg==}
     engines: {node: '>=18'}
 
-  '@sentry-internal/feedback@9.28.1':
-    resolution: {integrity: sha512-HOk/c26D3nlClO/xEefev8fIJzRA621PFQvNFPu/y0Z5HujEqSmIsrff0cXszPPYD95h4Mwk63E0ZYdspdeXcw==}
+  '@sentry-internal/feedback@9.30.0':
+    resolution: {integrity: sha512-qAZ7xxLqZM7GlEvmSUmTHnoueg+fc7esMQD4vH8pS7HI3n9C5MjGn3HHlndRpD8lL7iUUQ0TPZQgU6McbzMDyw==}
     engines: {node: '>=18'}
 
-  '@sentry-internal/replay-canvas@9.28.1':
-    resolution: {integrity: sha512-RtkogfcIpXLFCyV8CTnXmVTH2QauT/KwmUAXBbeOz3rRWsM19yjN1moHrsjxn7OdjTv+D4qWSCA8Ka1aKSpr7g==}
+  '@sentry-internal/replay-canvas@9.30.0':
+    resolution: {integrity: sha512-I4MxS27rfV7vnOU29L80y4baZ4I1XqpnYvC/yLN7C17nA8eDCufQ8WVomli41y8JETnfcxlm68z7CS0sO4RCSA==}
     engines: {node: '>=18'}
 
-  '@sentry-internal/replay@9.28.1':
-    resolution: {integrity: sha512-Tv9pkfAX+1bmhxF42TL0c4uTiK2+rp5LMYEPdz6JBfpfvG/Z1unPGsuB7fQmHYKyfHBQJmi92DZV+smljm7w/g==}
+  '@sentry-internal/replay@9.30.0':
+    resolution: {integrity: sha512-+6wkqQGLJuFUzvGRzbh3iIhFGyxQx/Oxc0ODDKmz9ag2xYRjCYb3UUQXmQX9navAF0HXUsq8ajoJPm2L1ZyWVg==}
     engines: {node: '>=18'}
 
-  '@sentry/astro@9.28.1':
-    resolution: {integrity: sha512-/Z0d+6hu4qj24wzJw8LUG6rx2kKCDQMyxD9eX8Ly95UJ4Ql9tjNqMK2bcgWukrI+A3sAKu9ucKuMOPvWZ5gUlg==}
+  '@sentry/astro@9.30.0':
+    resolution: {integrity: sha512-NLA/3X37FmTZNVmf24B0qWiFEaDyImDCahhNruc1A+dVLGTYs1GHmYWMkhLU22WupFm/QnrBVEe90iw2YNzniQ==}
     engines: {node: '>=18.19.1'}
     peerDependencies:
       astro: '>=3.x || >=4.0.0-beta || >=5.x'
@@ -4193,8 +4199,8 @@ packages:
     resolution: {integrity: sha512-+uLqaCKeYmH/W2YUV1XHkFEtpHdx/aFjCQahPVsvXyqg13dfkR6jaygPL4DB5DJtUSmPFCUE3MEk9ZO5JlhJYg==}
     engines: {node: '>= 14'}
 
-  '@sentry/browser@9.28.1':
-    resolution: {integrity: sha512-XAS46iQSq8lXTnv9udQP025JTf3PwSVRE9ePJVQhx25QBWxedqGhEOv5qqX9b1Ijf8KiZYXXhBWMQxBBXVzUaw==}
+  '@sentry/browser@9.30.0':
+    resolution: {integrity: sha512-sRyW6A9nIieTTI26MYXk1DmWEhmphTjZevusNWla+vvUigCmSjuH+xZw19w43OyvF3bu261Skypnm/mAalOTwg==}
     engines: {node: '>=18'}
 
   '@sentry/bundler-plugin-core@2.23.0':
@@ -4247,16 +4253,16 @@ packages:
     engines: {node: '>= 10'}
     hasBin: true
 
-  '@sentry/core@9.28.1':
-    resolution: {integrity: sha512-6q59r/71MeE+4StkvwdKAAyhBBNpWcii0HeiWBZ3l1gaFYQlb6bChjZJRZmxSzF5dnvkdF4duQbAC3JmjeIbPA==}
+  '@sentry/core@9.30.0':
+    resolution: {integrity: sha512-JfEpeQ8a1qVJEb9DxpFTFy1J1gkNdlgKAPiqYGNnm4yQbnfl2Kb/iEo1if70FkiHc52H8fJwISEF90pzMm6lPg==}
     engines: {node: '>=18'}
 
-  '@sentry/node@9.28.1':
-    resolution: {integrity: sha512-1bC8ywFPs1EIKzRlUhLoreTR/fUU45O+ezVNvOu0I6JURMwjyC8uT23f0Xkiolx4WjKZXER+d0el3HojPaYkYw==}
+  '@sentry/node@9.30.0':
+    resolution: {integrity: sha512-jHuSSKro2DUaccGcYSBbB8Rj0sG+LRh1iSWrJ+4c4Pj7tJFN9MbeMybC1buMSzAp+rwHUMZ3+ws0kgNVtsRJJg==}
     engines: {node: '>=18'}
 
-  '@sentry/opentelemetry@9.28.1':
-    resolution: {integrity: sha512-1xxriB2diNSlNpkMosdgIKzPOPwAiyFg7XgEWKpLtDYWj7WVbLNyLkUWriFr4JgU40uZp3LW+sGgnshA48/zQQ==}
+  '@sentry/opentelemetry@9.30.0':
+    resolution: {integrity: sha512-LhTmyGGLAP/LAxs/oXuPs0LC5Z80QSLL1oUoBRB5/+MitK7Huug6n8ZFjPTP3/6bT67XOVqILCdj8BwMlBeXhA==}
     engines: {node: '>=18'}
     peerDependencies:
       '@opentelemetry/api': ^1.9.0
@@ -12462,6 +12468,9 @@ packages:
   tunnel-agent@0.6.0:
     resolution: {integrity: sha512-McnNiV1l8RYeY8tBgEpuodCC1mLUdbSN+CYBL7kJsJNInOP8UjDDEwdk6Mw60vdLLrr5NHKZhMAOSrR2NZuQ+w==}
 
+  tw-animate-css@1.3.4:
+    resolution: {integrity: sha512-dd1Ht6/YQHcNbq0znIT6dG8uhO7Ce+VIIhZUhjsryXsMPJQz3bZg7Q2eNzLwipb25bRZslGb2myio5mScd1TFg==}
+
   tweetnacl@0.14.5:
     resolution: {integrity: sha512-KXXFFdAbFXY4geFIwoyNK+f5Z1b7swfXABfL7HXCmoIWMKU3dmS26672A4EeQtDzLKy7SXmfBu51JolvEKwtGA==}
 
@@ -17684,29 +17693,29 @@ snapshots:
       domhandler: 5.0.3
       selderee: 0.11.0
 
-  '@sentry-internal/browser-utils@9.28.1':
+  '@sentry-internal/browser-utils@9.30.0':
     dependencies:
-      '@sentry/core': 9.28.1
+      '@sentry/core': 9.30.0
 
-  '@sentry-internal/feedback@9.28.1':
+  '@sentry-internal/feedback@9.30.0':
     dependencies:
-      '@sentry/core': 9.28.1
+      '@sentry/core': 9.30.0
 
-  '@sentry-internal/replay-canvas@9.28.1':
+  '@sentry-internal/replay-canvas@9.30.0':
     dependencies:
-      '@sentry-internal/replay': 9.28.1
-      '@sentry/core': 9.28.1
+      '@sentry-internal/replay': 9.30.0
+      '@sentry/core': 9.30.0
 
-  '@sentry-internal/replay@9.28.1':
+  '@sentry-internal/replay@9.30.0':
     dependencies:
-      '@sentry-internal/browser-utils': 9.28.1
-      '@sentry/core': 9.28.1
+      '@sentry-internal/browser-utils': 9.30.0
+      '@sentry/core': 9.30.0
 
-  '@sentry/astro@9.28.1(astro@5.9.2(@capacitor/preferences@7.0.1(@capacitor/core@7.2.0))(@types/node@24.0.1)(@upstash/redis@1.35.0)(aws4fetch@1.0.20)(encoding@0.1.13)(ioredis@5.6.1)(jiti@2.4.2)(lightningcss@1.30.1)(rollup@4.41.0)(terser@5.42.0)(tsx@4.20.2)(typescript@5.8.3)(yaml@2.8.0))(encoding@0.1.13)':
+  '@sentry/astro@9.30.0(astro@5.9.2(@capacitor/preferences@7.0.1(@capacitor/core@7.2.0))(@types/node@24.0.1)(@upstash/redis@1.35.0)(aws4fetch@1.0.20)(encoding@0.1.13)(ioredis@5.6.1)(jiti@2.4.2)(lightningcss@1.30.1)(rollup@4.41.0)(terser@5.42.0)(tsx@4.20.2)(typescript@5.8.3)(yaml@2.8.0))(encoding@0.1.13)':
     dependencies:
-      '@sentry/browser': 9.28.1
-      '@sentry/core': 9.28.1
-      '@sentry/node': 9.28.1
+      '@sentry/browser': 9.30.0
+      '@sentry/core': 9.30.0
+      '@sentry/node': 9.30.0
       '@sentry/vite-plugin': 2.23.0(encoding@0.1.13)
       astro: 5.9.2(@capacitor/preferences@7.0.1(@capacitor/core@7.2.0))(@types/node@24.0.1)(@upstash/redis@1.35.0)(aws4fetch@1.0.20)(encoding@0.1.13)(ioredis@5.6.1)(jiti@2.4.2)(lightningcss@1.30.1)(rollup@4.41.0)(terser@5.42.0)(tsx@4.20.2)(typescript@5.8.3)(yaml@2.8.0)
     transitivePeerDependencies:
@@ -17715,17 +17724,17 @@ snapshots:
 
   '@sentry/babel-plugin-component-annotate@2.23.0': {}
 
-  '@sentry/browser@9.28.1':
+  '@sentry/browser@9.30.0':
     dependencies:
-      '@sentry-internal/browser-utils': 9.28.1
-      '@sentry-internal/feedback': 9.28.1
-      '@sentry-internal/replay': 9.28.1
-      '@sentry-internal/replay-canvas': 9.28.1
-      '@sentry/core': 9.28.1
+      '@sentry-internal/browser-utils': 9.30.0
+      '@sentry-internal/feedback': 9.30.0
+      '@sentry-internal/replay': 9.30.0
+      '@sentry-internal/replay-canvas': 9.30.0
+      '@sentry/core': 9.30.0
 
   '@sentry/bundler-plugin-core@2.23.0(encoding@0.1.13)':
     dependencies:
-      '@babel/core': 7.27.1
+      '@babel/core': 7.27.4
       '@sentry/babel-plugin-component-annotate': 2.23.0
       '@sentry/cli': 2.39.1(encoding@0.1.13)
       dotenv: 16.5.0
@@ -17777,9 +17786,9 @@ snapshots:
       - encoding
       - supports-color
 
-  '@sentry/core@9.28.1': {}
+  '@sentry/core@9.30.0': {}
 
-  '@sentry/node@9.28.1':
+  '@sentry/node@9.30.0':
     dependencies:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/context-async-hooks': 1.30.1(@opentelemetry/api@1.9.0)
@@ -17811,14 +17820,14 @@ snapshots:
       '@opentelemetry/sdk-trace-base': 1.30.1(@opentelemetry/api@1.9.0)
       '@opentelemetry/semantic-conventions': 1.34.0
       '@prisma/instrumentation': 6.8.2(@opentelemetry/api@1.9.0)
-      '@sentry/core': 9.28.1
-      '@sentry/opentelemetry': 9.28.1(@opentelemetry/api@1.9.0)(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.34.0)
+      '@sentry/core': 9.30.0
+      '@sentry/opentelemetry': 9.30.0(@opentelemetry/api@1.9.0)(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.34.0)
       import-in-the-middle: 1.13.2
       minimatch: 9.0.5
     transitivePeerDependencies:
       - supports-color
 
-  '@sentry/opentelemetry@9.28.1(@opentelemetry/api@1.9.0)(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.34.0)':
+  '@sentry/opentelemetry@9.30.0(@opentelemetry/api@1.9.0)(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.34.0)':
     dependencies:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/context-async-hooks': 1.30.1(@opentelemetry/api@1.9.0)
@@ -17826,7 +17835,7 @@ snapshots:
       '@opentelemetry/instrumentation': 0.57.2(@opentelemetry/api@1.9.0)
       '@opentelemetry/sdk-trace-base': 1.30.1(@opentelemetry/api@1.9.0)
       '@opentelemetry/semantic-conventions': 1.34.0
-      '@sentry/core': 9.28.1
+      '@sentry/core': 9.30.0
 
   '@sentry/vite-plugin@2.23.0(encoding@0.1.13)':
     dependencies:
@@ -19667,6 +19676,10 @@ snapshots:
   acorn-import-attributes@1.9.5(acorn@8.14.1):
     dependencies:
       acorn: 8.14.1
+
+  acorn-import-attributes@1.9.5(acorn@8.15.0):
+    dependencies:
+      acorn: 8.15.0
 
   acorn-jsx@5.3.2(acorn@8.14.1):
     dependencies:
@@ -21817,7 +21830,7 @@ snapshots:
   esast-util-from-js@2.0.1:
     dependencies:
       '@types/estree-jsx': 1.0.5
-      acorn: 8.14.1
+      acorn: 8.15.0
       esast-util-from-estree: 2.0.0
       vfile-message: 4.0.2
 
@@ -23396,8 +23409,8 @@ snapshots:
 
   import-in-the-middle@1.13.2:
     dependencies:
-      acorn: 8.14.1
-      acorn-import-attributes: 1.9.5(acorn@8.14.1)
+      acorn: 8.15.0
+      acorn-import-attributes: 1.9.5(acorn@8.15.0)
       cjs-module-lexer: 1.4.3
       module-details-from-path: 1.0.4
 
@@ -24941,8 +24954,8 @@ snapshots:
 
   micromark-extension-mdxjs@3.0.0:
     dependencies:
-      acorn: 8.14.1
-      acorn-jsx: 5.3.2(acorn@8.14.1)
+      acorn: 8.15.0
+      acorn-jsx: 5.3.2(acorn@8.15.0)
       micromark-extension-mdx-expression: 3.0.1
       micromark-extension-mdx-jsx: 3.0.2
       micromark-extension-mdx-md: 2.0.0
@@ -28168,6 +28181,8 @@ snapshots:
     dependencies:
       safe-buffer: 5.2.1
 
+  tw-animate-css@1.3.4: {}
+
   tweetnacl@0.14.5: {}
 
   tweetnacl@1.0.3: {}
@@ -28450,7 +28465,7 @@ snapshots:
 
   unplugin@1.0.1:
     dependencies:
-      acorn: 8.14.1
+      acorn: 8.15.0
       chokidar: 3.6.0
       webpack-sources: 3.3.0
       webpack-virtual-modules: 0.5.0

@@ -17,29 +17,11 @@ interface DeleteRequestData {
   'hipaa-confirmation': boolean
 }
 
-export const POST: APIRoute = async ({ request, cookies }) => {
+export const POST: APIRoute = protectRoute({
+  requiredRole: 'admin'
+})(async ({ request, locals }) => {
   try {
-    // Protect the route - only authenticated admin users can access
-    const authResult = await protectRoute(request, cookies, {
-      requiredRoles: ['admin'],
-    })
-
-    if (!authResult.success) {
-      logger.warn('Unauthorized access attempt to patient data deletion API', {
-        ip: request.headers.get('x-forwarded-for') || 'unknown',
-      })
-
-      return new Response(
-        JSON.stringify({
-          success: false,
-          message: 'Unauthorized access',
-        }),
-        {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' },
-        },
-      )
-    }
+    const { user } = locals
 
     // Parse and validate the form data
     const formData = await request.formData()
@@ -126,7 +108,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       dataCategories: deletionScope === 'specific' ? dataCategories : [],
       reason: deletionReason,
       additionalDetails,
-      requestedBy: authResult.user.id,
+      requestedBy: user.id,
     })
 
     // Log the successful request
@@ -134,7 +116,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       requestId: result.id,
       patientId,
       scope: deletionScope,
-      adminUser: authResult.user.id,
+      adminUser: user.id,
     })
 
     // Return success response
@@ -167,4 +149,4 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       },
     )
   }
-}
+})

@@ -1,6 +1,7 @@
 ---
 import '@unocss/reset/tailwind.css'
 import '@/styles/main.css'
+import '@/styles/pixelated-theme.css'
 import '@/styles/prose.css'
 import '@/styles/markdown.css'
 import '@/styles/page.css'
@@ -17,6 +18,7 @@ import ToastProvider from '@/components/ui/ToastProvider.tsx'
 import LiveRegionSystem from '@/components/accessibility/LiveRegionSystem.astro'
 import SpeedInsights from '@vercel/speed-insights/astro'
 import Analytics from '@vercel/analytics/astro'
+import SentryInit from "@/components/SentryInit"
 
 import { SITE, UI, FEATURES } from '@/config'
 import { getUrl } from '@/utils/common'
@@ -39,6 +41,7 @@ interface Props {
   showNavBar?: boolean
   showFooter?: boolean
   usePlumAnimation?: boolean
+  useThemeParticles?: boolean
   centered?: boolean
   containerClass?: string
   contentClass?: string
@@ -53,10 +56,11 @@ const {
   showNavBar = true,
   showFooter = true,
   usePlumAnimation = false,
+  useThemeParticles = true,
   centered = true,
   containerClass = 'mx-auto w-full',
   contentClass = 'pt-16 pb-2 px-4 flex-grow',
-  bgType,
+  bgType = 'plum',
   transitionMode = 'slide',
   ogImage,
   pubDate,
@@ -150,13 +154,24 @@ const isAuthPage = isLoginPage ||
   </head>
 
   <body
-    class="relative flex flex-col min-h-screen
-      font-sans text-gray-700 dark:text-gray-200"
+    class="relative flex flex-col min-h-screen theme-page
+      font-sans theme-text-primary"
     style={Object.keys(style).length !== 0 ? style : undefined}
     data-no-sliding={!enableSlideEnterAnim ? true : undefined}
   >
     <!-- Background -->
     {bgType && <Background type={bgType} />}
+
+    <!-- Theme Particles -->
+    {useThemeParticles && (
+      <div class="particles-container">
+        <div class="particle particle-1"></div>
+        <div class="particle particle-2"></div>
+        <div class="particle particle-3"></div>
+        <div class="particle particle-4"></div>
+        <div class="particle particle-5"></div>
+      </div>
+    )}
 
     <!-- Toast Notifications Provider -->
     <ToastProvider client:load />
@@ -173,13 +188,13 @@ const isAuthPage = isLoginPage ||
     </Link>
     {showNavBar && <MainNav />}
     <div class:list={["page-wrapper flex flex-col min-h-screen", {"login-page-wrapper": isLoginPage || isLoginRedirect}]}>
-      <main id="main" class="mx-auto w-full px-4 flex-grow">
+      <main id="main" class="mx-auto w-full px-4 flex-grow relative z-10">
         <div class={`${contentClass} ${centered ? 'flex justify-center items-center' : ''}`}>
           <div class={containerClass}>
             <slot />
             {
               Astro.url.pathname !== getUrl('/') && (
-                <footer class="slide-enter animate-delay-1000! prose mx-auto mt-8 print:hidden">
+                <footer class="slide-enter animate-delay-1000! prose mx-auto mt-8 print:hidden theme-text-secondary">
                   <slot name="share" />
                 </footer>
               )
@@ -251,6 +266,8 @@ const isAuthPage = isLoginPage ||
     <script src="/js/service-worker-registration.js" is:inline></script>
     <script src="/js/speed-insights-before-send.js" is:inline></script>
     <SpeedInsights />
+
+    <SentryInit client:load />
   </body>
 </html>
 

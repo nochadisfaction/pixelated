@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro'
 import { validationRunner } from '../../../../lib/ai/validation/ContinuousValidationRunner'
 import { getLogger } from '../../../../lib/logging'
-import { isAuthenticated } from '../../../../lib/auth'
+import { getSession } from '../../../../lib/auth/session'
 import {
   createAuditLog,
   AuditEventType,
@@ -13,8 +13,8 @@ export const GET: APIRoute = async ({ request }) => {
 
   try {
     // Authenticate the request
-    const authResult = await isAuthenticated(request)
-    if (!authResult.authenticated) {
+    const sessionData = await getSession(request)
+    if (!sessionData) {
       return new Response(
         JSON.stringify({
           error: 'Unauthorized',
@@ -53,10 +53,10 @@ export const GET: APIRoute = async ({ request }) => {
     await createAuditLog(
       AuditEventType.AI_OPERATION,
       'validation-history-get',
-      authResult.user?.id || 'system',
+      sessionData.user?.id || 'system',
       'validation-api',
       {
-        userId: authResult.user?.id,
+        userId: sessionData.user?.id,
         entriesCount: history.length,
       },
       AuditEventStatus.SUCCESS,

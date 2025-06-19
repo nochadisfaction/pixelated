@@ -13,32 +13,11 @@ interface UpdateDeletionRequestBody {
   processingNotes?: string
 }
 
-export const POST: APIRoute = async ({ request, cookies }) => {
+export const POST: APIRoute = protectRoute({
+  requiredRole: 'admin'
+})(async ({ request, locals }) => {
   try {
-    // Protect the route - only authenticated admin users can access
-    const authResult = await protectRoute(request, cookies, {
-      requiredRoles: ['admin'],
-    })
-
-    if (!authResult.success) {
-      logger.warn(
-        'Unauthorized access attempt to update deletion request API',
-        {
-          ip: request.headers.get('x-forwarded-for') || 'unknown',
-        },
-      )
-
-      return new Response(
-        JSON.stringify({
-          success: false,
-          message: 'Unauthorized access',
-        }),
-        {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' },
-        },
-      )
-    }
+    const { user } = locals
 
     // Parse and validate the request body
     const body = (await request.json()) as UpdateDeletionRequestBody
@@ -75,15 +54,15 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const result = await updateDataDeletionRequest({
       id: body.id,
       status: body.status,
-      processedBy: authResult.user.id,
-      processingNotes: body.processingNotes,
+      processedBy: user.id,
+      processingNotes: body.processingNotes || undefined,
     })
 
     // Log the successful update
     logger.info('Data deletion request updated', {
       requestId: body.id,
       newStatus: body.status,
-      adminUser: authResult.user.id,
+      adminUser: user.id,
     })
 
     // Return success response
@@ -116,4 +95,4 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       },
     )
   }
-}
+})

@@ -103,7 +103,7 @@ const features = [
         <div class="w-full">
           <!-- Status Badge -->
           <div class="mb-12 animate-breathe text-center">
-            <Badge className="inline-flex items-center gap-3 px-6 py-3 text-sm bg-green-500/20 border border-green-400/40 text-green-200 rounded-full backdrop-blur-md bg-black/10">
+            <Badge className="inline-flex items-center gap-3 px-6 py-3 text-sm bg-green-500/20 border border-green-400/40 text-green-200 rounded-full">
               <span class="relative flex h-3 w-3">
                 <span class="animate-pulse absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                 <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
@@ -113,8 +113,8 @@ const features = [
           </div>
 
           <!-- Power Headlines with Value Proposition -->
-          <div class="text-center mb-8">
-            <h1 class="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-wide mb-4 organic-text-glow leading-tight max-w-6xl mx-auto">
+          <div class="text-center mb-20">
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-wide mb-4 leading-tight max-w-6xl mx-auto">
               Practice Makes Perfect
               <br />
               <span class="text-green-400 golden-shimmer">But Practice Safely</span>
@@ -133,63 +133,68 @@ const features = [
           </div>
 
           <!-- Two-column layout: Description/Buttons LEFT + Image RIGHT -->
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 mb-20 w-full items-center">
-            <!-- Left column: Benefits and CTA -->
-            <div class="text-left">
-              <!-- Key Benefits List -->
-              <ul class="space-y-4 mb-8 text-green-100">
-                <li class="flex items-start gap-3">
-                  <span class="text-green-400 text-xl">💝</span>
-                  <span class="text-lg">Learn from clients who won't judge your mistakes</span>
-                </li>
-                <li class="flex items-start gap-3">
-                  <span class="text-green-400 text-xl">🌱</span>
-                  <span class="text-lg">Try that new approach you read about in a safe space</span>
-                </li>
-                <li class="flex items-start gap-3">
-                  <span class="text-green-400 text-xl">🪞</span>
-                  <span class="text-lg">See your blind spots before they hurt someone real</span>
-                </li>
-                <li class="flex items-start gap-3">
-                  <span class="text-green-400 text-xl">💪</span>
-                  <span class="text-lg">Walk into your first tough session feeling ready</span>
-                </li>
-              </ul>
+          <div class="max-w-5xl mx-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 mb-20 w-full items-center">
+              <!-- Left column: Benefits and CTA -->
+              <div class="text-left">
+                <!-- Key Benefits List -->
+                <ul class="space-y-4 mb-8 text-green-100">
+                  <li class="flex items-start gap-3">
+                    <span class="text-green-400 text-xl">💝</span>
+                    <span class="text-lg">Learn from clients who won't judge your mistakes</span>
+                  </li>
+                  <li class="flex items-start gap-3">
+                    <span class="text-green-400 text-xl">🌱</span>
+                    <span class="text-lg">Try that new approach you read about in a safe space</span>
+                  </li>
+                  <li class="flex items-start gap-3">
+                    <span class="text-green-400 text-xl">🪞</span>
+                    <span class="text-lg">See your blind spots before they hurt someone real</span>
+                  </li>
+                  <li class="flex items-start gap-3">
+                    <span class="text-green-400 text-xl">💪</span>
+                    <span class="text-lg">Walk into your first tough session feeling ready</span>
+                  </li>
+                </ul>
 
-              <!-- Urgency-Driven CTA -->
-              <div class="space-y-4">
-                <!-- Primary CTA with urgency -->
-                <Button size="lg" className="w-full lg:w-auto bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-gray-900 px-12 py-6 text-lg font-bold rounded-full shadow-lg shadow-green-500/25 hover:shadow-green-400/40 transform hover:scale-105 transition-all duration-300 organic-button">
-                  Try it free (we believe in you) →
-                </Button>
-                
-                <!-- Risk Reversal -->
-                <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
-                  <Button variant="outline" size="lg" className="px-8 py-4 text-base font-semibold rounded-full border-2 border-green-400 text-green-300 hover:bg-green-400/10 hover:shadow-green-400/25 transition-all duration-300 backdrop-blur-md bg-black/10">
-                    See how it works
+                <!-- Urgency-Driven CTA -->
+                <div class="flex flex-col items-center space-y-4">
+                  <!-- Primary CTA with urgency -->
+                  <Button size="lg" className="w-full lg:w-auto bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-gray-900 px-12 py-6 text-lg font-bold rounded-full transform hover:scale-105 transition-all duration-300">
+                    Try it free (we believe in you) →
                   </Button>
-                  <p class="text-sm text-green-300/70">
-                    No pressure • Made for people who care
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Right column: Image -->
-            <div class="flex justify-center items-center">
-              <div class="relative w-60 h-60 lg:w-72 lg:h-72">
-                <div class="absolute inset-0 bg-gradient-to-br from-green-400/20 to-emerald-500/20 rounded-3xl backdrop-blur-md bg-black/10 border border-green-500/30 flex items-center justify-center">
-                  <!-- Mental health & AI illustration -->
-                  <div class="text-center">
-                    <div class="text-8xl mb-4 text-green-400 opacity-60">🧠</div>
-                    <div class="text-6xl mb-4 text-emerald-400 opacity-50">💭</div>
-                    <div class="text-4xl text-green-300 opacity-40">🤖</div>
+                  
+                  <!-- Risk Reversal -->
+                  <div class="flex flex-col lg:flex-row gap-4 items-center">
+                    <Button variant="outline" size="lg" className="px-8 py-4 text-base font-semibold rounded-full border-2 border-green-400 text-green-300 hover:bg-green-400/10 transition-all duration-300">
+                      See how it works
+                    </Button>
+                    <p class="text-sm text-green-300/70">
+                      No pressure • Made for people who care
+                    </p>
                   </div>
                 </div>
-                <!-- Floating organic particles around the image -->
-                <div class="absolute -top-4 -left-4 w-4 h-4 bg-green-400/60 rounded-full animate-pulse"></div>
-                <div class="absolute -bottom-6 -right-6 w-6 h-6 bg-emerald-400/50 rounded-full animate-pulse" style="animation-delay: 1s;"></div>
-                <div class="absolute top-1/4 -right-8 w-3 h-3 bg-green-300/40 rounded-full animate-pulse" style="animation-delay: 2s;"></div>
+              </div>
+
+              <!-- Right column: Image -->
+              <div class="flex justify-center items-center">
+                <div class="relative w-60 h-60 lg:w-72 lg:h-72">
+                  <div class="absolute inset-0 bg-gradient-to-br from-green-400/20 to-emerald-500/20 rounded-3xl border border-green-500/30 overflow-hidden">
+                    <!-- Mental health AI therapy photo -->
+                    <img 
+                      src="/images/features/robot-therapy.jpg" 
+                      alt="AI-powered mental health therapy - innovative therapeutic technology for training and patient care"
+                      class="w-full h-full object-cover object-[70%_center]"
+                      loading="lazy"
+                    />
+                    <!-- Subtle overlay to maintain text readability if needed -->
+                    <div class="absolute inset-0 bg-gradient-to-br from-green-400/10 to-emerald-500/10"></div>
+                  </div>
+                  <!-- Floating particles around the image -->
+                  <div class="absolute -top-4 -left-4 w-4 h-4 bg-green-400/60 rounded-full animate-pulse"></div>
+                  <div class="absolute -bottom-6 -right-6 w-6 h-6 bg-emerald-400/50 rounded-full animate-pulse" style="animation-delay: 1s;"></div>
+                  <div class="absolute top-1/4 -right-8 w-3 h-3 bg-green-300/40 rounded-full animate-pulse" style="animation-delay: 2s;"></div>
+                </div>
               </div>
             </div>
           </div>
@@ -197,7 +202,7 @@ const features = [
           <!-- Social Proof Stats -->
           <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
             {heroStats.map((stat) => (
-              <div class="text-center p-6 rounded-2xl border border-green-600/30 hover:border-green-400/50 transition-all duration-500 stat-card backdrop-blur-md bg-black/10">
+              <div class="text-center p-6 rounded-2xl border border-green-600/30 hover:border-green-400/50 transition-all duration-500 stat-card">
                 <div class="text-3xl lg:text-4xl font-bold text-green-400 mb-2 organic-counter">
                   {stat.value}
                 </div>
@@ -215,7 +220,7 @@ const features = [
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
               {testimonials.map((testimonial) => (
-                <div class="p-6 rounded-2xl border border-green-600/30 backdrop-blur-md bg-black/10 hover:border-green-400/50 transition-all duration-300">
+                <div class="p-6 rounded-2xl border border-green-600/30 hover:border-green-400/50 transition-all duration-300">
                   <div class="flex gap-1 mb-4">
                     {Array.from({length: testimonial.rating}).map((_) => (
                       <span class="text-green-400">⭐</span>
@@ -234,11 +239,129 @@ const features = [
       </div>
     </section>
 
+    <!-- Security Section -->
+    <section class="py-24 lg:py-32 relative z-10">
+      <div class="container mx-auto px-4 relative">
+        <div class="max-w-6xl mx-auto">
+          <!-- Section Header -->
+          <div class="text-center mb-16">
+            <div class="mb-6">
+              <Badge className="inline-flex items-center gap-2 px-4 py-2 text-sm bg-blue-500/20 border border-blue-400/40 text-blue-200 rounded-full">
+                <span class="text-blue-400">🛡️</span>
+                Military-Grade Security
+              </Badge>
+            </div>
+            <h2 class="text-4xl lg:text-6xl font-bold text-white mb-8">
+              Your Data Remains
+              <span class="text-blue-400 golden-shimmer">
+                Your Data
+              </span>
+            </h2>
+            <p class="text-xl lg:text-2xl text-green-100/90 leading-relaxed max-w-4xl mx-auto">
+              We don't just meet HIPAA standards—we obliterate them. Your training sessions are protected by the same encryption that guards state secrets.
+            </p>
+          </div>
+
+          <!-- Security Features Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+            <!-- Zero-Knowledge Encryption -->
+            <Card className="border border-blue-600/30 hover:border-blue-400/60 rounded-2xl overflow-hidden group transition-all duration-700 organic-card">
+              <CardHeader className="pb-4 relative">
+                <div class="text-5xl mb-4 group-hover:scale-110 transition-transform duration-700 text-blue-400">
+                  🔐
+                </div>
+                <CardTitle className="text-xl font-bold text-blue-100 tracking-wide mb-3">
+                  Zero-Knowledge Protection
+                </CardTitle>
+                <div class="text-sm text-blue-400/90 font-medium bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
+                  Even we can't see your sessions
+                </div>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-blue-200/80 leading-relaxed">
+                  Think of it like a safety deposit box where even the bank employees can't see inside. Your training conversations are encrypted before they ever leave your device. We literally cannot read them, even if we wanted to.
+                </CardDescription>
+              </CardContent>
+            </Card>
+
+            <!-- Military-Level Encryption -->
+            <Card className="border border-blue-600/30 hover:border-blue-400/60 rounded-2xl overflow-hidden group transition-all duration-700 organic-card">
+              <CardHeader className="pb-4 relative">
+                <div class="text-5xl mb-4 group-hover:scale-110 transition-transform duration-700 text-blue-400">
+                  🎖️
+                </div>
+                <CardTitle className="text-xl font-bold text-blue-100 tracking-wide mb-3">
+                  Military-Grade Encryption
+                </CardTitle>
+                <div class="text-sm text-blue-400/90 font-medium bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
+                  Same tech that protects state secrets
+                </div>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-blue-200/80 leading-relaxed">
+                  We use AES-256 encryption—the gold standard trusted by governments worldwide. If someone intercepted your data, it would take longer than the age of the universe to crack it.
+                </CardDescription>
+              </CardContent>
+            </Card>
+
+            <!-- FHE -->
+            <Card className="border border-blue-600/30 hover:border-blue-400/60 rounded-2xl overflow-hidden group transition-all duration-700 organic-card">
+              <CardHeader className="pb-4 relative">
+                <div class="text-5xl mb-4 group-hover:scale-110 transition-transform duration-700 text-blue-400">
+                  🧬
+                </div>
+                <CardTitle className="text-xl font-bold text-blue-100 tracking-wide mb-3">
+                  Our Favorite: FHE
+                </CardTitle>
+                <div class="text-sm text-blue-400/90 font-medium bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
+                  Computing on invisible data
+                </div>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-blue-200/80 leading-relaxed">
+                  Fully Homomorphic Encryption lets our AI analyze your sessions while they stay completely encrypted. It's like having a conversation through a one-way mirror that only shows insights, never the actual words.
+                </CardDescription>
+              </CardContent>
+            </Card>
+          </div>
+
+          <!-- Trust Statement -->
+          <div class="text-center">
+            <div class="bg-blue-500/10 border border-blue-400/30 rounded-3xl p-8 lg:p-12 max-w-4xl mx-auto">
+              <div class="text-6xl mb-6 text-blue-400">🏛️</div>
+              <h3 class="text-2xl lg:text-3xl font-bold text-blue-100 mb-4">
+                Beyond HIPAA. Beyond Compliance.
+              </h3>
+              <p class="text-lg text-blue-200/90 mb-6 leading-relaxed">
+                While others worry about meeting minimum standards, we've built a fortress. Your students practice in complete privacy, your institution stays protected, and you sleep soundly knowing that every conversation is locked away tighter than Fort Knox.
+              </p>
+              <div class="flex items-center justify-center gap-6 text-blue-300/80 text-sm">
+                <span class="flex items-center gap-2">
+                  <span class="text-blue-400">✓</span>
+                  SOC 2 Type II Certified
+                </span>
+                <span class="hidden sm:inline">•</span>
+                <span class="hidden sm:inline flex items-center gap-2">
+                  <span class="text-blue-400">✓</span>
+                  FERPA Compliant
+                </span>
+                <span class="hidden sm:inline">•</span>
+                <span class="hidden sm:inline flex items-center gap-2">
+                  <span class="text-blue-400">✓</span>
+                  Zero Data Retention
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Features Section -->
     <section class="py-24 lg:py-40 relative z-10">
       <div class="container mx-auto px-4 relative">
         <div class="max-w-4xl mx-auto text-center mb-20">
-          <h2 class="text-4xl lg:text-6xl font-bold text-white mb-8 organic-text-glow">
+          <h2 class="text-4xl lg:text-6xl font-bold text-white mb-8">
             Why This Actually
             <span class="text-green-400 golden-shimmer">
               Helps
@@ -251,9 +374,9 @@ const features = [
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature) => (
-            <Card className={`border border-green-600/30 hover:border-green-400/60 rounded-2xl overflow-hidden group hover:shadow-lg hover:shadow-green-500/20 transition-all duration-700 organic-card backdrop-blur-md bg-black/10`}>
+            <Card className={`border border-green-600/30 hover:border-green-400/60 rounded-2xl overflow-hidden group transition-all duration-700 organic-card`}>
               <CardHeader className="pb-4 relative">
-                <div class={`text-5xl mb-4 group-hover:scale-110 transition-transform duration-700 ${feature.accent === 'green' ? 'organic-icon-green' : feature.accent === 'emerald' ? 'organic-icon-emerald' : ''}`}>
+                <div class={`text-5xl mb-4 group-hover:scale-110 transition-transform duration-700`}>
                   {feature.icon}
                 </div>
                 <CardTitle className="text-xl font-bold text-green-100 tracking-wide mb-3">
@@ -279,21 +402,21 @@ const features = [
     <section class="py-24 lg:py-40 relative z-10">
       <div class="relative container mx-auto px-4 text-center">
         <div class="max-w-5xl mx-auto">
-          <div class="rounded-3xl border border-green-500/40 p-12 lg:p-16 organic-window backdrop-blur-md bg-black/10">
+          <div class="rounded-3xl border border-green-500/40 p-12 lg:p-16">
             <!-- AI ornament -->
             <div class="flex justify-center mb-8">
-              <div class="text-6xl text-green-400 organic-ornament">🤖</div>
+              <div class="text-6xl text-green-400">🤖</div>
             </div>
             
             <!-- Urgency Badge -->
             <div class="mb-6">
-              <Badge className="inline-flex items-center gap-2 px-4 py-2 text-sm bg-red-500/20 border border-red-400/40 text-red-200 rounded-full backdrop-blur-md bg-black/10">
+              <Badge className="inline-flex items-center gap-2 px-4 py-2 text-sm bg-red-500/20 border border-red-400/40 text-red-200 rounded-full">
                 <span class="animate-pulse w-2 h-2 bg-red-400 rounded-full"></span>
                 We can only onboard a few programs at a time
               </Badge>
             </div>
 
-            <h2 class="text-4xl lg:text-6xl font-bold text-green-100 mb-8 organic-text-glow">
+            <h2 class="text-4xl lg:text-6xl font-bold text-green-100 mb-8">
               Ready to Give Your Students
               <br />
               <span class="text-green-400 golden-shimmer">Something Better?</span>
@@ -304,16 +427,16 @@ const features = [
             </p>
 
             <!-- Risk-Free Guarantee -->
-            <div class="bg-green-500/10 border border-green-400/30 rounded-2xl p-6 mb-8 backdrop-blur-md">
+            <div class="bg-green-500/10 border border-green-400/30 rounded-2xl p-6 mb-8">
               <h4 class="text-lg font-bold text-green-200 mb-2">💛 Our Promise to You</h4>
               <p class="text-green-200/80">Try it with your program for 30 days. If your students aren't more confident, we'll refund every penny.</p>
             </div>
             
             <div class="flex flex-col sm:flex-row gap-6 justify-center items-center mb-6">
-              <Button size="lg" className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-gray-900 px-12 py-6 text-xl font-bold rounded-full shadow-lg shadow-green-500/25 hover:shadow-green-400/40 transform hover:scale-105 transition-all duration-300 w-auto">
+              <Button size="lg" className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-gray-900 px-12 py-6 text-xl font-bold rounded-full transform hover:scale-105 transition-all duration-300 w-auto">
                 Let's talk about your program →
               </Button>
-              <Button size="lg" className="bg-transparent border-2 border-green-400 text-green-300 hover:bg-green-400/10 px-10 py-5 text-lg font-semibold rounded-full transition-all duration-300 w-auto backdrop-blur-md bg-black/10">
+              <Button size="lg" className="bg-transparent border-2 border-green-400 text-green-300 hover:bg-green-400/10 px-10 py-5 text-lg font-semibold rounded-full transition-all duration-300 w-auto">
                 Watch a quick demo
               </Button>
             </div>
@@ -322,7 +445,6 @@ const features = [
             <p class="text-sm text-green-300/70">
               💛 Loved by therapy schools everywhere • 🔒 Your data stays safe • 🎓 Made by therapists, for therapists
             </p>
-            </div>
           </div>
         </div>
       </div>
@@ -340,7 +462,7 @@ const features = [
     position: absolute;
     width: 4px;
     height: 4px;
-    background: radial-gradient(circle, #10b981, transparent);
+    background: #10b981;
     border-radius: 50%;
     animation: float-organic 12s ease-in-out infinite;
     opacity: 0.6;
@@ -400,11 +522,7 @@ const features = [
     }
   }
 
-  /* Text Effects */
-  .organic-text-glow {
-    text-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
-  }
-
+  /* Text Effects - removed glow */
   .golden-shimmer {
     background: linear-gradient(45deg, #10b981, #059669, #047857);
     background-size: 200% 200%;
@@ -419,20 +537,7 @@ const features = [
     50% { background-position: 100% 50%; }
   }
 
-  /* Button Effects */
-  .organic-button {
-    box-shadow: 
-      0 0 30px rgba(16, 185, 129, 0.3),
-      inset 0 0 20px rgba(16, 185, 129, 0.1);
-  }
-
-  .organic-button:hover {
-    box-shadow: 
-      0 0 40px rgba(16, 185, 129, 0.5),
-      inset 0 0 30px rgba(16, 185, 129, 0.2);
-  }
-
-  /* Card Effects */
+  /* Card Effects - removed glow */
   .organic-card {
     position: relative;
     overflow: hidden;
@@ -445,7 +550,7 @@ const features = [
     left: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle, rgba(16, 185, 129, 0.1), transparent 50%);
+    background: transparent;
     animation: organic-pulse 4s ease-in-out infinite;
     transform: scale(0);
   }
@@ -457,23 +562,6 @@ const features = [
   @keyframes organic-pulse {
     0%, 100% { transform: scale(0) rotate(0deg); opacity: 0; }
     50% { transform: scale(1) rotate(180deg); opacity: 1; }
-  }
-
-  /* Icon Effects */
-  .organic-icon-green {
-    filter: drop-shadow(0 0 15px rgba(16, 185, 129, 0.7));
-    animation: gentle-glow 3s ease-in-out infinite;
-  }
-
-  .organic-icon-emerald {
-    filter: drop-shadow(0 0 15px rgba(5, 150, 105, 0.7));
-    animation: gentle-glow 3s ease-in-out infinite;
-    animation-delay: 1.5s;
-  }
-
-  @keyframes gentle-glow {
-    0%, 100% { filter: drop-shadow(0 0 15px rgba(16, 185, 129, 0.7)); }
-    50% { filter: drop-shadow(0 0 25px rgba(16, 185, 129, 0.9)); }
   }
 
   /* Stats Counter */
@@ -503,46 +591,6 @@ const features = [
     100% { transform: translateY(0); opacity: 1; }
   }
 
-  /* Organic Window Effects */
-  .organic-window {
-    box-shadow: 
-      inset 0 0 60px rgba(16, 185, 129, 0.1),
-      0 0 80px rgba(0, 0, 0, 0.4);
-    position: relative;
-  }
-
-  .organic-window::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: 1.5rem;
-    padding: 2px;
-    background: linear-gradient(45deg, #10b981, transparent, #059669);
-    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    mask-composite: exclude;
-    animation: organic-border 6s linear infinite;
-  }
-
-  @keyframes organic-border {
-    0%, 100% { background: linear-gradient(45deg, #10b981, transparent, #059669); }
-    25% { background: linear-gradient(135deg, #059669, transparent, #047857); }
-    50% { background: linear-gradient(225deg, #047857, transparent, #10b981); }
-    75% { background: linear-gradient(315deg, #10b981, transparent, #059669); }
-  }
-
-  /* Ornament Animation */
-  .organic-ornament {
-    animation: gentle-sway 4s ease-in-out infinite;
-  }
-
-  @keyframes gentle-sway {
-    0%, 100% { transform: rotate(-5deg) scale(1); }
-    50% { transform: rotate(5deg) scale(1.1); }
-  }
-
   /* Breathing Animation */
   .animate-breathe {
     animation: breathe 3s ease-in-out infinite;
@@ -558,10 +606,6 @@ const features = [
     .particle {
       width: 3px;
       height: 3px;
-    }
-    
-    .organic-window::before {
-      padding: 1px;
     }
   }
 </style> 

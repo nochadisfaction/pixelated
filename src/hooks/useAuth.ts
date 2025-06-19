@@ -119,7 +119,7 @@ export function useAuth(): UseAuthReturn {
 
       return {
         success: true,
-        user: user || undefined,
+        ...(user && { user }),
         session,
       }
     } catch (error: unknown) {
@@ -150,8 +150,8 @@ export function useAuth(): UseAuthReturn {
 
       return {
         success: true,
-        user: user || undefined,
-        session,
+        ...(user && { user }),
+        ...(session && { session }),
       }
     } catch (error: unknown) {
       console.error('Sign up error:', error)
@@ -228,18 +228,16 @@ export function useAuth(): UseAuthReturn {
         // Convert AuthService response to AuthResult
         return {
           success: true,
-          user: response.user || undefined,
-          session: response.session || null,
-          error: null,
+          ...(response.user && { user: response.user }),
+          ...(response.session && { session: response.session }),
         }
-      } else {
+      }
         // Fallback implementation
         console.warn('AuthService.verifyOtp is not implemented, using fallback')
         return {
           success: false,
           error: 'OTP verification not implemented',
         }
-      }
     } catch (err) {
       const error = err as Error
       setError(error)
@@ -288,14 +286,12 @@ export function useAuth(): UseAuthReturn {
         return {
           ...prev,
           fullName: profile.fullName ?? prev.fullName,
-          // Use optional chaining and type assertion for avatarUrl
-          avatarUrl:
-            profile.avatarUrl ?? (prev.avatarUrl as string | undefined),
+          ...(profile.avatarUrl !== undefined && { avatarUrl: profile.avatarUrl }),
           metadata: {
             ...(prev.metadata as Record<string, unknown>),
             ...profile.metadata,
           },
-        }
+        } as AuthUser
       })
     } catch (error) {
       console.error('Update profile error:', error)

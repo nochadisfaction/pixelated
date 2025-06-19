@@ -15,40 +15,40 @@
 @import './advanced-animations.css';
 
 :root {
-  --c-bg: #fff;
-  --c-scrollbar: #eee;
-  --c-scrollbar-hover: #bbb;
-  --c-text: #222;
-  --c-text-light: #444;
-  --c-text-lighter: #777;
-  --c-border: rgba(125, 125, 125, 0.3);
-  --c-selection: rgba(125, 125, 125, 0.2);
-  --c-link: inherit;
-  --c-link-hover: inherit;
+  --c-bg: #050505;
+  --c-scrollbar: #111;
+  --c-scrollbar-hover: #10b981;
+  --c-text: #ffffff;
+  --c-text-light: #d1fae5;
+  --c-text-lighter: #86efac;
+  --c-border: rgba(16, 185, 129, 0.3);
+  --c-selection: rgba(16, 185, 129, 0.2);
+  --c-link: #10b981;
+  --c-link-hover: #34d399;
 
-  /* Add common colors */
-  --color-bg: #ffffff;
-  --color-text: #1f2937;
-  --color-primary: #4a9a95;
-  --color-primary-hover: #3e817d;
-  --color-gray-200: #e5e7eb;
-  --color-gray-400: #9ca3af;
-  --color-gray-500: #6b7280;
-  --color-gray-600: #4b5563;
-  --color-gray-700: #374151;
-  --color-gray-800: #1f2937;
+  /* Updated theme-based colors */
+  --color-bg: #050505;
+  --color-text: #ffffff;
+  --color-primary: #10b981;
+  --color-primary-hover: #34d399;
+  --color-gray-200: #d1fae5;
+  --color-gray-400: #86efac;
+  --color-gray-500: #10b981;
+  --color-gray-600: #059669;
+  --color-gray-700: #047857;
+  --color-gray-800: #064e3b;
 
   /* General Reset */
-  --color-primary: #4a9a95;
-  --color-primary-dark: #3e817d;
+  --color-primary: #10b981;
+  --color-primary-dark: #059669;
   --color-black: #000000;
   --color-dark-bg: #050505;
-  --color-card-bg: rgba(20, 20, 20, 0.85);
-  --color-border: rgba(50, 50, 50, 0.3);
-  --color-text: #f3f3f3;
-  --color-text-muted: #a1a1aa;
-  --color-input-bg: rgba(25, 25, 25, 0.6);
-  --color-hover: rgba(50, 50, 50, 0.3);
+  --color-card-bg: rgba(16, 185, 129, 0.05);
+  --color-border: rgba(16, 185, 129, 0.3);
+  --color-text: #ffffff;
+  --color-text-muted: #86efac;
+  --color-input-bg: rgba(16, 185, 129, 0.1);
+  --color-hover: rgba(16, 185, 129, 0.3);
   --color-error: #ef4444;
   --color-error-bg: rgba(239, 68, 68, 0.1);
 
@@ -91,18 +91,18 @@
 :root.dark {
   --c-bg: #050505;
   --c-scrollbar: #111;
-  --c-scrollbar-hover: #222;
-  --c-text: #f3f3f3;
-  --c-text-light: #ddd;
-  --c-text-lighter: #aaa;
-  --c-border: rgba(125, 125, 125, 0.2);
-  --c-selection: rgba(125, 125, 125, 0.3);
+  --c-scrollbar-hover: #10b981;
+  --c-text: #ffffff;
+  --c-text-light: #d1fae5;
+  --c-text-lighter: #86efac;
+  --c-border: rgba(16, 185, 129, 0.2);
+  --c-selection: rgba(16, 185, 129, 0.3);
 
   /* Add dark mode colors */
-  --color-bg-dark: #121212;
-  --color-text-dark: #e5e7eb;
-  --color-primary-dark: #4a9a95;
-  --color-primary-hover-dark: #5eb4af;
+  --color-bg-dark: #050505;
+  --color-text-dark: #ffffff;
+  --color-primary-dark: #10b981;
+  --color-primary-hover-dark: #34d399;
 }
 
 html {
@@ -474,18 +474,14 @@ main {
 .card {
   background: var(--color-card-bg);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  backdrop-filter: blur(10px);
   border: 1px solid var(--color-border);
   overflow: hidden;
   transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
+    transform 0.3s ease;
 }
 
 .card:hover {
   transform: translateY(-5px);
-  box-shadow: var(--shadow-hover);
   border-color: rgba(80, 80, 80, 0.7);
 }
 
@@ -505,14 +501,12 @@ main {
 .form-input:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(74, 154, 149, 0.2);
   background-color: rgba(30, 30, 30, 0.8);
 }
 
 /* Add input error state styling */
 .input-wrapper.error .form-input {
   border-color: var(--color-error);
-  box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.2);
 }
 
 .input-wrapper.error .input-icon {
@@ -587,12 +581,10 @@ main {
   background: #4a9a95;
   color: white;
   border: none;
-  box-shadow: 0 2px 10px rgba(74, 154, 149, 0.3);
 }
 
 .btn-primary:hover:not(:disabled) {
   background: #3e817d;
-  box-shadow: 0 4px 12px rgba(74, 154, 149, 0.4);
   transform: translateY(-1px);
 }
 

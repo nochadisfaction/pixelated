@@ -59,7 +59,7 @@ const handleMetricsRequest = async (req: any) => {
     let filteredMetrics = snapshot.metrics;
     if (query.metrics) {
       const requestedMetrics = query.metrics.split(',').map(m => m.trim());
-      filteredMetrics = snapshot.metrics.filter(m => 
+      filteredMetrics = snapshot.metrics.filter((m: { name: string }) => 
         requestedMetrics.includes(m.name)
       );
     }
@@ -84,7 +84,7 @@ const handleMetricsRequest = async (req: any) => {
       }),
       meta: {
         totalMetrics: filteredMetrics.length,
-        metricsTypes: [...new Set(filteredMetrics.map(m => m.name))],
+        metricsTypes: [...new Set(filteredMetrics.map((m: { name: string }) => m.name))],
         requestDuration: Date.now() - startTime,
       },
     };
