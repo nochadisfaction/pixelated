@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "pnpm exec astro build --config astro.config.vercel-minimal.mjs",
+  "buildCommand": "pnpm astro build",
   "installCommand": "pnpm install --frozen-lockfile --prefer-offline",
   "framework": "astro",
   "outputDirectory": "dist",
