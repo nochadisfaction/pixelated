@@ -12,7 +12,7 @@ import type { ChatMessage } from '../../types/chat'
 import { EncryptionMode } from '../fhe/types'
 import { getLogger } from '../logging'
 import { createSignedVerificationToken } from '../security/verification'
-import { generateId } from '../utils'
+import { generateId } from '../utils/index'
 import PDFDocument from 'pdfkit'
 import archiver from 'archiver'
 import { Buffer } from 'buffer'
@@ -73,7 +73,7 @@ export interface ExportResult {
   data: string | Uint8Array
   format: ExportFormat
   encryptionMode: EncryptionMode
-  verificationToken?: string
+  verificationToken: string | undefined // Modified definition
   timestamp: number
   mimeType: string
   filename: string

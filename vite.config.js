@@ -1,3 +1,4 @@
+import { sentryVitePlugin } from '@sentry/vite-plugin'
 import { defineConfig } from 'vite'
 import path from 'path'
 
@@ -16,6 +17,10 @@ export default defineConfig({
     externalNodePlugin(),
     flexsearchSSRPlugin(),
     middlewarePatchPlugin(),
+    sentryVitePlugin({
+      org: 'pixelated-empathy-dq',
+      project: 'pixel-astro',
+    }),
   ],
   resolve: {
     alias: {
@@ -23,7 +28,9 @@ export default defineConfig({
       'node:crypto': path.resolve('./src/lib/polyfills/browser-polyfills.ts'),
       'node:path': path.resolve('./src/lib/polyfills/browser-polyfills.ts'),
       'node:fs': path.resolve('./src/lib/polyfills/browser-polyfills.ts'),
-      'node:child_process': path.resolve('./src/lib/polyfills/browser-polyfills.ts'),
+      'node:child_process': path.resolve(
+        './src/lib/polyfills/browser-polyfills.ts',
+      ),
       'node:stream': path.resolve('./src/lib/polyfills/browser-polyfills.ts'),
       'node:util': path.resolve('./src/lib/polyfills/browser-polyfills.ts'),
       'node:events': path.resolve('./src/lib/polyfills/browser-polyfills.ts'),
@@ -127,7 +134,7 @@ export default defineConfig({
           astroMiddleware: [
             'astro/dist/core/middleware/sequence',
             'astro/dist/core/middleware/index',
-            'astro-internal:middleware'
+            'astro-internal:middleware',
           ],
           // Split vendor libraries into separate chunks
           react: ['react', 'react-dom', 'react/jsx-runtime'],
@@ -142,20 +149,16 @@ export default defineConfig({
             /EmotionTemporalAnalysisChart/,
             /EmotionDimensionalAnalysis/,
             /EmotionProgressDemo/,
-            /EmotionVisualization/
+            /EmotionVisualization/,
           ],
           // Split large UI components
-          uiComponents: [
-            /Particle/,
-            /SwiperCarousel/,
-            /TherapyChatSystem/
-          ],
+          uiComponents: [/Particle/, /SwiperCarousel/, /TherapyChatSystem/],
           // Dashboard components
           dashboards: [
             /AnalyticsDashboard/,
             /AuditLogDashboard/,
             /ConversionDashboard/,
-            /TreatmentPlanManager/
+            /TreatmentPlanManager/,
           ],
           // Auth related code
           auth: [/useAuth/, /LoginForm/, /RegisterForm/],
@@ -168,9 +171,9 @@ export default defineConfig({
             /button/,
             /label/,
             /slider/,
-            /switch/
-          ]
-        }
+            /switch/,
+          ],
+        },
       },
     },
   },

@@ -1,7 +1,5 @@
 /// <reference types="astro/client" />
 
-type EdgeLocals = import('@astrojs/vercel').EdgeLocals
-
 interface ImportMetaEnv {
   readonly SITE_URL: string
   readonly PUBLIC_SITE_URL: string
@@ -16,9 +14,9 @@ interface ImportMeta {
 }
 
 declare namespace App {
-  interface Locals extends EdgeLocals {
-    requestId?: string
-    timestamp?: string
+  interface Locals {
+    requestId: string
+    timestamp: string
     user?: {
       id: string
       email: string
@@ -31,6 +29,6 @@ declare namespace App {
       isAuthPage: boolean
       userAgent: string
     }
-    cspNonce: string
+    cspNonce?: string
   }
 }

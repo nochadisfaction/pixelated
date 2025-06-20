@@ -9,7 +9,8 @@ import {
   AuditDetails,
 } from './audit'
 import { supabase } from './supabase'
-import type { NextApiRequest, NextApiResponse } from 'next'
+// Note: This is an Astro project, Next.js types are not needed here
+// TODO: Replace with Astro-compatible types when implementing API auth
 
 export interface AuthUser {
   id: string

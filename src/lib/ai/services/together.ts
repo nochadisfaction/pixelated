@@ -1,4 +1,9 @@
-import type { AIMessage, AIServiceOptions, AICompletion, AIUsage } from '../models/ai-types'
+import type {
+  AIMessage,
+  AIServiceOptions,
+  AICompletion,
+  AIUsage,
+} from '../models/ai-types'
 import { appLogger } from '../../logging'
 
 export interface TogetherAIConfig {
@@ -23,7 +28,9 @@ export interface TogetherAIService {
   dispose(): void
 }
 
-export function createTogetherAIService(config: TogetherAIConfig): TogetherAIService {
+export function createTogetherAIService(
+  config: TogetherAIConfig,
+): TogetherAIService {
   const baseUrl = config.togetherBaseUrl || 'https://api.together.xyz'
   const apiKey = config.togetherApiKey
 
@@ -55,11 +62,13 @@ export function createTogetherAIService(config: TogetherAIConfig): TogetherAISer
         })
 
         if (!response.ok) {
-          throw new Error(`Together AI API error: ${response.status} ${response.statusText}`)
+          throw new Error(
+            `Together AI API error: ${response.status} ${response.statusText}`,
+          )
         }
 
         const data = await response.json()
-        
+
         // Return in expected format
         return {
           id: data.id || `together-${Date.now()}`,
@@ -83,9 +92,16 @@ export function createTogetherAIService(config: TogetherAIConfig): TogetherAISer
           provider: 'together',
           content: data.choices?.[0]?.message?.content || '',
         }
-      } catch (error) {
-        appLogger.error('Error in Together AI completion:', error)
-        throw new Error(`Together AI service error: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      } catch (error: any) {
+        appLogger.error('Error in Together AI completion:', {
+          error:
+            error instanceof Error
+              ? { message: error.message, stack: error.stack }
+              : error,
+        })
+        throw new Error(
+          `Together AI service error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        )
       }
     },
 
@@ -94,12 +110,12 @@ export function createTogetherAIService(config: TogetherAIConfig): TogetherAISer
       options?: AIServiceOptions,
     ): Promise<AICompletion> {
       const result = await this.generateCompletion(messages, options)
-      
+
       // Ensure we return an AICompletion object
       if ('id' in result) {
         return result as AICompletion
       }
-      
+
       // Convert basic response to AICompletion format
       return {
         id: `together-${Date.now()}`,
@@ -130,11 +146,11 @@ export function createTogetherAIService(config: TogetherAIConfig): TogetherAISer
     ): Promise<AsyncGenerator<any, void, void>> {
       // For now, return a simple generator that yields the completion
       const completion = await this.createChatCompletion(messages, options)
-      
-      async function* streamGenerator() {
-        const content = completion.content
+
+      const streamGenerator = async function* () {
+        const { content } = completion
         const chunkSize = 10
-        
+
         for (let i = 0; i < content.length; i += chunkSize) {
           const chunk = content.slice(i, i + chunkSize)
           yield {
@@ -145,12 +161,12 @@ export function createTogetherAIService(config: TogetherAIConfig): TogetherAISer
             done: i + chunkSize >= content.length,
             finishReason: i + chunkSize >= content.length ? 'stop' : undefined,
           }
-          
+
           // Add small delay to simulate streaming
-          await new Promise(resolve => setTimeout(resolve, 50))
+          await new Promise((resolve) => setTimeout(resolve, 50))
         }
       }
-      
+
       return streamGenerator()
     },
 
@@ -159,4 +175,4 @@ export function createTogetherAIService(config: TogetherAIConfig): TogetherAISer
       appLogger.debug('Together AI service disposed')
     },
   }
-} 
+}

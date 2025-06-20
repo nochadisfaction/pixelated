@@ -1,6 +1,7 @@
 ---
 import { getCollection, type CollectionEntry, render } from 'astro:content'
 import BlogPostLayout from '@/layouts/BlogPostLayout.astro'
+import { mdxComponents } from '../../../mdx-components.js'
 
 export const prerender = true
 
@@ -20,24 +21,8 @@ interface Props {
 
 const { entry } = Astro.props
 const { Content } = await render(entry)
-
-// Get related docs (same category or tags)
-const allDocs = await getCollection(
-  'docs',
-  ({ data }: CollectionEntry<'docs'>) => !data.draft,
-)
-
-const relatedDocs = allDocs
-  .filter(
-    (d: CollectionEntry<'docs'>) =>
-      d.id !== entry.id && // Not the current doc
-      (d.data.category === entry.data.category || // Same category
-        d.data.tags?.some((tag: string) => entry.data.tags?.includes(tag))), // Shared tags
-  )
-  .sort(() => Math.random() - 0.5) // Randomize
-  .slice(0, 3) // Get up to 3 related docs
 ---
 
 <BlogPostLayout {entry}>
-  <Content />
+  <Content components={mdxComponents} />
 </BlogPostLayout>

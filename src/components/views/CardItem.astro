@@ -54,7 +54,8 @@ interface Props {
   item: CardItemData
   imageProps?: LocalImageProps | RemoteImageProps
   videoProps?: HTMLAttributes<'video'>
-  class?: string
+  class?: string | undefined
+  href?: string | undefined
 }
 
 const {
@@ -83,7 +84,7 @@ const Content = details ? 'collapsible-content' : 'div'
       ((images && images.length > 0) || video) && (
         <MediaContainer
           class="b-b b-b-[#8884] op-100!"
-          href={link || undefined}
+          {...(MediaContainer === Link ? { href: link } : {})}
         >
           {images &&
             (images.length > 1 ? (

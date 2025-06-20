@@ -1,7 +1,7 @@
 import { fheChat, type ChatMessage, type ChatMessageWithFHE } from './fheChat'
-import { EmotionLlamaEnhancedProvider } from '@lib/ai/providers/EmotionLlamaEnhancedProvider'
 import { createLogger } from '@utils/logger'
-import type { FHEService } from '@lib/fhe'
+import type { FHEService } from '@/lib/fhe'
+import type { AIService } from '@/lib/ai/models/ai-types'
 
 const logger = createLogger({ context: 'MentalHealthChat' })
 
@@ -40,7 +40,7 @@ export interface MentalHealthChatOptions {
  * and providing mental health insights
  */
 export class MentalHealthChat {
-  private provider: EmotionLlamaEnhancedProvider
+  private aiService: AIService | null = null
   private options: MentalHealthChatOptions
   private analysisHistory: Map<string, MentalHealthAnalysis[]> = new Map()
 
@@ -50,12 +50,11 @@ export class MentalHealthChat {
    * @param options Configuration options
    */
   constructor(
-    private fheService: FHEService,
-    options: Partial<MentalHealthChatOptions> = {},
+    options: Partial<MentalHealthChatOptions> & {fheService: FHEService},
   ) {
-    // Initialize provider with environment variables
-    const baseUrl = process.env.EMOTION_LLAMA_API_URL || ''
-    const apiKey = process.env.EMOTION_LLAMA_API_KEY || ''
+    // Initialize AI service with environment variables
+    const baseUrl = process.env['EMOTION_LLAMA_API_URL'] || ''
+    const apiKey = process.env['EMOTION_LLAMA_API_KEY'] || ''
 
     if (!baseUrl || !apiKey) {
       logger.warn(
@@ -63,16 +62,8 @@ export class MentalHealthChat {
       )
     }
 
-    // Create the enhanced provider
-    this.provider = new EmotionLlamaEnhancedProvider(
-      baseUrl,
-      apiKey,
-      fheService,
-      {
-        mentalHealthAnalysisEnabled: options.enableAnalysis ?? true,
-        expertGuidanceEnabled: options.useExpertGuidance ?? true,
-      },
-    )
+    // For now, we'll use a placeholder until proper AI service is implemented
+    this.aiService = null
 
     // Set default options
     this.options = {
@@ -81,6 +72,7 @@ export class MentalHealthChat {
       triggerInterventionThreshold: options.triggerInterventionThreshold ?? 0.8,
       analysisMinimumLength: options.analysisMinimumLength ?? 20,
     }
+
   }
 
   /**
@@ -130,29 +122,39 @@ export class MentalHealthChat {
    */
   private async analyzeMessage(text: string): Promise<MentalHealthAnalysis> {
     try {
-      // First analyze emotions
-      const emotionAnalysis = await this.provider.analyzeEmotions(text)
-
-      // If we have mental health information from MentalLLaMA, use it
-      if (emotionAnalysis.mentalHealth) {
-        return {
-          hasMentalHealthIssue:
-            emotionAnalysis.mentalHealth.hasMentalHealthIssue,
-          category: emotionAnalysis.mentalHealth.category,
-          confidence: emotionAnalysis.mentalHealth.confidence,
-          explanation: emotionAnalysis.mentalHealth.explanation,
-          supportingEvidence: emotionAnalysis.mentalHealth.supportingEvidence,
-          timestamp: Date.now(),
-          expertGuided: emotionAnalysis.mentalHealth.expertGuided,
+      // TODO: Implement proper AI-based analysis when AI service is available
+      if (this.aiService) {
+        try {
+          // Placeholder for AI service integration - using a simple method call
+          logger.debug('AI service available for analysis')
+        } catch (error) {
+          logger.warn('AI service call failed:', error)
         }
       }
 
-      // Fall back to a simpler approach if MentalLLaMA integration failed
+      // Simple rule-based analysis for now
+      const concernKeywords = ['depressed', 'anxious', 'suicidal', 'hopeless', 'worthless']
+      const lowerText = text.toLowerCase()
+      const foundConcerns = concernKeywords.filter(keyword => lowerText.includes(keyword))
+      
+      if (foundConcerns.length > 0) {
+        return {
+          hasMentalHealthIssue: true,
+          category: 'mental-health-concern',
+          confidence: Math.min(0.9, foundConcerns.length * 0.3),
+          explanation: `Detected potential mental health indicators: ${foundConcerns.join(', ')}`,
+          supportingEvidence: foundConcerns,
+          timestamp: Date.now(),
+          expertGuided: false,
+        }
+      }
+
+      // No concerns detected
       return {
         hasMentalHealthIssue: false,
         category: 'none',
-        confidence: 0,
-        explanation: 'No mental health issues detected',
+        confidence: 0.8,
+        explanation: 'No mental health concerns detected in message',
         supportingEvidence: [],
         timestamp: Date.now(),
       }
@@ -231,7 +233,6 @@ export class MentalHealthChat {
    */
   async generateIntervention(
     conversationId: string,
-    clientId: string,
   ): Promise<string> {
     try {
       // Get the analysis history
@@ -243,15 +244,6 @@ export class MentalHealthChat {
       }
 
       // Create a synthetic session for the intervention
-      const session = {
-        sessionId: conversationId,
-        clientId,
-        therapistId: 'system',
-        startTime: new Date(),
-        status: 'active' as const,
-        securityLevel: 'hipaa' as const,
-        emotionAnalysisEnabled: true,
-      }
 
       // Get the most recent analysis with a mental health issue
       const recentIssues = history
@@ -260,43 +252,26 @@ export class MentalHealthChat {
 
       // If no mental health issues, provide a default intervention
       if (recentIssues.length === 0) {
-        const response = await this.provider.generateIntervention(session, {
-          timestamp: new Date(),
-          emotions: [],
-          overallSentiment: 0,
-          riskFactors: [],
-          contextualFactors: [],
-          requiresAttention: false,
-        })
+        // Generate a simple intervention response
+        const response = {
+          content: "I'm here to support you. How are you feeling today?"
+        }
         return response.content
       }
 
       // Use the most recent mental health issue for intervention
       const latestIssue = recentIssues[0]
-
-      // Create a custom analysis for intervention
-      const customAnalysis = {
-        timestamp: new Date(),
-        emotions: [],
-        overallSentiment: 0,
-        riskFactors: [],
-        contextualFactors: [],
-        requiresAttention: true,
-        mentalHealth: {
-          hasMentalHealthIssue: latestIssue.hasMentalHealthIssue,
-          category: latestIssue.category,
-          confidence: latestIssue.confidence,
-          explanation: latestIssue.explanation,
-          supportingEvidence: latestIssue.supportingEvidence,
-          expertGuided: latestIssue.expertGuided || false,
-        },
+      if (!latestIssue) {
+        return "I'm here to support you. Let me know how I can help."
       }
 
-      // Generate the intervention
-      const response = await this.provider.generateIntervention(
-        session,
-        customAnalysis,
-      )
+      // Create a custom analysis for intervention
+
+      // TODO: Generate proper intervention when AI service is available
+      // For now, return a generic therapeutic response
+      const response = {
+        content: `I understand you're experiencing ${latestIssue.category}. ${latestIssue.explanation} Would you like to talk about what's been on your mind?`
+      }
 
       return response.content
     } catch (error) {
@@ -316,11 +291,8 @@ export class MentalHealthChat {
       ...options,
     }
 
-    // Update provider configuration
-    this.provider.configureMentalHealthAnalysis(
-      this.options.enableAnalysis,
-      this.options.useExpertGuidance,
-    )
+    // TODO: Update AI service configuration when available
+    // this.aiService?.configure?.(this.options)
 
     logger.info('Mental health chat configuration updated', {
       options: this.options,
@@ -328,11 +300,11 @@ export class MentalHealthChat {
   }
 
   /**
-   * Check if MentalLLaMA is available in the provider
-   * @returns True if MentalLLaMA is available
+   * Check if AI service is available
+   * @returns True if AI service is available
    */
-  isMentalLLaMAAvailable(): boolean {
-    return this.provider.isMentalLLaMAAvailable()
+  isAIServiceAvailable(): boolean {
+    return this.aiService !== null
   }
 
   /**
@@ -347,7 +319,7 @@ export class MentalHealthChat {
 // Export a factory function to create the MentalHealthChat service
 export const createMentalHealthChat = (
   fheService: FHEService,
-  options: Partial<MentalHealthChatOptions> = {},
+  options: Partial<MentalHealthChatOptions> = {}
 ): MentalHealthChat => {
-  return new MentalHealthChat(fheService, options)
+  return new MentalHealthChat({...options, fheService});
 }

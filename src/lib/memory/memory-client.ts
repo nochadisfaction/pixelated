@@ -2,6 +2,8 @@ export interface MemoryEntry {
   id?: string;
   content: string;
   metadata?: {
+    role: string;
+    role: string;
     timestamp?: string;
     category?: string;
     importance?: number;

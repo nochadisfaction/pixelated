@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { createAIService } from '@/lib/ai/factory'
+import { createTogetherAIService } from '@/lib/ai/services/together'
 import type { AIMessage, AIServiceOptions } from '@/lib/ai/models/ai-types'
 
 export function useAIService() {
@@ -7,9 +7,9 @@ export function useAIService() {
     async (prompt: string, options?: AIServiceOptions) => {
       try {
         // Create AI service with Together provider
-        const aiService = createAIService({
-          provider: 'together',
-          apiKey: process.env.TOGETHER_API_KEY || '',
+        const aiService = createTogetherAIService({
+          togetherApiKey: process.env['TOGETHER_API_KEY'] || '',
+          apiKey: process.env['TOGETHER_API_KEY'] || '',
         })
 
         // Format the prompt as a message

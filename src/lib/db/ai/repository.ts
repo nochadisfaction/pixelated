@@ -6,16 +6,36 @@ import type {
   ResponseGenerationResult,
   SentimentAnalysisResult,
 } from './types'
-import type {
-  EmotionAnalysis,
-  TherapySession,
-} from '../../ai/interfaces/therapy'
+import type { TherapySession } from '../../ai/models/ai-types'
+import type { EmotionAnalysis } from '../../ai/emotions/types'
 import { supabase } from '../../supabase'
-import type {
-  EfficacyFeedback,
-  Technique,
-} from '../../ai/services/EfficacyTrackingService'
-import type { ClientProfile } from '../../ai/services/PersonalizationServiceImpl'
+// TODO: Create these service interfaces when services are implemented
+interface EfficacyFeedback {
+  recommendation_id: string
+  client_id: string
+  technique_id: string
+  efficacy_rating: number
+  timestamp: string
+  feedback: string
+  session_id: string
+  therapist_id: string
+  context: Record<string, unknown>
+}
+
+interface Technique {
+  id: string
+  name: string
+  description: string
+  indication: string
+  category: string
+}
+
+interface ClientProfile {
+  id: string
+  preferences: Record<string, unknown>
+  personalityTraits: Record<string, unknown>
+  riskFactors: string[]
+}
 import type { RiskFactor, Emotion } from '../../ai/emotions/types'
 
 // Define an interface for items from client_technique_history table

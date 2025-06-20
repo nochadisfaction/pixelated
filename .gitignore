@@ -124,3 +124,6 @@ tasks.json
 .pnpm-store/
 
 src/lib/ai/bias-detection/bias_detection_env
+
+# Sentry Config File
+.env.sentry-build-plugin

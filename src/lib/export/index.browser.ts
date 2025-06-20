@@ -12,7 +12,7 @@ import type { ChatMessage } from '../../types/chat'
 import { EncryptionMode } from '../fhe/types'
 import { getLogger } from '../logging'
 import { createSignedVerificationToken } from '../security/verification'
-import { generateId } from '../utils'
+import { generateId } from '../utils/index'
 
 // Initialize logger
 const logger = getLogger()
@@ -88,7 +88,7 @@ export interface ExportResult {
   data: string | Uint8Array
   format: ExportFormat
   encryptionMode: EncryptionMode
-  verificationToken?: string
+  verificationToken?: string | undefined
   timestamp: number
   mimeType: string
   filename: string

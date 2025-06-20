@@ -20,6 +20,32 @@ import Tabs from './src/components/docs/Tabs.astro';
 import Tip from './src/components/docs/Tip.astro';
 import Warning from './src/components/docs/Warning.astro';
 
+// Named exports for direct imports
+export {
+  Accordion,
+  AccordionGroup,
+  Card,
+  CardGrid,
+  CardGroup,
+  Cards,
+  Check,
+  CodeGroup,
+  Expandable,
+  Frame,
+  Info,
+  Latex,
+  Note,
+  ResponseField,
+  SnippetIntro,
+  Steps,
+  Tab,
+  TabItem,
+  Tabs,
+  Tip,
+  Warning,
+};
+
+// Components object for MDX configuration
 export const mdxComponents = {
   Accordion,
   AccordionGroup,
@@ -44,4 +70,5 @@ export const mdxComponents = {
   Warning,
 };
 
+// Default export for MDX configuration
 export default mdxComponents;

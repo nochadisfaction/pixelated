@@ -27,7 +27,9 @@ const integrations = [
     },
   }),
   react(),
-  mdx(),
+  mdx({
+    components: path.resolve('./mdx-components.js'),
+  }),
   UnoCSS({
     injectReset: true,
     mode: 'global',

@@ -1,11 +1,38 @@
 import type { AIRepository } from '../db/ai/repository'
-import type {
-  TherapySession,
-  SessionDocumentation,
-  EmotionAnalysis,
-  TherapyAIResponse,
-  TherapyAIOptions,
-} from '../ai/interfaces/therapy'
+import type { TherapySession } from '../ai/models/ai-types'
+import type { EmotionAnalysis } from '../ai/emotions/types'
+
+// TODO: Create these therapy AI interfaces when services are implemented
+interface SessionDocumentation {
+  sessionId: string
+  clientId: string
+  therapistId: string
+  startTime: Date
+  endTime?: Date
+  summary: string
+  keyInsights: string[]
+  recommendations: string[]
+  emotionSummary: string
+  interventions: string[]
+  notes: string
+  metadata: Record<string, unknown>
+}
+
+interface TherapyAIResponse {
+  content: string
+  confidence: number
+  techniques: string[]
+  sessionId?: string
+  timestamp: Date
+}
+
+interface TherapyAIOptions {
+  temperature?: number
+  maxTokens?: number
+  model?: string
+  includeEmotions?: boolean
+  includeInterventions?: boolean
+}
 import type { AIService } from '../ai/AIService'
 import { getLogger } from '../logging'
 import { EventEmitter } from 'events'

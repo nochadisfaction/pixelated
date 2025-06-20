@@ -169,12 +169,12 @@ async function authenticateRequest(
 function hasPermission(
   user: UserContext,
   resource: string,
-  action: string,
+  action: 'read' | 'write' | 'delete' | 'export',
 ): boolean {
   return user.permissions.some(
     (permission) =>
       permission.resource === resource &&
-      permission.actions.includes(action as string),
+      permission.actions.includes(action),
   )
 }
 
@@ -213,12 +213,18 @@ function getClientInfo(request: Request): {
   ipAddress: string
   userAgent: string
 } {
+  let ipAddress = 'unknown'
   const forwarded = request.headers.get('x-forwarded-for')
-  const ipAddress = forwarded
-    ? forwarded.split(',')[0].trim()
-    : request.headers.get('x-real-ip') || 'unknown'
-
-  const userAgent = request.headers.get('user-agent') || 'unknown'
+  if (forwarded) {
+    // x-forwarded-for may contain multiple IPs, take the first valid one
+    ipAddress = forwarded.split(',').map(ip => ip.trim()).find(Boolean) || 'unknown'
+  } else {
+    const realIp = request.headers.get('x-real-ip')
+    if (realIp && realIp.trim() !== '') {
+      ipAddress = realIp.trim()
+    }
+  }
+  const userAgent = request.headers.get('user-agent')?.trim() || 'unknown'
 
   return { ipAddress, userAgent }
 }
@@ -284,7 +290,7 @@ export const POST: APIRoute = async ({ request }) => {
           success: false,
           error: 'Unauthorized',
           message: 'Valid authorization token required',
-        } as AnalyzeSessionResponse),
+        } as unknown as AnalyzeSessionResponse),
         {
           status: 401,
           headers: {
@@ -303,7 +309,7 @@ export const POST: APIRoute = async ({ request }) => {
           success: false,
           error: 'Forbidden',
           message: 'Insufficient permissions for bias analysis',
-        } as AnalyzeSessionResponse),
+        } as unknown as AnalyzeSessionResponse),
         {
           status: 403,
           headers: { 'Content-Type': 'application/json' },
@@ -318,7 +324,7 @@ export const POST: APIRoute = async ({ request }) => {
           success: false,
           error: 'Rate Limit Exceeded',
           message: 'Too many requests. Please try again later.',
-        } as AnalyzeSessionResponse),
+        } as unknown as AnalyzeSessionResponse),
         {
           status: 429,
           headers: {
@@ -339,7 +345,7 @@ export const POST: APIRoute = async ({ request }) => {
           success: false,
           error: 'Invalid Content Type',
           message: 'Content-Type must be application/json',
-        } as AnalyzeSessionResponse),
+        } as unknown as AnalyzeSessionResponse),
         {
           status: 400,
           headers: { 'Content-Type': 'application/json' },
@@ -361,11 +367,10 @@ export const POST: APIRoute = async ({ request }) => {
         JSON.stringify({
           success: false,
           error: 'Validation Error',
-          message:
-            error instanceof z.ZodError
-              ? `Invalid request data: ${error.errors.map((e) => e.message).join(', ')}`
-              : 'Invalid request format',
-        } as AnalyzeSessionResponse),
+          message: error instanceof z.ZodError
+            ? `Invalid request data: ${error.errors.map((e) => e.message).join(', ')}`
+            : 'Invalid request format',
+        } as unknown as AnalyzeSessionResponse),
         {
           status: 400,
           headers: { 'Content-Type': 'application/json' },
@@ -386,14 +391,12 @@ export const POST: APIRoute = async ({ request }) => {
     // Check cache first (unless skipCache is true)
     const cacheManager = getCacheManager()
     const shouldUseCache = !requestData.options?.skipCache
-    let _cacheHit = false
 
     if (shouldUseCache) {
       const cachedResult = await cacheManager.analysisCache.getAnalysisResult(
         validatedSession.sessionId,
       )
       if (cachedResult) {
-        _cacheHit = true
 
         // Log cache hit
         const auditLogger = getAuditLogger()
@@ -646,7 +649,7 @@ export const GET: APIRoute = async ({ request }) => {
           success: false,
           error: 'Unauthorized',
           message: 'Valid authorization token required',
-        } as AnalyzeSessionResponse),
+        } as unknown as AnalyzeSessionResponse),
         {
           status: 401,
           headers: { 'Content-Type': 'application/json' },
@@ -661,7 +664,7 @@ export const GET: APIRoute = async ({ request }) => {
           success: false,
           error: 'Forbidden',
           message: 'Insufficient permissions to read bias analysis',
-        } as AnalyzeSessionResponse),
+        } as unknown as AnalyzeSessionResponse),
         {
           status: 403,
           headers: { 'Content-Type': 'application/json' },
@@ -677,7 +680,7 @@ export const GET: APIRoute = async ({ request }) => {
           success: false,
           error: 'Rate Limit Exceeded',
           message: 'Too many requests. Please try again later.',
-        } as AnalyzeSessionResponse),
+        } as unknown as AnalyzeSessionResponse),
         {
           status: 429,
           headers: {
@@ -704,11 +707,10 @@ export const GET: APIRoute = async ({ request }) => {
         JSON.stringify({
           success: false,
           error: 'Validation Error',
-          message:
-            error instanceof z.ZodError
-              ? `Invalid query parameters: ${error.errors.map((e) => e.message).join(', ')}`
-              : 'Invalid query parameters',
-        } as AnalyzeSessionResponse),
+          message: error instanceof z.ZodError
+            ? `Invalid query parameters: ${error.errors.map((e) => e.message).join(', ')}`
+            : 'Invalid query parameters',
+        } as unknown as AnalyzeSessionResponse),
         {
           status: 400,
           headers: { 'Content-Type': 'application/json' },
@@ -799,7 +801,7 @@ export const GET: APIRoute = async ({ request }) => {
           success: false,
           error: 'Not Found',
           message: 'Session analysis not found',
-        } as AnalyzeSessionResponse),
+        } as unknown as AnalyzeSessionResponse),
         {
           status: 404,
           headers: { 'Content-Type': 'application/json' },

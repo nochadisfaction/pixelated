@@ -4,7 +4,7 @@ import { useAuth } from './useAuth';
 import { useAIService } from './useAIService';
 import { useMentalHealthAnalysis } from './useMentalHealthAnalysis';
 import type { Message } from '@/types/chat';
-import type { AIMessage } from '@/lib/ai/types';
+import type { ChatMessage as AIMessage } from '@/lib/ai/models/types';
 import { generateUniqueId } from '@/lib/utils';
 
 export interface ChatMessage extends Message {
@@ -55,7 +55,7 @@ export function useChatWithMemory(
   
   // Initialize memory with conversation category
   const memory = useMemory({
-    userId: user?.id || 'anonymous',
+    userId: user?.id?.toString() || 'anonymous',
     category: 'conversation',
     autoLoad: true,
   });
@@ -93,7 +93,9 @@ export function useChatWithMemory(
       topics?: string[];
     }
   ) => {
-    if (!enableMemory || !user?.id) return;
+    if (!enableMemory || !user?.id) {
+      return;
+    }
 
     try {
       const memoryContent = `${message.role}: ${message.content}`;
@@ -101,7 +103,7 @@ export function useChatWithMemory(
         category: 'conversation',
         sessionId,
         messageId: message.id,
-        timestamp: message.timestamp,
+        timestamp: message.timestamp.toString(),
         role: message.role,
         tags: [
           'chat-message',
@@ -131,22 +133,25 @@ export function useChatWithMemory(
    * Retrieve relevant memory context for AI response
    */
   const getMemoryContext = useCallback(async (query: string): Promise<string> => {
-    if (!enableMemory || !user?.id) return '';
+    if (!enableMemory || !user?.id) {
+      return '';
+    }
 
     try {
       // Search for relevant memories
       const relevantMemories = await memory.searchMemories(query, {
         limit: maxMemoryContext,
-        sessionId, // Prioritize current session
       });
 
-      if (relevantMemories.length === 0) return '';
+      if (relevantMemories.length === 0) {
+        return '';
+      }
 
       // Format memories for context
       const contextEntries = relevantMemories.map(mem => {
         const metadata = mem.metadata || {};
-        const role = metadata.role || 'unknown';
-        const timestamp = metadata.timestamp ? new Date(metadata.timestamp).toLocaleString() : 'unknown';
+        const role = (metadata as any).role || 'unknown';
+        const timestamp = (metadata as any).timestamp ? new Date((metadata as any).timestamp).toLocaleString() : 'unknown';
         
         return `[${timestamp}] ${role}: ${mem.content}`;
       });
@@ -162,7 +167,9 @@ export function useChatWithMemory(
    * Analyze message content for memory enhancement
    */
   const analyzeMessageContent = useCallback(async (content: string) => {
-    if (!enableAnalysis) return {};
+    if (!enableAnalysis) {
+      return {};
+    }
 
     try {
       const analysis = await analyzeMessage(content);
@@ -186,7 +193,9 @@ export function useChatWithMemory(
    * Send a message with memory integration
    */
   const sendMessage = useCallback(async (content: string) => {
-    if (!content.trim() || isLoading) return;
+    if (!content.trim() || isLoading) {
+      return;
+    }
 
     setError(null);
     setIsLoading(true);
@@ -241,13 +250,16 @@ Remember to:
         },
       ];
 
+      // Convert messages to a single prompt string
+      const promptString = aiMessages.map(msg => `${msg.role}: ${msg.content}`).join('\n\n');
+      
       // Get AI response
-      const aiResponse = await getAIResponse(aiMessages);
+      const aiResponse = await getAIResponse(promptString);
 
       const assistantMessage: ChatMessage = {
         id: generateUniqueId(),
         role: 'assistant',
-        content: aiResponse.content,
+        content: aiResponse,
         name: '',
         timestamp: Date.now(),
         memoryStored: false,
@@ -258,7 +270,7 @@ Remember to:
       setMessages(prev => [...prev, assistantMessage]);
 
       // Analyze and store AI response
-      const responseAnalysis = await analyzeMessageContent(aiResponse.content);
+      const responseAnalysis = await analyzeMessageContent(aiResponse);
       await storeMessageInMemory(assistantMessage, responseAnalysis);
 
       // Store conversation insights
@@ -266,10 +278,11 @@ Remember to:
         const insights = await generateConversationInsights(userMessage, assistantMessage);
         if (insights) {
           await memory.addMemory(`Conversation insight: ${insights}`, {
+            role: 'system',
             category: 'insights',
             sessionId,
             tags: ['conversation-insight', 'ai-analysis'],
-            timestamp: Date.now(),
+            timestamp: Date.now().toString(),
           });
         }
       }
@@ -310,15 +323,21 @@ Remember to:
    * Regenerate the last AI response
    */
   const regenerateResponse = useCallback(async () => {
-    if (messages.length < 2 || isLoading) return;
+    if (messages.length < 2 || isLoading) {
+      return;
+    }
 
     const lastUserMessage = [...messages].reverse().find(msg => msg.role === 'user');
-    if (!lastUserMessage) return;
+    if (!lastUserMessage) {
+      return;
+    }
 
     // Remove the last assistant message
     setMessages(prev => {
       const lastAssistantIndex = prev.map(m => m.role).lastIndexOf('assistant');
-      if (lastAssistantIndex === -1) return prev;
+      if (lastAssistantIndex === -1) {
+        return prev;
+      }
       return prev.slice(0, lastAssistantIndex);
     });
 
@@ -338,7 +357,9 @@ Remember to:
    * Generate conversation summary
    */
   const getConversationSummary = useCallback(async (): Promise<string> => {
-    if (messages.length === 0) return 'No conversation to summarize.';
+    if (messages.length === 0) {
+      return 'No conversation to summarize.';
+    }
 
     try {
       const conversationText = messages
@@ -346,21 +367,12 @@ Remember to:
         .map(msg => `${msg.role}: ${msg.content}`)
         .join('\n');
 
-      const summaryMessages: AIMessage[] = [
-        {
-          role: 'system',
-          content: 'Summarize the following conversation in 2-3 sentences, focusing on key topics and insights.',
-          name: '',
-        },
-        {
-          role: 'user',
-          content: conversationText,
-          name: '',
-        },
-      ];
+      const summaryPrompt = `Summarize the following conversation in 2-3 sentences, focusing on key topics and insights.
 
-      const response = await getAIResponse(summaryMessages);
-      return response.content;
+Conversation:
+${conversationText}`;
+
+      return await getAIResponse(summaryPrompt);
     } catch (err) {
       return 'Failed to generate conversation summary.';
     }
@@ -383,14 +395,12 @@ Remember to:
  */
 function extractTopics(content: string): string[] {
   // Basic keyword extraction - you can enhance this with NLP
-  const keywords = content
-    .toLowerCase()
-    .split(/\W+/)
-    .filter(word => word.length > 3)
-    .filter(word => !commonWords.includes(word))
-    .slice(0, 5);
-
-  return keywords;
+  return content
+      .toLowerCase()
+      .split(/\W+/)
+      .filter(word => word.length > 3)
+      .filter(word => !commonWords.includes(word))
+      .slice(0, 5);
 }
 
 /**
@@ -398,7 +408,7 @@ function extractTopics(content: string): string[] {
  */
 async function generateConversationInsights(
   userMessage: ChatMessage,
-  aiMessage: ChatMessage
+  _aiMessage: ChatMessage
 ): Promise<string | null> {
   try {
     // Analyze the conversation turn for insights
