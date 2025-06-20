@@ -86,7 +86,7 @@ const Content = details ? 'collapsible-content' : 'div'
           class="b-b b-b-[#8884] op-100!"
           {...(MediaContainer === Link ? { href: link } : {})}
         >
-          {images &&
+          {images && images.length > 0 &&
             (images.length > 1 ? (
               <SwiperCarousel
                 images={images}
@@ -98,8 +98,8 @@ const Content = details ? 'collapsible-content' : 'div'
             ) : (
               <Image
                 class="aspect-[16/9] object-cover"
-                src={images[0].src}
-                alt={images[0].alt}
+                src={images[0]!.src}
+                alt={images[0]!.alt}
                 width={1200}
                 height={675}
                 {...imageProps}
