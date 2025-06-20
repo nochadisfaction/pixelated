@@ -1,3 +1,0 @@
-[submodule "src/lib/ai/bias-detection"]
-	path = src/lib/ai/bias-detection
-	url = https://github.com/nochadisfaction/bias-detection
