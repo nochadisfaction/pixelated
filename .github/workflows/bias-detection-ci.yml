@@ -18,9 +18,9 @@ on:
       - 'tests/**/*bias-detection*'
 
 env:
-  NODE_VERSION: '18'
+  NODE_VERSION: '22.x'
   PYTHON_VERSION: '3.11'
-  PNPM_VERSION: '8'
+  PNPM_VERSION: '10.12.1'
 
 jobs:
   # Security and dependency scanning
@@ -75,7 +75,7 @@ jobs:
       - name: Setup pnpm cache
         uses: actions/cache@v3
         with:
-          path: ${{ env.STORE_PATH }}
+          path: ~/.pnpm-store
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
@@ -144,7 +144,7 @@ jobs:
       - name: Setup pnpm cache
         uses: actions/cache@v3
         with:
-          path: ${{ env.STORE_PATH }}
+          path: ~/.pnpm-store
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
@@ -397,7 +397,9 @@ jobs:
           docker tag bias-detection-engine:${{ github.sha }} bias-detection-engine:latest
 
       - name: Configure AWS credentials
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/master' && env.AWS_ACCESS_KEY_ID != ''
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}

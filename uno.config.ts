@@ -36,6 +36,11 @@ export default defineConfig({
     presetIcons({
       scale: 1.2,
       warn: true,
+      collections: {
+        'ri': () => import('@iconify-json/ri/icons.json').then((i) => i.default),
+        'lucide': () => import('@iconify-json/lucide/icons.json').then((i) => i.default),
+        'carbon': () => import('@iconify-json/carbon/icons.json').then((i) => i.default),
+      }
     }),
     presetTypography(),
   ],

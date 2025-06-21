@@ -62,10 +62,10 @@ const collectionItems = await getCollection(collectionType)
 
     get #config() {
       return {
-        gap: this.#getParseInt(this.dataset.gap || '16'),
-        minCardWidth: this.#getParseInt(this.dataset.minCardWidth || '350'),
-        maxCardWidth: this.#getParseInt(this.dataset.maxCardWidth || '1000'),
-        showMore: this.#getParseInt(this.dataset.showMore || '0'),
+        gap: this.#getParseInt(this.dataset['gap'] || '16'),
+        minCardWidth: this.#getParseInt(this.dataset['minCardWidth'] || '350'),
+        maxCardWidth: this.#getParseInt(this.dataset['maxCardWidth'] || '1000'),
+        showMore: this.#getParseInt(this.dataset['showMore'] || '0'),
       }
     }
 
@@ -178,7 +178,7 @@ const collectionItems = await getCollection(collectionType)
         card.style.width = `${cardWidth}px`
         card.style.transform = `translate(${left}px, ${top}px)`
 
-        columnHeights[column] += card.offsetHeight + gap
+        columnHeights[column] = (columnHeights[column] || 0) + (card.offsetHeight || 0) + gap
       })
 
       const maxHeight = Math.max(...columnHeights)

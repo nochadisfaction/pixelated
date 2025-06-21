@@ -17,10 +17,14 @@ export default defineConfig({
     externalNodePlugin(),
     flexsearchSSRPlugin(),
     middlewarePatchPlugin(),
-    sentryVitePlugin({
-      org: 'pixelated-empathy-dq',
-      project: 'pixel-astro',
-    }),
+    // Only include Sentry plugin when properly configured
+    ...(process.env.SENTRY_AUTH_TOKEN ? [
+      sentryVitePlugin({
+        org: process.env.SENTRY_ORG || 'pixelated-empathy-dq',
+        project: process.env.SENTRY_PROJECT || 'pixelated',
+        authToken: process.env.SENTRY_AUTH_TOKEN,
+      }),
+    ] : []),
   ],
   resolve: {
     alias: {

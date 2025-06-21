@@ -44,6 +44,13 @@ const isArticle = !!headings.length
 const { minHeadingLevel, maxHeadingLevel, displayPosition, displayMode } =
   getTocConfig()
 const specHeadings = generateToc(headings, minHeadingLevel, maxHeadingLevel)
+
+// Generate icon classes based on display position
+const iconClasses = [
+  'toc-desktop-anchor',
+  displayPosition === 'left' ? 'i-ri-menu-2-fill' : 'i-ri-menu-3-fill',
+  displayMode === 'always' ? 'op-60' : ''
+].filter(Boolean)
 ---
 
 <aside>
@@ -57,14 +64,7 @@ const specHeadings = generateToc(headings, minHeadingLevel, maxHeadingLevel)
       ${displayMode === 'always' ? 'toc-desktop-on' : ''}`}
       {style}
     >
-      <div
-        class:list={{
-          'toc-desktop-anchor': true,
-          'i-ri-menu-2-fill': displayPosition === 'left',
-          'i-ri-menu-3-fill': displayPosition === 'right',
-          'op-60': displayMode === 'always',
-        }}
-      >
+      <div class={iconClasses.join(' ')}>
       </div>
       <ul>
         {
@@ -139,8 +139,8 @@ const specHeadings = generateToc(headings, minHeadingLevel, maxHeadingLevel)
     }
 
     #init = () => {
-      this.#minH = this.#getHeadingLevel(this.dataset.minH)
-      this.#maxH = this.#getHeadingLevel(this.dataset.maxH)
+      this.#minH = this.#getHeadingLevel(this.dataset['minH'])
+      this.#maxH = this.#getHeadingLevel(this.dataset['maxH'])
 
       // map heading elements to their corresponding toc links
       const tocLinks = this.#getElements('a', false) as HTMLAnchorElement[]

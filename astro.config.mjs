@@ -56,7 +56,8 @@ const integrations = [
       sendDefaultPii: true,
       telemetry: false,
       sourceMapsUploadOptions: {
-        project: 'pixelated',
+        project: process.env.SENTRY_PROJECT || 'pixelated',
+        org: process.env.SENTRY_ORG || 'pixelated-empathy-dq',
         authToken: process.env.SENTRY_AUTH_TOKEN,
       },
     }),
