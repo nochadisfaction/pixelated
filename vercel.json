@@ -7,7 +7,7 @@
   "devCommand": "pnpm astro dev",
   "functions": {
     "src/pages/**/*.{js,ts,astro}": {
-      "excludeFiles": "{ai/**,test_pixel_logs/**,logs/**,memory/**,screenshots/**,reports/**,security-scan-artifacts/**,secret-scan-artifacts/**,performance-results/**,patches/**,lint/**,fixes/**,docs/**,tests/**,**/bias_detection_env/**,**/bias_detection_env,node_modules/@tensorflow/**,node_modules/three/**,node_modules/@google-cloud/**,node_modules/sharp/**,node_modules/@testing-library/**,node_modules/@playwright/**,node_modules/playwright/**,*.test.{js,ts},*.spec.{js,ts},**/*.test.{js,ts},**/*.spec.{js,ts},**/*.d.ts,**/test/**,**/tests/**,**/__tests__/**,**/*.md,**/*.mdx,**/README*,**/CHANGELOG*,**/LICENSE*,**/.git/**,**/.github/**,**/.vscode/**,**/.cursor/**,**/coverage/**,**/docs/**,**/examples/**,**/*.map,**/src/simulator/**,**/src/load-tests/**,**/src/test/**,**/src/tests/**}/**"
+      "excludeFiles": "{ai/**,test_pixel_logs/**,logs/**,memory/**,screenshots/**,reports/**,security-scan-artifacts/**,secret-scan-artifacts/**,performance-results/**,patches/**,lint/**,fixes/**,docs/**,tests/**}"
     }
   },
   "build": {
