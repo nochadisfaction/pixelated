@@ -6,7 +6,10 @@
   "outputDirectory": "dist",
   "devCommand": "pnpm astro dev",
   "functions": {
-    "src/pages/**/*.{js,ts,astro}": {
+    "src/pages/api/**/*.{js,ts}": {
+      "excludeFiles": "{ai/**,test_pixel_logs/**,logs/**,memory/**,screenshots/**,reports/**,security-scan-artifacts/**,secret-scan-artifacts/**,performance-results/**,patches/**,lint/**,fixes/**,docs/**,tests/**}"
+    },
+    "api/*.{js,ts}": {
       "excludeFiles": "{ai/**,test_pixel_logs/**,logs/**,memory/**,screenshots/**,reports/**,security-scan-artifacts/**,secret-scan-artifacts/**,performance-results/**,patches/**,lint/**,fixes/**,docs/**,tests/**}"
     }
   },
