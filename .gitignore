@@ -95,6 +95,15 @@
 /ai/
 .vercel
 
+# Python environments (prevent heavy ML environments from being committed)
+**/bias_detection_env/
+**/venv/
+**/.venv/
+**/env/
+**/.env/
+**/conda_env/
+**/__pycache__/
+
 # Added by Claude Task Master
 # Logs
 logs

@@ -56,7 +56,7 @@ const integrations = [
       sendDefaultPii: true,
       telemetry: false,
       sourceMapsUploadOptions: {
-        project: process.env.SENTRY_PROJECT || 'pixelated',
+        project: process.env.SENTRY_PROJECT || 'pixel-astro',
         org: process.env.SENTRY_ORG || 'pixelated-empathy-dq',
         authToken: process.env.SENTRY_AUTH_TOKEN,
       },
@@ -148,30 +148,90 @@ export default defineConfig({
     
     plugins: [flexsearchSSRPlugin()],
     
-    // Simplified build configuration
+    // Aggressive build configuration for Vercel
     build: {
       chunkSizeWarningLimit: 1500,
       target: 'node18',
-      sourcemap: true, // Disable sourcemaps to avoid warnings during build
+      sourcemap: false, // Disable sourcemaps to reduce size
       rollupOptions: {
-        // Only essential externals
-        external: [
-          'flexsearch',
-          'flexsearch/dist/module/document',
-          // Core Node.js modules
-          /^node:/,
-          'fs', 'path', 'crypto', 'http', 'https', 'util', 'buffer', 'stream', 'events', 'url'
-        ],
+        // Aggressive externals to reduce bundle size
+        external: (id) => {
+          // Never externalize Astro internals and integrations
+          if (id.includes('@astro-page:') || 
+              id.includes('astro/') || 
+              id.includes('astro\\') ||
+              id.startsWith('@astrojs/') ||
+              id.includes('@astrojs/')) {
+            return false;
+          }
+          
+          // Check specific patterns
+          const patterns = [
+            'flexsearch',
+            'flexsearch/dist/module/document',
+            // Exclude Python environments and heavy ML dependencies
+            /bias_detection_env/,
+            /.*\/bias_detection_env\/.*/,
+            // Core Node.js modules
+            /^node:/,
+          'fs', 'path', 'crypto', 'http', 'https', 'util', 'buffer', 'stream', 'events', 'url',
+          // Heavy dependencies - externalize to reduce bundle size
+          '@tensorflow/tfjs',
+          '@tensorflow/tfjs-layers',
+          'three',
+          'three-stdlib',
+          '@react-three/fiber',
+          '@google-cloud/storage',
+          'sharp',
+          'newrelic',
+          'node-seal',
+          'snarkjs',
+          'circomlib',
+          'pdfkit',
+          'canvas',
+          // AI/ML libraries - only include what's needed
+          /^@langchain/,
+          /^composio-/,
+          // Testing libraries
+          /@testing-library/,
+          /@playwright/,
+          /playwright/,
+          /vitest/,
+          /^@vitest/,
+          // Development tools
+          /@types/,
+          /eslint/,
+          /biome/,
+          // AWS SDK - externalize heavy modules
+          /@aws-sdk\/client-s3/,
+          /@aws-sdk\/client-dynamodb/,
+          /@aws-sdk\/client-kms/,
+          // Potentially heavy UI libraries
+          /@radix-ui/,
+          /framer-motion/,
+          /recharts/,
+          /chart\.js/,
+          ];
+          
+          // Check if any pattern matches
+          return patterns.some(pattern => {
+            if (typeof pattern === 'string') {
+              return id === pattern;
+            } else if (pattern instanceof RegExp) {
+              return pattern.test(id);
+            }
+            return false;
+          });
+        },
         output: {
-          // Simplified chunking - let Rollup handle most of it
+          // Minimal chunking for Vercel
           manualChunks: {
             'react-core': ['react', 'react-dom'],
-            'ui-lib': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
-            'ai-ml': ['openai', '@ai-sdk/openai'],
+            'ai-core': ['openai', '@ai-sdk/openai'],
           },
         },
         onwarn: (warning, warn) => {
-          // Suppress sourcemap warnings
+          // Suppress all warnings during build
           if (warning.code === 'SOURCEMAP_ERROR') {
             return
           }
@@ -181,6 +241,12 @@ export default defineConfig({
           if (warning.message?.includes('Can\'t resolve original location')) {
             return
           }
+          if (warning.code === 'UNRESOLVED_IMPORT') {
+            return
+          }
+          if (warning.code === 'EXTERNAL_DEPENDENCY') {
+            return
+          }
           warn(warning)
         },
       },
@@ -188,12 +254,33 @@ export default defineConfig({
 
     ssr: {
       noExternal: ['@google-cloud/storage', 'sharp'],
-      external: ['flexsearch', 'flexsearch/dist/module/document'],
+      external: [
+        'flexsearch', 
+        'flexsearch/dist/module/document',
+        '@tensorflow/tfjs',
+        '@tensorflow/tfjs-layers',
+        'three',
+        'three-stdlib',
+        '@react-three/fiber',
+        'newrelic',
+        'node-seal',
+        'snarkjs',
+        'circomlib',
+        'pdfkit',
+      ],
     },
 
     optimizeDeps: {
       include: ['react', 'react-dom'],
-      exclude: ['@unocss/astro', 'flexsearch'],
+      exclude: [
+        '@unocss/astro', 
+        'flexsearch',
+        '@tensorflow/tfjs',
+        '@tensorflow/tfjs-layers',
+        'three',
+        'three-stdlib',
+        '@react-three/fiber',
+      ],
     },
 
     // UnoCSS timeout prevention
