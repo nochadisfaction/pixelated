@@ -25,6 +25,7 @@ Actions:
     Configuration:
       Wait: true
       AWSRegion: us-east-2
+      AppStackName: GrokSucks
       CreateBranch: true
       AmplifyBranchName: ${WorkflowSource.BranchName}
       Path: .
