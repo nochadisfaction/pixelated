@@ -76,7 +76,49 @@ const integrations = [
 export default defineConfig({
   site: 'https://pixelatedempathy.com',
   output: 'server',
-  adapter: vercel(),
+  adapter: vercel({
+    // Minimize serverless function size
+    includeFiles: [
+      // Only include essential runtime files
+      'package.json',
+      'astro.config.mjs',
+      'mdx-components.js',
+    ],
+    excludeFiles: [
+      // Exclude large directories from serverless functions
+      'tests/**',
+      'test_pixel_logs/**',
+      'logs/**',
+      'memory/**',
+      'screenshots/**',
+      'reports/**',
+      'security-scan-artifacts/**',
+      'secret-scan-artifacts/**',
+      'performance-results/**',
+      'ai/**',
+      'docs/**',
+      'lint/**',
+      'fixes/**',
+      'patches/**',
+      'dist/**',
+      '.astro/**',
+      // Heavy node_modules
+      'node_modules/@tensorflow/**',
+      'node_modules/three/**',
+      'node_modules/@react-three/**',
+      'node_modules/sharp/**',
+      'node_modules/@google-cloud/**',
+      'node_modules/puppeteer/**',
+      'node_modules/playwright/**',
+      'node_modules/@playwright/**',
+      'node_modules/@testing-library/**',
+      'node_modules/@types/**',
+      'node_modules/typescript/**',
+      'node_modules/eslint/**',
+      'node_modules/biome/**',
+      'node_modules/vitest/**',
+    ],
+  }),
   image: {
     service: {
       entrypoint: 'astro/assets/services/sharp',
@@ -165,52 +207,141 @@ export default defineConfig({
             return false;
           }
           
-          // Check specific patterns
+          // VERY aggressive externalization for Vercel size limits
           const patterns = [
+            // Core Node.js modules - always external
+            /^node:/,
+            'fs', 'path', 'crypto', 'http', 'https', 'util', 'buffer', 'stream', 'events', 'url',
+            'os', 'child_process', 'worker_threads', 'cluster', 'net', 'tls', 'dns',
+            
+            // Heavy ML/AI dependencies - MUST be external
+            '@tensorflow/tfjs',
+            '@tensorflow/tfjs-layers',
+            '@tensorflow/tfjs-node',
+            '@tensorflow/tfjs-backend-cpu',
+            '@tensorflow/tfjs-backend-webgl',
+            /^@tensorflow/,
+            /tensorflow/,
+            'pytorch',
+            'torch',
+            /^@pytorch/,
+            'opencv',
+            /^opencv/,
+            
+            // Heavy graphics/3D libraries
+            'three',
+            'three-stdlib',
+            '@react-three/fiber',
+            '@react-three/drei',
+            'babylon',
+            '@babylonjs/',
+            'webgl',
+            'canvas',
+            'sharp',
+            
+            // Cloud services - externalize heavy SDKs
+            '@google-cloud/storage',
+            '@google-cloud/bigquery',
+            '@google-cloud/firestore',
+            /^@google-cloud/,
+            /^@aws-sdk/,
+            '@azure/',
+            
+            // Crypto/blockchain libraries
+            'node-seal',
+            'snarkjs',
+            'circomlib',
+            /^@noble/,
+            'ethers',
+            'web3',
+            
+            // Document processing
+            'pdfkit',
+            'puppeteer',
+            'playwright',
+            '@playwright/test',
+            /^playwright/,
+            'jsdom',
+            
+            // Search libraries (can be heavy)
             'flexsearch',
             'flexsearch/dist/module/document',
-            // Exclude Python environments and heavy ML dependencies
+            'elasticsearch',
+            '@elastic/',
+            'solr',
+            
+            // AI/LLM libraries
+            /^@langchain/,
+            'langchain',
+            /^composio-/,
+            'openai',
+            '@ai-sdk/',
+            'anthropic',
+            'groq-sdk',
+            
+            // Testing frameworks - not needed in production
+            /@testing-library/,
+            /^@playwright/,
+            /vitest/,
+            /^@vitest/,
+            'jest',
+            '@jest/',
+            'mocha',
+            'chai',
+            'sinon',
+            
+            // Development tools - not needed in production
+            /@types/,
+            /eslint/,
+            /biome/,
+            'typescript',
+            'ts-node',
+            'nodemon',
+            '@swc/',
+            'esbuild',
+            'vite',
+            'rollup',
+            'webpack',
+            
+            // Heavy UI libraries
+            /@radix-ui/,
+            'framer-motion',
+            'recharts',
+            /chart\.js/,
+            'highcharts',
+            'd3',
+            '@d3-/',
+            
+            // Database drivers (can be heavy)
+            'pg', 'mysql', 'mysql2', 'sqlite3', 'mongodb', 'redis',
+            '@prisma/client',
+            'mongoose',
+            'sequelize',
+            
+            // Email libraries
+            'nodemailer',
+            '@sendgrid/',
+            'mailgun',
+            
+            // Monitoring/APM
+            'newrelic',
+            '@sentry/node',
+            'dd-trace',
+            
+            // Python/ML environments
             /bias_detection_env/,
             /.*\/bias_detection_env\/.*/,
-            // Core Node.js modules
-            /^node:/,
-          'fs', 'path', 'crypto', 'http', 'https', 'util', 'buffer', 'stream', 'events', 'url',
-          // Heavy dependencies - externalize to reduce bundle size
-          '@tensorflow/tfjs',
-          '@tensorflow/tfjs-layers',
-          'three',
-          'three-stdlib',
-          '@react-three/fiber',
-          '@google-cloud/storage',
-          'sharp',
-          'newrelic',
-          'node-seal',
-          'snarkjs',
-          'circomlib',
-          'pdfkit',
-          'canvas',
-          // AI/ML libraries - only include what's needed
-          /^@langchain/,
-          /^composio-/,
-          // Testing libraries
-          /@testing-library/,
-          /@playwright/,
-          /playwright/,
-          /vitest/,
-          /^@vitest/,
-          // Development tools
-          /@types/,
-          /eslint/,
-          /biome/,
-          // AWS SDK - externalize heavy modules
-          /@aws-sdk\/client-s3/,
-          /@aws-sdk\/client-dynamodb/,
-          /@aws-sdk\/client-kms/,
-          // Potentially heavy UI libraries
-          /@radix-ui/,
-          /framer-motion/,
-          /recharts/,
-          /chart\.js/,
+            /python/,
+            /conda/,
+            /jupyter/,
+            /notebook/,
+            
+            // Any package over 10MB typically
+            /plotly/,
+            /matplotlib/,
+            /numpy/,
+            /pandas/,
+            /scipy/,
           ];
           
           // Check if any pattern matches
@@ -253,20 +384,83 @@ export default defineConfig({
     },
 
     ssr: {
-      noExternal: ['@google-cloud/storage', 'sharp'],
+      noExternal: [],
       external: [
+        // Search libraries
         'flexsearch', 
         'flexsearch/dist/module/document',
+        
+        // Heavy ML/AI libraries
         '@tensorflow/tfjs',
         '@tensorflow/tfjs-layers',
+        '@tensorflow/tfjs-node',
+        /^@tensorflow/,
+        'pytorch',
+        'torch',
+        'opencv',
+        
+        // Heavy graphics/3D
         'three',
         'three-stdlib',
         '@react-three/fiber',
-        'newrelic',
+        '@react-three/drei',
+        'babylon',
+        'canvas',
+        'sharp',
+        
+        // Cloud SDKs
+        '@google-cloud/storage',
+        '@google-cloud/bigquery',
+        /^@google-cloud/,
+        /^@aws-sdk/,
+        '@azure/',
+        
+        // Crypto/blockchain
         'node-seal',
         'snarkjs',
         'circomlib',
+        'ethers',
+        'web3',
+        
+        // Document processing
         'pdfkit',
+        'puppeteer',
+        'playwright',
+        
+        // AI/LLM
+        /^@langchain/,
+        'langchain',
+        'openai',
+        '@ai-sdk/',
+        'anthropic',
+        
+        // Monitoring
+        'newrelic',
+        '@sentry/node',
+        'dd-trace',
+        
+        // Databases
+        'pg', 'mysql', 'mysql2', 'sqlite3', 'mongodb', 'redis',
+        '@prisma/client',
+        'mongoose',
+        'sequelize',
+        
+        // Email
+        'nodemailer',
+        '@sendgrid/',
+        
+        // Testing (not needed in SSR)
+        /@testing-library/,
+        /^@playwright/,
+        /vitest/,
+        'jest',
+        
+        // Development tools
+        /@types/,
+        /eslint/,
+        /biome/,
+        'typescript',
+        'ts-node',
       ],
     },
 
