@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "pnpm build",
-  "installCommand": "pnpm install --no-frozen-lockfile --registry=https://registry.npmjs.org/",
+  "installCommand": "pnpm install --no-frozen-lockfile --fetch-retries=3 --fetch-retry-factor=10 --fetch-timeout=300000",
   "framework": "astro",
   "outputDirectory": "dist",
   "devCommand": "pnpm astro dev",
